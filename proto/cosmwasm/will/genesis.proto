@@ -1,0 +1,17 @@
+syntax = "proto3";
+// package wasmd.will;
+package cosmwasm.will;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "cosmwasm/will/params.proto";
+// import "cosmwasm/will/types.proto";
+
+option go_package = "github.com/CosmWasm/wasmd/x/will/types";
+
+// GenesisState defines the will module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1
+      [ (gogoproto.nullable) = false, (amino.dont_omitempty) = true ];
+}

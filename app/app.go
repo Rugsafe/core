@@ -135,13 +135,9 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-
-	// "github.com/CosmWasm/wasmd/x/wasm"
-
 	"github.com/CosmWasm/wasmd/x/will"
 	willkeeper "github.com/CosmWasm/wasmd/x/will/keeper"
 	willtypes "github.com/CosmWasm/wasmd/x/will/types"
-	// will "will"
 )
 
 const appName = "WasmApp"
@@ -745,7 +741,7 @@ func NewWasmApp(
 		// sdk
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
 
-		//will
+		// will
 		will.NewAppModule(appCodec, &app.WillKeeper, logger),
 	)
 

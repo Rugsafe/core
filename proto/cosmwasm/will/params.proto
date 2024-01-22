@@ -1,0 +1,14 @@
+syntax = "proto3";
+// package wasmd.will;
+package cosmwasm.will;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/CosmWasm/wasmd/x/will/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (amino.name) = "wasmd/x/will/Params";
+  option (gogoproto.equal) = true;
+}

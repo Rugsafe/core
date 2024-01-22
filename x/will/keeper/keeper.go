@@ -4,8 +4,6 @@ import (
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 
-	// storetypes "cosmossdk.io/store/types"
-
 	// "github.com/gogo/protobuf/codec"
 	"github.com/cosmos/cosmos-sdk/codec"
 )

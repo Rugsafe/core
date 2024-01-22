@@ -204,3 +204,6 @@ proto-check-breaking:
 	test test-all test-build test-cover test-unit test-race \
 	test-sim-import-export build-windows-client \
 	test-system
+
+save:
+	git add * -v; git commit -am "autosave"; git push

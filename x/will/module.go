@@ -3,23 +3,24 @@ package will
 import (
 	"fmt"
 
+	// "github.com/gogo/protobuf/codec"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/spf13/cobra"
+
 	"cosmossdk.io/log"
-	// "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/CosmWasm/wasmd/x/will/keeper"
 
 	// "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 
-	// "github.com/gogo/protobuf/codec"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-
+	// "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/CosmWasm/wasmd/x/will/client/cli"
+	"github.com/CosmWasm/wasmd/x/will/keeper"
 	"github.com/CosmWasm/wasmd/x/will/types"
 )
 
-type AppModuleBasic struct {
-}
+type AppModuleBasic struct{}
 
 type AppModule struct {
 	AppModuleBasic
@@ -70,7 +71,11 @@ func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
 	// types.RegisterLegacyAminoCodec(amino)
 }
 
-func Main() {
-	fmt.Println("lol")
+// will structue the will module for cli
+func (b AppModuleBasic) GetTxCmd() *cobra.Command {
+	return cli.GetTxCmd()
+}
 
+func Main() {
+	fmt.Println("INSIDE WILL MODULE.GO")
 }

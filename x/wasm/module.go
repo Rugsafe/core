@@ -123,7 +123,6 @@ func NewAppModule(
 	router *baseapp.MsgServiceRouter,
 	ss exported.Subspace,
 ) AppModule {
-
 	return AppModule{
 		AppModuleBasic:     AppModuleBasic{},
 		cdc:                cdc,
