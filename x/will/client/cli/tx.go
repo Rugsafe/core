@@ -1,10 +1,13 @@
 package cli
 
 import (
+	"fmt"
+
 	"github.com/CosmWasm/wasmd/x/will/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	"github.com/cosmos/cosmos-sdk/testutil/network"
 	"github.com/spf13/cobra"
 )
 
@@ -27,9 +30,9 @@ func GetTxCmd() *cobra.Command {
 func CreateWillCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create-will [will-id]",
-		Short:   "Create a will",
+		Short:   "Create a Will",
 		Aliases: []string{"get"},
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -39,9 +42,16 @@ func CreateWillCmd() *cobra.Command {
 			// if err != nil {
 			// 	return err
 			// }
+			fmt.Println("inside tx CreateWill command")
+			//
+			// logger := log.Logger{}
+			// logger := log.NewTestLogger(t)
+			logger := network.NewCLILogger(cmd)
+			logger.Log("inside tx CreateWill command")
+			logger.Log(string(args[0]))
 			msg := types.MsgCreateWill{
 				Creator:     clientCtx.GetFromAddress().String(),
-				Id:          "dummy id",
+				Id:          args[0],
 				Name:        "test will",
 				Beneficiary: "benefiary 1",
 			}

@@ -18,6 +18,8 @@ import (
 	"github.com/CosmWasm/wasmd/x/will/client/cli"
 	"github.com/CosmWasm/wasmd/x/will/keeper"
 	"github.com/CosmWasm/wasmd/x/will/types"
+
+	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
 type AppModuleBasic struct{}
@@ -64,12 +66,30 @@ func (b AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, serv
 
 // RegisterInterfaces implements InterfaceModule
 func (b AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
-	// types.RegisterInterfaces(registry)
+	types.RegisterInterfaces(registry)
 }
 
 func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
 	// types.RegisterLegacyAminoCodec(amino)
 }
+
+func (am AppModule) RegisterServices(cfg module.Configurator) {
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+	// types.RegisterQueryServer(cfg.QueryServer(), keeper.Querier(am.keeper))
+
+	// for migrations!
+	// m := keeper.NewMigrator(*am.keeper, am.legacySubspace)
+	// err := cfg.RegisterMigration(types.ModuleName, 1, m.Migrate1to2)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+}
+
+// func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
+//     // Register all your message types and interfaces here
+//     types.RegisterMsgServer(registry, &_Msg_serviceDesc)
+// }
 
 // will structue the will module for cli
 func (b AppModuleBasic) GetTxCmd() *cobra.Command {
