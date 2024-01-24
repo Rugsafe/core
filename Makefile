@@ -207,3 +207,11 @@ proto-check-breaking:
 
 save:
 	git add * -v; git commit -am "autosave"; git push
+alice_c:
+	./build/wasmd keys add alice --recover
+alice_d:
+	 ./build/wasmd keys delete alice 
+will_c:
+	./build/wasmd tx will create "test will 1" "beneficiary" --from alice --chain-id w3ll-chain
+will_g:
+	./build/wasmd query will get 1 --chain-id w3ll-chain

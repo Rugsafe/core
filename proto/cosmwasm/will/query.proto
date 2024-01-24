@@ -1,31 +1,33 @@
 syntax = "proto3";
-// package wasmd.will;
 package cosmwasm.will;
 
-import "amino/amino.proto";
-import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-// import "cosmos/base/query/v1beta1/pagination.proto";
-// import "wasmd/will/params.proto";
-import "cosmwasm/will/params.proto";
-// import "cosmwasm/will/types.proto";
+import "cosmwasm/will/types.proto";
 
 option go_package = "github.com/CosmWasm/wasmd/x/will/types";
 
-// Query defines the gRPC querier service.
+// Query defines the gRPC querier service for the will module.
 service Query {
-  // Parameters queries the parameters of the module.
-  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/CosmWasm/wasmd/will/params";
+  // GetWill retrieves a will by its ID.
+  rpc GetWill(QueryGetWillRequest) returns (QueryGetWillResponse) {
+    option (google.api.http).get = "/cosmwasm/wasmd/will/{will_id}";
   }
 }
 
-// QueryParamsRequest is request type for the Query/Params RPC method.
-message QueryParamsRequest {}
+// QueryGetWillRequest is the request type for retrieving a will by its ID.
+message QueryGetWillRequest { string will_id = 1; }
 
-// QueryParamsResponse is response type for the Query/Params RPC method.
-message QueryParamsResponse {
-  // params holds all the parameters of this module.
-  Params params = 1
-      [ (gogoproto.nullable) = false, (amino.dont_omitempty) = true ];
+// QueryGetWillResponse is the response type returned after retrieving a will.
+message QueryGetWillResponse {
+  // will_id contains the retrieved will information.
+  uint64 will_id = 1;
+  // will is the will body
+  Will will = 2;
 }
+
+// // Will defines a will structure.
+// message Will {
+//   uint64 id = 1;          // The unique identifier of the will.
+//   string name = 2;        // The name of the will.
+//   string beneficiary = 3; // The beneficiary of the will.
+// }

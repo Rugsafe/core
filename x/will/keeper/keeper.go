@@ -1,11 +1,15 @@
 package keeper
 
 import (
+	"context"
+
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 
-	// "github.com/gogo/protobuf/codec"
 	"github.com/cosmos/cosmos-sdk/codec"
+
+	// "github.com/gogo/protobuf/codec"
+	"github.com/CosmWasm/wasmd/x/will/types"
 )
 
 type Keeper struct {
@@ -26,25 +30,13 @@ func NewKeeper(
 		cdc:          cdc,
 	}
 
-	// keeper.wasmVMQueryHandler = DefaultQueryPlugins(bankKeeper, stakingKeeper, distrKeeper, channelKeeper, keeper)
-	// preOpts, postOpts := splitOpts(opts)
-	// for _, o := range preOpts {
-	// 	o.apply(keeper)
-	// }
-	// // only set the wasmvm if no one set this in the options
-	// // NewVM does a lot, so better not to create it and silently drop it.
-	// if keeper.wasmVM == nil {
-	// 	var err error
-	// 	keeper.wasmVM, err = wasmvm.NewVM(filepath.Join(homeDir, "wasm"), availableCapabilities, contractMemoryLimit, wasmConfig.ContractDebugMode, wasmConfig.MemoryCacheSize)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// }
-
-	// for _, o := range postOpts {
-	// 	o.apply(keeper)
-	// }
-	// // not updatable, yet
-	// keeper.wasmVMResponseHandler = NewDefaultWasmVMContractResponseHandler(NewMessageDispatcher(keeper.messenger, keeper))
 	return *keeper
+}
+
+func (k Keeper) GetWillByID(ctx context.Context, id uint64) *types.Will {
+	store := k.storeService.OpenKVStore(ctx)
+	var will types.Will
+	willBz, _ := store.Get(types.GetWillKey(id))
+	k.cdc.MustUnmarshal(willBz, &will)
+	return &will
 }

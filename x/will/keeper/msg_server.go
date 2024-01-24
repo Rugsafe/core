@@ -18,9 +18,16 @@ func NewMsgServerImpl(k *Keeper) types.MsgServer {
 
 func (m msgServer) CreateWill(
 	ctx context.Context,
-	msg *types.MsgCreateWill,
+	msg *types.MsgCreateWillRequest,
 ) (*types.MsgCreateWillResponse, error) {
 	return &types.MsgCreateWillResponse{}, nil
+}
+
+func (m msgServer) CheckIn(
+	ctx context.Context,
+	msg *types.MsgCheckInRequest,
+) (*types.MsgCheckInResponse, error) {
+	return &types.MsgCheckInResponse{}, nil
 }
 
 // UpdateParams updates the module parameters

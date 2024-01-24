@@ -21,7 +21,10 @@ service Msg {
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 
   // create a new will
-  rpc CreateWill(MsgCreateWill) returns (MsgCreateWillResponse);
+  rpc CreateWill(MsgCreateWillRequest) returns (MsgCreateWillResponse);
+
+  // checkin into a will
+  rpc CheckIn(MsgCheckInRequest) returns (MsgCheckInResponse);
 }
 
 // MsgUpdateParams is the Msg/UpdateParams request type.
@@ -45,13 +48,25 @@ message MsgUpdateParams {
 message MsgUpdateParamsResponse {}
 
 // message for creating a will
-message MsgCreateWill {
+message MsgCreateWillRequest {
   option (cosmos.msg.v1.signer) = "creator";
+  option (amino.name) = "wasmd/x/will/MsgCreateWillRequest";
   string creator = 1;
-  string id = 2;
+  uint64 id = 2;
   string name = 3;
   string beneficiary = 4;
 }
 
 // to get the will response
 message MsgCreateWillResponse {}
+
+// message for checking in
+message MsgCheckInRequest {
+  option (cosmos.msg.v1.signer) = "creator";
+  option (amino.name) = "wasmd/x/will/MsgCheckInRequest";
+  string creator = 1;
+  uint64 id = 2;
+}
+
+// response for checkin
+message MsgCheckInResponse {}

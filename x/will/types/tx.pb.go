@@ -142,27 +142,27 @@ func (m *MsgUpdateParamsResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
 
 // message for creating a will
-type MsgCreateWill struct {
+type MsgCreateWillRequest struct {
 	Creator     string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
-	Id          string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Id          uint64 `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
 	Name        string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Beneficiary string `protobuf:"bytes,4,opt,name=beneficiary,proto3" json:"beneficiary,omitempty"`
 }
 
-func (m *MsgCreateWill) Reset()         { *m = MsgCreateWill{} }
-func (m *MsgCreateWill) String() string { return proto.CompactTextString(m) }
-func (*MsgCreateWill) ProtoMessage()    {}
-func (*MsgCreateWill) Descriptor() ([]byte, []int) {
+func (m *MsgCreateWillRequest) Reset()         { *m = MsgCreateWillRequest{} }
+func (m *MsgCreateWillRequest) String() string { return proto.CompactTextString(m) }
+func (*MsgCreateWillRequest) ProtoMessage()    {}
+func (*MsgCreateWillRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_22e268a87ad78580, []int{2}
 }
 
-func (m *MsgCreateWill) XXX_Unmarshal(b []byte) error {
+func (m *MsgCreateWillRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
 
-func (m *MsgCreateWill) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgCreateWillRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgCreateWill.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgCreateWillRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -173,42 +173,42 @@ func (m *MsgCreateWill) XXX_Marshal(b []byte, deterministic bool) ([]byte, error
 	}
 }
 
-func (m *MsgCreateWill) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgCreateWill.Merge(m, src)
+func (m *MsgCreateWillRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCreateWillRequest.Merge(m, src)
 }
 
-func (m *MsgCreateWill) XXX_Size() int {
+func (m *MsgCreateWillRequest) XXX_Size() int {
 	return m.Size()
 }
 
-func (m *MsgCreateWill) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgCreateWill.DiscardUnknown(m)
+func (m *MsgCreateWillRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCreateWillRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgCreateWill proto.InternalMessageInfo
+var xxx_messageInfo_MsgCreateWillRequest proto.InternalMessageInfo
 
-func (m *MsgCreateWill) GetCreator() string {
+func (m *MsgCreateWillRequest) GetCreator() string {
 	if m != nil {
 		return m.Creator
 	}
 	return ""
 }
 
-func (m *MsgCreateWill) GetId() string {
+func (m *MsgCreateWillRequest) GetId() uint64 {
 	if m != nil {
 		return m.Id
 	}
-	return ""
+	return 0
 }
 
-func (m *MsgCreateWill) GetName() string {
+func (m *MsgCreateWillRequest) GetName() string {
 	if m != nil {
 		return m.Name
 	}
 	return ""
 }
 
-func (m *MsgCreateWill) GetBeneficiary() string {
+func (m *MsgCreateWillRequest) GetBeneficiary() string {
 	if m != nil {
 		return m.Beneficiary
 	}
@@ -256,46 +256,150 @@ func (m *MsgCreateWillResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgCreateWillResponse proto.InternalMessageInfo
 
+// message for checking in
+type MsgCheckInRequest struct {
+	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Id      uint64 `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (m *MsgCheckInRequest) Reset()         { *m = MsgCheckInRequest{} }
+func (m *MsgCheckInRequest) String() string { return proto.CompactTextString(m) }
+func (*MsgCheckInRequest) ProtoMessage()    {}
+func (*MsgCheckInRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_22e268a87ad78580, []int{4}
+}
+
+func (m *MsgCheckInRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *MsgCheckInRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgCheckInRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *MsgCheckInRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCheckInRequest.Merge(m, src)
+}
+
+func (m *MsgCheckInRequest) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *MsgCheckInRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCheckInRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgCheckInRequest proto.InternalMessageInfo
+
+func (m *MsgCheckInRequest) GetCreator() string {
+	if m != nil {
+		return m.Creator
+	}
+	return ""
+}
+
+func (m *MsgCheckInRequest) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+// response for checkin
+type MsgCheckInResponse struct{}
+
+func (m *MsgCheckInResponse) Reset()         { *m = MsgCheckInResponse{} }
+func (m *MsgCheckInResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgCheckInResponse) ProtoMessage()    {}
+func (*MsgCheckInResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_22e268a87ad78580, []int{5}
+}
+
+func (m *MsgCheckInResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *MsgCheckInResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgCheckInResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *MsgCheckInResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCheckInResponse.Merge(m, src)
+}
+
+func (m *MsgCheckInResponse) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *MsgCheckInResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCheckInResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgCheckInResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgUpdateParams)(nil), "cosmwasm.will.MsgUpdateParams")
 	proto.RegisterType((*MsgUpdateParamsResponse)(nil), "cosmwasm.will.MsgUpdateParamsResponse")
-	proto.RegisterType((*MsgCreateWill)(nil), "cosmwasm.will.MsgCreateWill")
+	proto.RegisterType((*MsgCreateWillRequest)(nil), "cosmwasm.will.MsgCreateWillRequest")
 	proto.RegisterType((*MsgCreateWillResponse)(nil), "cosmwasm.will.MsgCreateWillResponse")
+	proto.RegisterType((*MsgCheckInRequest)(nil), "cosmwasm.will.MsgCheckInRequest")
+	proto.RegisterType((*MsgCheckInResponse)(nil), "cosmwasm.will.MsgCheckInResponse")
 }
 
 func init() { proto.RegisterFile("cosmwasm/will/tx.proto", fileDescriptor_22e268a87ad78580) }
 
 var fileDescriptor_22e268a87ad78580 = []byte{
-	// 449 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x52, 0x41, 0x6b, 0x13, 0x41,
-	0x18, 0xcd, 0xa4, 0xb5, 0x92, 0x69, 0xab, 0x38, 0xb4, 0x66, 0xbb, 0x94, 0x35, 0x04, 0x29, 0x25,
-	0xe0, 0x0e, 0x56, 0x10, 0xe9, 0x49, 0xd3, 0x73, 0xa0, 0xac, 0x68, 0xc1, 0x8b, 0x4c, 0xb2, 0xe3,
-	0x74, 0x20, 0xb3, 0xb3, 0xcc, 0x4c, 0x6d, 0x73, 0x10, 0xc4, 0xa3, 0x27, 0x7f, 0x86, 0xc7, 0x1c,
-	0x8a, 0xbf, 0xa1, 0xc7, 0xe2, 0xc9, 0x93, 0x48, 0x72, 0xc8, 0xdf, 0x90, 0x99, 0xd9, 0x25, 0xc9,
-	0x16, 0x72, 0xd9, 0x9d, 0xef, 0xbd, 0xef, 0x7b, 0xf3, 0xde, 0xcc, 0xc0, 0xc7, 0x03, 0xa9, 0xc5,
-	0x25, 0xd1, 0x02, 0x5f, 0xf2, 0xe1, 0x10, 0x9b, 0xab, 0x38, 0x57, 0xd2, 0x48, 0xb4, 0x5d, 0xe2,
-	0xb1, 0xc5, 0xc3, 0x47, 0x44, 0xf0, 0x4c, 0x62, 0xf7, 0xf5, 0x1d, 0x61, 0xd3, 0x76, 0x48, 0x8d,
-	0x85, 0x66, 0xf8, 0xf3, 0x73, 0xfb, 0x2b, 0x88, 0x3d, 0x4f, 0x7c, 0x74, 0x15, 0xf6, 0x45, 0x41,
-	0xed, 0x30, 0xc9, 0xa4, 0xc7, 0xed, 0xaa, 0x40, 0xc3, 0x65, 0x0f, 0x39, 0x51, 0x44, 0x14, 0x13,
-	0xed, 0x6b, 0x00, 0x1f, 0xf6, 0x34, 0x7b, 0x97, 0xa7, 0xc4, 0xd0, 0x53, 0xc7, 0xa0, 0x97, 0xb0,
-	0x41, 0x2e, 0xcc, 0xb9, 0x54, 0xdc, 0x8c, 0x02, 0xd0, 0x02, 0x87, 0x8d, 0x6e, 0xf0, 0xfb, 0xfa,
-	0xd9, 0x4e, 0xb1, 0xd5, 0x9b, 0x34, 0x55, 0x54, 0xeb, 0xb7, 0x46, 0xf1, 0x8c, 0x25, 0xf3, 0x56,
-	0xf4, 0x0a, 0x6e, 0x78, 0xed, 0xa0, 0xde, 0x02, 0x87, 0x9b, 0x47, 0xbb, 0xf1, 0x52, 0xc8, 0xd8,
-	0xcb, 0x77, 0x1b, 0x37, 0x7f, 0x9f, 0xd4, 0x7e, 0xce, 0xc6, 0x1d, 0x90, 0x14, 0xfd, 0xc7, 0xf8,
-	0xdb, 0x6c, 0xdc, 0x99, 0x2b, 0x7d, 0x9f, 0x8d, 0x3b, 0xfb, 0x76, 0x2e, 0xc5, 0x57, 0xde, 0x73,
-	0xc5, 0x62, 0x7b, 0x0f, 0x36, 0x2b, 0x50, 0x42, 0x75, 0x2e, 0x33, 0x4d, 0xdb, 0x5f, 0xe0, 0x76,
-	0x4f, 0xb3, 0x13, 0x45, 0x89, 0xa1, 0x67, 0x7c, 0x38, 0x44, 0x01, 0xbc, 0x3f, 0xb0, 0x95, 0x54,
-	0x3e, 0x4c, 0x52, 0x96, 0xe8, 0x01, 0xac, 0xf3, 0xd4, 0x99, 0x6d, 0x24, 0x75, 0x9e, 0x22, 0x04,
-	0xd7, 0x33, 0x22, 0x68, 0xb0, 0xe6, 0x10, 0xb7, 0x46, 0x2d, 0xb8, 0xd9, 0xa7, 0x19, 0xfd, 0xc4,
-	0x07, 0x9c, 0xa8, 0x51, 0xb0, 0xee, 0xa8, 0x45, 0xe8, 0x78, 0xcb, 0x9a, 0x2f, 0x35, 0xdb, 0x4d,
-	0xb8, 0xbb, 0xb4, 0x7d, 0xe9, 0xeb, 0xe8, 0x17, 0x80, 0x6b, 0x3d, 0xcd, 0xd0, 0x7b, 0xb8, 0xb5,
-	0x74, 0xda, 0x51, 0xe5, 0x94, 0x2a, 0xb9, 0xc2, 0x83, 0xd5, 0x7c, 0xa9, 0x8f, 0x4e, 0x21, 0x5c,
-	0x08, 0xbd, 0x7f, 0x77, 0x6a, 0xce, 0x86, 0x4f, 0x57, 0xb1, 0xa5, 0x62, 0x78, 0xef, 0xab, 0xbd,
-	0xa4, 0xee, 0xeb, 0x9b, 0x49, 0x04, 0x6e, 0x27, 0x11, 0xf8, 0x37, 0x89, 0xc0, 0x8f, 0x69, 0x54,
-	0xbb, 0x9d, 0x46, 0xb5, 0x3f, 0xd3, 0xa8, 0xf6, 0xe1, 0x80, 0x71, 0x73, 0x7e, 0xd1, 0x8f, 0x07,
-	0x52, 0xe0, 0x13, 0xa9, 0xc5, 0x99, 0x7b, 0x63, 0x8b, 0xf7, 0x66, 0x46, 0x39, 0xd5, 0xfd, 0x0d,
-	0xf7, 0xd6, 0x5e, 0xfc, 0x0f, 0x00, 0x00, 0xff, 0xff, 0xf0, 0x49, 0xee, 0xb4, 0x0d, 0x03, 0x00,
-	0x00,
+	// 511 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x53, 0x4f, 0x8b, 0xd3, 0x40,
+	0x1c, 0x6d, 0xba, 0x75, 0x97, 0xfe, 0xd6, 0x3f, 0xec, 0xd0, 0xb5, 0xd9, 0x20, 0xb1, 0x1b, 0x65,
+	0x59, 0x0a, 0x26, 0x58, 0x41, 0x64, 0x4f, 0xda, 0x3d, 0x79, 0xa8, 0x48, 0x44, 0x0b, 0x5e, 0x24,
+	0x4d, 0xc6, 0x74, 0xb0, 0xc9, 0xc4, 0xcc, 0xd4, 0xdd, 0xde, 0xc4, 0xa3, 0x20, 0xf8, 0x31, 0xc4,
+	0x53, 0x0f, 0xfb, 0x21, 0xf6, 0x58, 0x3c, 0x79, 0x12, 0x69, 0x0f, 0xfd, 0x1a, 0x32, 0x99, 0x29,
+	0x6d, 0x52, 0x29, 0xec, 0xa5, 0xcd, 0xbc, 0xf7, 0x7e, 0x2f, 0xef, 0x4d, 0x66, 0xe0, 0xb6, 0x4f,
+	0x59, 0x74, 0xe6, 0xb1, 0xc8, 0x39, 0x23, 0x83, 0x81, 0xc3, 0xcf, 0xed, 0x24, 0xa5, 0x9c, 0xa2,
+	0x1b, 0x0b, 0xdc, 0x16, 0xb8, 0xb1, 0xe7, 0x45, 0x24, 0xa6, 0x4e, 0xf6, 0x2b, 0x15, 0x46, 0x5d,
+	0x28, 0x28, 0x73, 0x22, 0x16, 0x3a, 0x9f, 0x1e, 0x8a, 0x3f, 0x45, 0x1c, 0x48, 0xe2, 0x5d, 0xb6,
+	0x72, 0xe4, 0x42, 0x51, 0xb5, 0x90, 0x86, 0x54, 0xe2, 0xe2, 0x49, 0xa1, 0x46, 0x3e, 0x43, 0xe2,
+	0xa5, 0x5e, 0xa4, 0x26, 0xac, 0x0b, 0x0d, 0x6e, 0x75, 0x58, 0xf8, 0x3a, 0x09, 0x3c, 0x8e, 0x5f,
+	0x66, 0x0c, 0x7a, 0x0c, 0x55, 0x6f, 0xc8, 0xfb, 0x34, 0x25, 0x7c, 0xa4, 0x6b, 0x0d, 0xed, 0xb8,
+	0xda, 0xd6, 0x7f, 0x5d, 0x3c, 0xa8, 0xa9, 0x57, 0x3d, 0x0b, 0x82, 0x14, 0x33, 0xf6, 0x8a, 0xa7,
+	0x24, 0x0e, 0xdd, 0xa5, 0x14, 0x3d, 0x81, 0x6d, 0xe9, 0xad, 0x97, 0x1b, 0xda, 0xf1, 0x6e, 0x6b,
+	0xdf, 0xce, 0x95, 0xb4, 0xa5, 0x7d, 0xbb, 0x7a, 0xf9, 0xe7, 0x6e, 0xe9, 0xc7, 0x7c, 0xdc, 0xd4,
+	0x5c, 0xa5, 0x3f, 0x71, 0xbe, 0xcc, 0xc7, 0xcd, 0xa5, 0xd3, 0xd7, 0xf9, 0xb8, 0x79, 0x47, 0xcc,
+	0x05, 0xce, 0xb9, 0xcc, 0x5c, 0x88, 0x68, 0x1d, 0x40, 0xbd, 0x00, 0xb9, 0x98, 0x25, 0x34, 0x66,
+	0xd8, 0xfa, 0xa9, 0x41, 0xad, 0xc3, 0xc2, 0xd3, 0x14, 0x7b, 0x1c, 0x77, 0xc9, 0x60, 0xe0, 0xe2,
+	0x8f, 0x43, 0xcc, 0x38, 0xd2, 0x61, 0xc7, 0x17, 0x20, 0x4d, 0x65, 0x29, 0x77, 0xb1, 0x44, 0x37,
+	0xa1, 0x4c, 0x82, 0x2c, 0x74, 0xc5, 0x2d, 0x93, 0x00, 0x21, 0xa8, 0xc4, 0x5e, 0x84, 0xf5, 0xad,
+	0x4c, 0x96, 0x3d, 0xa3, 0x06, 0xec, 0xf6, 0x70, 0x8c, 0xdf, 0x13, 0x9f, 0x78, 0xe9, 0x48, 0xaf,
+	0x64, 0xd4, 0x2a, 0x74, 0xd2, 0x12, 0x25, 0x16, 0x9e, 0xa2, 0xc2, 0x61, 0xb1, 0xc2, 0x5a, 0x26,
+	0xab, 0x0e, 0xfb, 0x05, 0x5c, 0xb5, 0x88, 0x61, 0x4f, 0x10, 0x7d, 0xec, 0x7f, 0x78, 0x1e, 0x5f,
+	0xb9, 0x81, 0xdc, 0xd0, 0xd5, 0x2c, 0xe6, 0x5a, 0x96, 0x9c, 0xb5, 0x55, 0x03, 0xb4, 0x0a, 0xca,
+	0x14, 0xad, 0x6f, 0x65, 0xd8, 0xea, 0xb0, 0x10, 0xbd, 0x81, 0xeb, 0xb9, 0x13, 0x62, 0x16, 0xbe,
+	0x6c, 0xe1, 0x5b, 0x18, 0x47, 0x9b, 0xf9, 0x85, 0x3f, 0xea, 0x02, 0x2c, 0xbb, 0xa3, 0x7b, 0xeb,
+	0x53, 0x6b, 0x3b, 0x66, 0xdc, 0xdf, 0x2c, 0x52, 0xc6, 0x2f, 0x60, 0x47, 0x75, 0x41, 0x8d, 0xff,
+	0x0c, 0xe4, 0xba, 0x1b, 0x87, 0x1b, 0x14, 0xd2, 0xcf, 0xb8, 0xf6, 0x59, 0x9c, 0xd7, 0xf6, 0xd3,
+	0xcb, 0xa9, 0xa9, 0x4d, 0xa6, 0xa6, 0xf6, 0x77, 0x6a, 0x6a, 0xdf, 0x67, 0x66, 0x69, 0x32, 0x33,
+	0x4b, 0xbf, 0x67, 0x66, 0xe9, 0xed, 0x51, 0x48, 0x78, 0x7f, 0xd8, 0xb3, 0x7d, 0x1a, 0x39, 0xa7,
+	0x94, 0x45, 0xdd, 0xec, 0xba, 0xad, 0xee, 0x39, 0x1f, 0x25, 0x98, 0xf5, 0xb6, 0xb3, 0x6b, 0xf7,
+	0xe8, 0x5f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xf6, 0x52, 0x9b, 0xd7, 0x18, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -316,7 +420,9 @@ type MsgClient interface {
 	// parameters. The authority defaults to the x/gov module account.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 	// create a new will
-	CreateWill(ctx context.Context, in *MsgCreateWill, opts ...grpc.CallOption) (*MsgCreateWillResponse, error)
+	CreateWill(ctx context.Context, in *MsgCreateWillRequest, opts ...grpc.CallOption) (*MsgCreateWillResponse, error)
+	// checkin into a will
+	CheckIn(ctx context.Context, in *MsgCheckInRequest, opts ...grpc.CallOption) (*MsgCheckInResponse, error)
 }
 
 type msgClient struct {
@@ -336,9 +442,18 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
-func (c *msgClient) CreateWill(ctx context.Context, in *MsgCreateWill, opts ...grpc.CallOption) (*MsgCreateWillResponse, error) {
+func (c *msgClient) CreateWill(ctx context.Context, in *MsgCreateWillRequest, opts ...grpc.CallOption) (*MsgCreateWillResponse, error) {
 	out := new(MsgCreateWillResponse)
 	err := c.cc.Invoke(ctx, "/cosmwasm.will.Msg/CreateWill", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) CheckIn(ctx context.Context, in *MsgCheckInRequest, opts ...grpc.CallOption) (*MsgCheckInResponse, error) {
+	out := new(MsgCheckInResponse)
+	err := c.cc.Invoke(ctx, "/cosmwasm.will.Msg/CheckIn", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -351,7 +466,9 @@ type MsgServer interface {
 	// parameters. The authority defaults to the x/gov module account.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 	// create a new will
-	CreateWill(context.Context, *MsgCreateWill) (*MsgCreateWillResponse, error)
+	CreateWill(context.Context, *MsgCreateWillRequest) (*MsgCreateWillResponse, error)
+	// checkin into a will
+	CheckIn(context.Context, *MsgCheckInRequest) (*MsgCheckInResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -361,8 +478,12 @@ func (*UnimplementedMsgServer) UpdateParams(ctx context.Context, req *MsgUpdateP
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
 }
 
-func (*UnimplementedMsgServer) CreateWill(ctx context.Context, req *MsgCreateWill) (*MsgCreateWillResponse, error) {
+func (*UnimplementedMsgServer) CreateWill(ctx context.Context, req *MsgCreateWillRequest) (*MsgCreateWillResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateWill not implemented")
+}
+
+func (*UnimplementedMsgServer) CheckIn(ctx context.Context, req *MsgCheckInRequest) (*MsgCheckInResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckIn not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -388,7 +509,7 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Msg_CreateWill_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgCreateWill)
+	in := new(MsgCreateWillRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -400,7 +521,25 @@ func _Msg_CreateWill_Handler(srv interface{}, ctx context.Context, dec func(inte
 		FullMethod: "/cosmwasm.will.Msg/CreateWill",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).CreateWill(ctx, req.(*MsgCreateWill))
+		return srv.(MsgServer).CreateWill(ctx, req.(*MsgCreateWillRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_CheckIn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgCheckInRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).CheckIn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/cosmwasm.will.Msg/CheckIn",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).CheckIn(ctx, req.(*MsgCheckInRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -416,6 +555,10 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateWill",
 			Handler:    _Msg_CreateWill_Handler,
+		},
+		{
+			MethodName: "CheckIn",
+			Handler:    _Msg_CheckIn_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -485,7 +628,7 @@ func (m *MsgUpdateParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgCreateWill) Marshal() (dAtA []byte, err error) {
+func (m *MsgCreateWillRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -495,12 +638,12 @@ func (m *MsgCreateWill) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgCreateWill) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgCreateWillRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgCreateWill) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgCreateWillRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -519,12 +662,10 @@ func (m *MsgCreateWill) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x1a
 	}
-	if len(m.Id) > 0 {
-		i -= len(m.Id)
-		copy(dAtA[i:], m.Id)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Id)))
+	if m.Id != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Id))
 		i--
-		dAtA[i] = 0x12
+		dAtA[i] = 0x10
 	}
 	if len(m.Creator) > 0 {
 		i -= len(m.Creator)
@@ -552,6 +693,64 @@ func (m *MsgCreateWillResponse) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *MsgCreateWillResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgCheckInRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgCheckInRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgCheckInRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Id != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Creator) > 0 {
+		i -= len(m.Creator)
+		copy(dAtA[i:], m.Creator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Creator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgCheckInResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgCheckInResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgCheckInResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -595,7 +794,7 @@ func (m *MsgUpdateParamsResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgCreateWill) Size() (n int) {
+func (m *MsgCreateWillRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -605,9 +804,8 @@ func (m *MsgCreateWill) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.Id)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
+	if m.Id != 0 {
+		n += 1 + sovTx(uint64(m.Id))
 	}
 	l = len(m.Name)
 	if l > 0 {
@@ -621,6 +819,31 @@ func (m *MsgCreateWill) Size() (n int) {
 }
 
 func (m *MsgCreateWillResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgCheckInRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Creator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Id != 0 {
+		n += 1 + sovTx(uint64(m.Id))
+	}
+	return n
+}
+
+func (m *MsgCheckInResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -804,7 +1027,7 @@ func (m *MsgUpdateParamsResponse) Unmarshal(dAtA []byte) error {
 	return nil
 }
 
-func (m *MsgCreateWill) Unmarshal(dAtA []byte) error {
+func (m *MsgCreateWillRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -827,10 +1050,10 @@ func (m *MsgCreateWill) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgCreateWill: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgCreateWillRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgCreateWill: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgCreateWillRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -866,10 +1089,10 @@ func (m *MsgCreateWill) Unmarshal(dAtA []byte) error {
 			m.Creator = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
-			if wireType != 2 {
+			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
 			}
-			var stringLen uint64
+			m.Id = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -879,24 +1102,11 @@ func (m *MsgCreateWill) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				m.Id |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Id = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Name", wireType)
@@ -1010,6 +1220,159 @@ func (m *MsgCreateWillResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgCreateWillResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *MsgCheckInRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgCheckInRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgCheckInRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Creator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *MsgCheckInResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgCheckInResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgCheckInResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

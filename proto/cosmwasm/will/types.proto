@@ -1,0 +1,22 @@
+syntax = "proto3";
+package cosmwasm.will;
+
+// import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+// import "google/protobuf/any.proto";
+// import "amino/amino.proto";
+
+option go_package = "github.com/CosmWasm/wasmd/x/will/types";
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.equal_all) = true;
+
+// WillInfo is the structure that represents the will
+message Will {
+  option (gogoproto.equal) = true;
+  // will_id is the unique identifier of the will
+  uint64 will_id = 1 [ (gogoproto.customname) = "will_id" ];
+  // WillName is the user_generated name of the will
+  string will_name = 2 [ (gogoproto.customname) = "Will_name" ];
+  // WillBeneficiary is the private key or address, depending on the purpose of
+  string will_beneficiary = 3 [ (gogoproto.customname) = "Will_benefiary" ];
+}

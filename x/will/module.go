@@ -13,13 +13,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
 
 	// "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmd/x/will/client/cli"
 	"github.com/CosmWasm/wasmd/x/will/keeper"
 	"github.com/CosmWasm/wasmd/x/will/types"
-
-	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
 type AppModuleBasic struct{}
@@ -50,7 +49,6 @@ func (AppModuleBasic) Name() string {
 }
 
 func (am AppModule) IsAppModule() {
-
 }
 
 // IsOnePerModuleType implements the depinject.OnePerModuleType interface.
@@ -83,7 +81,6 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	// if err != nil {
 	// 	panic(err)
 	// }
-
 }
 
 // func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
@@ -94,6 +91,11 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 // will structue the will module for cli
 func (b AppModuleBasic) GetTxCmd() *cobra.Command {
 	return cli.GetTxCmd()
+}
+
+// GetQueryCmd returns no root query command for the wasm module.
+func (b AppModuleBasic) GetQueryCmd() *cobra.Command {
+	return cli.GetQueryCmd()
 }
 
 func Main() {
