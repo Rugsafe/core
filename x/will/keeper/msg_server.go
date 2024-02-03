@@ -3,6 +3,8 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/errors"
+
 	"github.com/CosmWasm/wasmd/x/will/types"
 )
 
@@ -20,7 +22,16 @@ func (m msgServer) CreateWill(
 	ctx context.Context,
 	msg *types.MsgCreateWillRequest,
 ) (*types.MsgCreateWillResponse, error) {
-	return &types.MsgCreateWillResponse{}, nil
+	will, err := m.keeper.createWill(ctx, msg)
+	if err != nil {
+		return nil, errors.Wrap(err, "upon creating will")
+	}
+	return &types.MsgCreateWillResponse{
+		Id:          will.ID,
+		Creator:     msg.GetCreator(),
+		Name:        will.Name,
+		Beneficiary: will.Beneficiary,
+	}, nil
 }
 
 func (m msgServer) CheckIn(

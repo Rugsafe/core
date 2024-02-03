@@ -1,8 +1,6 @@
 package types
 
-import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-)
+import "strings"
 
 const (
 	ModuleName = "will"
@@ -19,9 +17,12 @@ const (
 
 var WillPrefix = []byte{0x01}
 
-func GetWillKey(willID uint64) []byte {
-	willID8z := sdk.Uint64ToBigEndian(willID)
-	return append(WillPrefix, willID8z...)
+func GetWillKey(willID string) []byte {
+	// willID8z := sdk.Uint64ToBigEndian(willID)
+	stringKey := []byte(strings.ToLower(willID))
+	// return append(WillPrefix, willID8z...)
+	// return append(WillPrefix, willID...)
+	return append(WillPrefix, stringKey...)
 }
 
 /*

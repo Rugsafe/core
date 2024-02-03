@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/spf13/cobra"
 
@@ -22,6 +23,7 @@ func GetQueryCmd() *cobra.Command {
 	}
 	queryCmd.AddCommand(
 		GetWillCmd(),
+		ListWillsCmd(),
 	)
 	return queryCmd
 }
@@ -35,10 +37,12 @@ func GetWillCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
+				fmt.Println("INSIDE WILL QUERY.GO, ERROR 1")
 				return err
 			}
 
 			willID := args[0]
+			fmt.Printf("GetWillCMD: %s", willID)
 			queryClient := types.NewQueryClient(clientCtx)
 			res, err := queryClient.GetWill(
 				context.Background(),
@@ -46,7 +50,47 @@ func GetWillCmd() *cobra.Command {
 					WillId: willID,
 				},
 			)
+			fmt.Println("ENTIRE WILL STRUCT QUERY.GO")
+			fmt.Println(res)
+			fmt.Println("GetWillByID ID: " + res.Will.ID)
+			fmt.Println("GetWillByID Beneficiary Name: " + res.Will.Beneficiary)
+			fmt.Println("GetWillByID Name: " + res.Will.Name)
 			if err != nil {
+				fmt.Println("INSIDE WILL QUERY.GO, ERROR 2")
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func ListWillsCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "Fetch a list of will by your address",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				fmt.Println("INSIDE LIST WILL QUERY.GO, ERROR 1")
+				return err
+			}
+
+			address := clientCtx.GetFromAddress()
+			fmt.Printf("ListWillsCmd address: %s", address)
+			queryClient := types.NewQueryClient(clientCtx)
+
+			res, err := queryClient.ListWills(
+				context.Background(),
+				&types.QueryListWillsRequest{
+					Address: address.String(),
+				},
+			)
+			if err != nil {
+				fmt.Println("INSIDE LIST WILL QUERY.GO, ERROR 2")
 				return err
 			}
 

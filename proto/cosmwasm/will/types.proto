@@ -13,10 +13,10 @@ option (gogoproto.equal_all) = true;
 // WillInfo is the structure that represents the will
 message Will {
   option (gogoproto.equal) = true;
-  // will_id is the unique identifier of the will
-  uint64 will_id = 1 [ (gogoproto.customname) = "will_id" ];
-  // WillName is the user_generated name of the will
-  string will_name = 2 [ (gogoproto.customname) = "Will_name" ];
-  // WillBeneficiary is the private key or address, depending on the purpose of
-  string will_beneficiary = 3 [ (gogoproto.customname) = "Will_benefiary" ];
+  // id is the unique identifier of the will
+  string id = 1 [ (gogoproto.customname) = "ID" ];
+  // Name is the user_generated name of the will
+  string name = 2 [ (gogoproto.customname) = "Name" ];
+  // Beneficiary is the private key or address, depending on the purpose of
+  string beneficiary = 3 [ (gogoproto.customname) = "Beneficiary" ];
 }

@@ -52,20 +52,24 @@ message MsgCreateWillRequest {
   option (cosmos.msg.v1.signer) = "creator";
   option (amino.name) = "wasmd/x/will/MsgCreateWillRequest";
   string creator = 1;
-  uint64 id = 2;
-  string name = 3;
-  string beneficiary = 4;
+  string name = 2;
+  string beneficiary = 3;
 }
 
 // to get the will response
-message MsgCreateWillResponse {}
+message MsgCreateWillResponse {
+  string id = 1;
+  string creator = 2;
+  string name = 3;
+  string beneficiary = 4;
+}
 
 // message for checking in
 message MsgCheckInRequest {
   option (cosmos.msg.v1.signer) = "creator";
   option (amino.name) = "wasmd/x/will/MsgCheckInRequest";
   string creator = 1;
-  uint64 id = 2;
+  string id = 2;
 }
 
 // response for checkin

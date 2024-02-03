@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -56,7 +55,6 @@ func CreateWillCmd() *cobra.Command {
 			logger.Log(string(args[1]))
 			msg := types.MsgCreateWillRequest{
 				Creator:     clientCtx.GetFromAddress().String(),
-				Id:          1,
 				Name:        args[0],
 				Beneficiary: args[1],
 			}
@@ -92,7 +90,8 @@ func CheckInCmd() *cobra.Command {
 			logger := network.NewCLILogger(cmd)
 			logger.Log("inside tx Checkin command 2")
 			logger.Log(string(args[0]))
-			willId, err := strconv.ParseUint(args[0], 10, 64)
+			// willId, err := strconv.ParseUint(args[0], 10, 64)
+			willId := args[0]
 			if err != nil {
 				return fmt.Errorf("failed to parse will ID: %w", err)
 			}

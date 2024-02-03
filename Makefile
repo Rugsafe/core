@@ -205,13 +205,27 @@ proto-check-breaking:
 	test-sim-import-export build-windows-client \
 	test-system
 
+_env_:
+	export PATH=$PATH:$(go env GOPATH)/bin
 save:
 	git add * -v; git commit -am "autosave"; git push
+alice_test: alice_d alice_c
+	echo "done"
 alice_c:
 	./build/wasmd keys add alice --recover
 alice_d:
 	 ./build/wasmd keys delete alice 
 will_c:
-	./build/wasmd tx will create "test will 1" "beneficiary" --from alice --chain-id w3ll-chain
+	./build/wasmd tx will create "test will 3" "benefivvvciary" --from alice --chain-id w3ll-chain
+	sleep 1
+will_cx:
+	@for i in {1..10}; do \
+		echo "Running command $$i time(s)"; \
+		make will_c; \
+	done
 will_g:
-	./build/wasmd query will get 1 --chain-id w3ll-chain
+	./build/wasmd query will get "zmxjiudojne844jdsbndsbdyuikdbaazxqetrsdshudjsdhuekdsxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxnxnmcnmcndhdiohsiodsdhsdoshdsdjksdhjksdsdsdhjsdjsdhjksdjshjdhjshdjksjdhsjdhks"
+will_l:
+	./build/wasmd query will list
+run:
+	bash run.sh 
