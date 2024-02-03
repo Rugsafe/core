@@ -21,10 +21,6 @@ type queryServer struct {
 }
 
 // NewGrpcQuerier constructor
-//
-//	func NewGrpcQuerier(cdc codec.Codec, storeService corestoretypes.KVStoreService, keeper types.ViewKeeper, queryGasLimit storetypes.Gas) *GrpcQuerier {
-//		return &queryServer{cdc: cdc, storeService: storeService, keeper: keeper, queryGasLimit: queryGasLimit}
-//	}
 func NewGrpcQuerier(k *Keeper) types.QueryServer {
 	return &queryServer{keeper: k}
 }
@@ -50,34 +46,6 @@ func queryGetWill(ctx sdk.Context, id string, keeper *Keeper) (*types.QueryGetWi
 	}, nil
 }
 
-//	func queryListWills(ctx context.Context, keeper *Keeper, req *types.QueryListWillsRequest) (*types.QueryListWillsResponse, error) {
-//		fmt.Println("QUERY SERVER.GO, Getting will by ID")
-//		wills, err := keeper.listWillsByAddress(ctx, req.Address)
-//		if err != nil {
-//			return nil, errors.Wrapf(err, "queryListWills: error when listing wills for address: %s", req.Address)
-//		}
-//		return &types.QueryListWillsResponse{Wills: wills}, nil
-//	}
-// func queryListWills(ctx context.Context, keeper *Keeper, req *types.QueryListWillsRequest) (*types.QueryListWillsResponse, error) {
-// 	fmt.Println("QUERY SERVER.GO, Getting will by ID")
-// 	wills, err := keeper.listWillsByAddress(ctx, req.Address)
-// 	if err != nil {
-// 		return nil, errors.Wrapf(err, "queryListWills: error when listing wills for address: %s", req.Address)
-// 	}
-
-// 	// Convert []*types.Will (Go slice) to []*types.Will (protobuf slice)
-// 	willsProto := make([]*types.Will, len(wills))
-// 	for i, will := range wills {
-// 		willsProto[i] = &types.Will{
-// 			ID:          will.ID,
-// 			Name:        will.Name,
-// 			Beneficiary: will.Beneficiary,
-// 		}
-// 	}
-
-// 	return &types.QueryListWillsResponse{Wills: willsProto}, nil
-// }
-
 func queryListWills(ctx context.Context, keeper *Keeper, req *types.QueryListWillsRequest) (*types.QueryListWillsResponse, error) {
 	fmt.Println("QUERY SERVER.GO, Getting wills by address", req.Address)
 	wills, err := keeper.listWillsByAddress(ctx, req.Address)
@@ -97,37 +65,6 @@ func queryListWills(ctx context.Context, keeper *Keeper, req *types.QueryListWil
 		Wills: willsProto, // Adjust to use the dereferenced slice
 	}, nil
 }
-
-// func (q queryServer) ListWills(ctx context.Context, req *types.QueryListWillsRequest) (*types.QueryListWillsResponse, error) {
-// 	wills, err := q.keeper.listWillsByAddress(ctx, req.Address)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return &types.QueryListWillsResponse{
-// 		Wills: wills, // Ensure your protobuf definition matches this field name
-// 	}, nil
-// }
-
-// func (q queryServer) ListWills(ctx context.Context, req *types.QueryListWillsRequest) (*types.QueryListWillsResponse, error) {
-// 	wills, err := q.keeper.listWillsByAddress(ctx, req.Address)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Convert []*types.Will (Go slice) to []*types.Will (protobuf slice)
-// 	willsProto := make([]*types.Will, len(wills))
-// 	for i, will := range wills {
-// 		willsProto[i] = &types.Will{
-// 			ID:          will.ID,
-// 			Name:        will.Name,
-// 			Beneficiary: will.Beneficiary,
-// 		}
-// 	}
-
-// 	return &types.QueryListWillsResponse{
-// 		Wills: willsProto, // Ensure your protobuf definition matches this field name
-// 	}, nil
-// }
 
 func (q queryServer) ListWills(ctx context.Context, req *types.QueryListWillsRequest) (*types.QueryListWillsResponse, error) {
 	wills, err := q.keeper.listWillsByAddress(ctx, req.Address)
