@@ -216,7 +216,7 @@ alice_c:
 alice_d:
 	 ./build/wasmd keys delete alice 
 will_c:
-	./build/wasmd tx will create "test will 3" "benefivvvciary" --from alice --chain-id w3ll-chain
+	./build/wasmd tx will create "test will 1" "benefivvvciary" --from alice --chain-id w3ll-chain -y
 	sleep 1
 will_cx:
 	@for i in {1..10}; do \
