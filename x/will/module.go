@@ -8,7 +8,6 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
-	"cosmossdk.io/api/tendermint/abci"
 	"cosmossdk.io/log"
 
 	// "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -21,6 +20,7 @@ import (
 	"github.com/CosmWasm/wasmd/x/will/client/cli"
 	"github.com/CosmWasm/wasmd/x/will/keeper"
 	"github.com/CosmWasm/wasmd/x/will/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type AppModuleBasic struct{}
@@ -94,24 +94,28 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 // }
 
 // BeginBlock executes delayed items.
-// func (am AppModule) BeginBlock(sdk client.Context) {
-// 	fmt.Println("NOW IM ACTUALLY IN THE WILL MODULES BEGIN BLOCKER")
-// }
+func (am AppModuleBasic) BeginBlock(sdk sdk.Context) {
+	fmt.Println("NOW IM ACTUALLY IN THE WILL MODULES BEGIN BLOCKER 1")
+}
 
 func (am AppModule) BeginBlock(ctx context.Context) error {
-	fmt.Println("NOW IM ACTUALLY IN THE WILL MODULES BEGIN BLOCKER")
-	endBlockerError := am.keeper.EndBlocker(ctx)
-	if endBlockerError != nil {
-		error_msg, _ := fmt.Printf("ERROR RUNNING will.am.keeper.EndBlocker: %s", endBlockerError)
-		fmt.Println(error_msg)
-	}
+	fmt.Println("NOW IM ACTUALLY IN THE WILL MODULES BEGIN BLOCKER 2")
+	fmt.Println(ctx)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	endBlockerError := am.keeper.EndBlocker(sdkCtx)
+	// if endBlockerError != nil {
+	// 	error_msg, _ := fmt.Printf("ERROR RUNNING will.am.keeper.BeginBlock: %s", endBlockerError)
+	// 	fmt.Println(error_msg)
+	// } else {
 
+	// }
 	return nil
 }
 
-func (am AppModule) EndBlock(ctx context.Context) ([]abci.ValidatorUpdate, error) {
+func (am AppModule) EndBlock(ctx context.Context) error {
 	fmt.Println("NOW IM ACTUALLY IN THE WILL MODULES END BLOCKER")
-	return ([]abci.ValidatorUpdate{}), nil
+	fmt.Println(ctx)
+	return nil
 }
 
 /////////////////////

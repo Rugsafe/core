@@ -178,9 +178,10 @@ func (k Keeper) GetWillsByExpiry(ctx sdk.Context, expiryHeight int64) ([]*types.
 }
 
 func (k Keeper) BeginBlocker(ctx sdk.Context) error {
+	// func (k Keeper) BeginBlocker(ctx context.Context) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
-	//get all wills that are indexed for this block
+	// //get all wills that are indexed for this block
 	var block_height int64 = ctx.BlockHeight()
 	fmt.Println("TODO: get all wills indexed at block height: %i", block_height)
 
@@ -202,8 +203,9 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 	return nil
 }
 
-func (k *Keeper) EndBlocker(ctx context.Context) error {
+// func (k *Keeper) EndBlocker(ctx context.Context) error {
+func (k *Keeper) EndBlocker(ctx sdk.Context) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
-
+	fmt.Println("INSIDE END BLOCKER FOR WILL MODULE")
 	return nil
 }

@@ -1,7 +1,7 @@
 {
   "app_name": "wasmd",
   "app_version": "",
-  "genesis_time": "2024-02-10T19:02:26.559955Z",
+  "genesis_time": "2024-02-10T20:08:44.868662Z",
   "chain_id": "w3ll-chain",
   "initial_height": 1,
   "app_hash": null,
@@ -18,7 +18,7 @@
       "accounts": [
         {
           "@type": "/cosmos.auth.v1beta1.BaseAccount",
-          "address": "w3ll1dwpuyh7wk2avscjfcycmcyz8293n8qafazs5e8",
+          "address": "w3ll1j78ql4xs6qnu9pp72dc7xuaykaycf2h5ft8dsa",
           "pub_key": null,
           "account_number": "0",
           "sequence": "0"
@@ -35,7 +35,7 @@
       },
       "balances": [
         {
-          "address": "w3ll1dwpuyh7wk2avscjfcycmcyz8293n8qafazs5e8",
+          "address": "w3ll1j78ql4xs6qnu9pp72dc7xuaykaycf2h5ft8dsa",
           "coins": [
             {
               "denom": "stake",
@@ -129,10 +129,10 @@
                 },
                 "min_self_delegation": "1",
                 "delegator_address": "",
-                "validator_address": "w3llvaloper1dwpuyh7wk2avscjfcycmcyz8293n8qaf0m6cxc",
+                "validator_address": "w3llvaloper1j78ql4xs6qnu9pp72dc7xuaykaycf2h5mjdp0z",
                 "pubkey": {
                   "@type": "/cosmos.crypto.ed25519.PubKey",
-                  "key": "WXcuQ0pp0cDyGja/GAM66S9DN2YWo1k8WZVnk7urDeU="
+                  "key": "1hHnBTZvhuB39AkIGxWdIV0x2tf6iMkjAbyVc2FK9zY="
                 },
                 "value": {
                   "denom": "stake",
@@ -140,7 +140,7 @@
                 }
               }
             ],
-            "memo": "480f1bdcd479c82e91316c9d8ed9e7826cd72d82@192.168.1.78:26656",
+            "memo": "2746f84e97f5391fa8b3dce554c67cdb85bc0921@192.168.1.78:26656",
             "timeout_height": "0",
             "extension_options": [],
             "non_critical_extension_options": []
@@ -150,7 +150,7 @@
               {
                 "public_key": {
                   "@type": "/cosmos.crypto.secp256k1.PubKey",
-                  "key": "A0T00pfARjnju+vD2Y2u0654X6TaNLdBC0KbYC/veLZx"
+                  "key": "A0QiU63YxnK3lttPaaVrtozpdEp8COnCcKRjchShh4i9"
                 },
                 "mode_info": {
                   "single": {
@@ -169,7 +169,7 @@
             "tip": null
           },
           "signatures": [
-            "cJYxd+2rUyLccHFj6s0ilLxnNxVRGilfBBTNAdMJZGQUiVqOEPk7Pwj65F9efMCsLOZwUB65ReFUugSOGCizUg=="
+            "7Fr+79lmL/1ihteIPasPADHK06norOX8c/Y3GmtxaO88EcvxsSkEpZC2ne8JeOkB5jopmfZ1k98KkCJhtsMsmQ=="
           ]
         }
       ]
