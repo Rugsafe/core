@@ -6,9 +6,32 @@ import "gogoproto/gogo.proto";
 // import "google/protobuf/any.proto";
 // import "amino/amino.proto";
 
+// Import necessary dependencies
+import "cosmos/base/v1beta1/coin.proto";
+
 option go_package = "github.com/CosmWasm/wasmd/x/will/types";
 option (gogoproto.goproto_getters_all) = false;
 option (gogoproto.equal_all) = true;
+
+// ExecutionComponent represents a single action within a will.
+message ExecutionComponent {
+  // Using oneof to allow for different types of components
+  oneof component_type {
+    TransferComponent transfer = 1;
+    ClaimComponent claim = 2;
+    // ContractComponent contract = 3; // TODO
+  }
+}
+
+// TransferComponent represents a straightforward asset transfer.
+message TransferComponent {
+  string to = 1;                       // Address to transfer assets to
+  cosmos.base.v1beta1.Coin amount = 2; // Amount to transfer
+}
+
+// ClaimComponent represents an action that requires a beneficiary to make a
+// claim.
+message ClaimComponent { string evidence = 1; }
 
 // WillInfo is the structure that represents the will
 message Will {
@@ -19,4 +42,7 @@ message Will {
   string name = 2 [ (gogoproto.customname) = "Name" ];
   // Beneficiary is the private key or address, depending on the purpose of
   string beneficiary = 3 [ (gogoproto.customname) = "Beneficiary" ];
+  // exedution components
+  repeated ExecutionComponent components = 4
+      [ (gogoproto.customname) = "Components" ];
 }

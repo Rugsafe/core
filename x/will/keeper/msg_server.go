@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"cosmossdk.io/errors"
 
@@ -11,10 +12,10 @@ import (
 var _ types.MsgServer = msgServer{}
 
 type msgServer struct {
-	keeper *Keeper
+	keeper IKeeper
 }
 
-func NewMsgServerImpl(k *Keeper) types.MsgServer {
+func NewMsgServerImpl(k IKeeper) types.MsgServer {
 	return &msgServer{keeper: k}
 }
 
@@ -22,7 +23,8 @@ func (m msgServer) CreateWill(
 	ctx context.Context,
 	msg *types.MsgCreateWillRequest,
 ) (*types.MsgCreateWillResponse, error) {
-	will, err := m.keeper.createWill(ctx, msg)
+	fmt.Println("Inside msg_server, CreateWill")
+	will, err := m.keeper.CreateWill(ctx, msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "upon creating will")
 	}

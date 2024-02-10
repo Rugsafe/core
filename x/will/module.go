@@ -1,12 +1,14 @@
 package will
 
 import (
+	"context"
 	"fmt"
 
 	// "github.com/gogo/protobuf/codec"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
+	"cosmossdk.io/api/tendermint/abci"
 	"cosmossdk.io/log"
 
 	// "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -34,7 +36,6 @@ func NewAppModule(
 	keeper *keeper.Keeper,
 	logger log.Logger,
 ) AppModule {
-	logger.Info("yo im here......")
 	Main()
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
@@ -82,6 +83,38 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	// 	panic(err)
 	// }
 }
+
+// EndBlock returns the end blocker for the delay module.
+// func (am AppModule) EndBlock(_ client.Context) []abci.ValidatorUpdate {
+// 	return []abci.ValidatorUpdate{}
+// }
+
+// func (am AppModule) EndBlock(ctx context.Context) ([]abci.ValidatorUpdate, error) {
+// 	return am.keeper.EndBlocker(ctx)
+// }
+
+// BeginBlock executes delayed items.
+// func (am AppModule) BeginBlock(sdk client.Context) {
+// 	fmt.Println("NOW IM ACTUALLY IN THE WILL MODULES BEGIN BLOCKER")
+// }
+
+func (am AppModule) BeginBlock(ctx context.Context) error {
+	fmt.Println("NOW IM ACTUALLY IN THE WILL MODULES BEGIN BLOCKER")
+	endBlockerError := am.keeper.EndBlocker(ctx)
+	if endBlockerError != nil {
+		error_msg, _ := fmt.Printf("ERROR RUNNING will.am.keeper.EndBlocker: %s", endBlockerError)
+		fmt.Println(error_msg)
+	}
+
+	return nil
+}
+
+func (am AppModule) EndBlock(ctx context.Context) ([]abci.ValidatorUpdate, error) {
+	fmt.Println("NOW IM ACTUALLY IN THE WILL MODULES END BLOCKER")
+	return ([]abci.ValidatorUpdate{}), nil
+}
+
+/////////////////////
 
 // func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 //     // Register all your message types and interfaces here

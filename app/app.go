@@ -142,10 +142,12 @@ import (
 
 const appName = "WasmApp"
 
+// const appName = "W3llApp"
+
 // We pull these out so we can set them with LDFLAGS in the Makefile
 var (
 	NodeDir      = ".wasmd"
-	Bech32Prefix = "wasm"
+	Bech32Prefix = "w3ll" // wasm
 )
 
 // These constants are derived from the above variables.
@@ -191,6 +193,7 @@ var (
 )
 
 // WasmApp extended ABCI application
+// type WasmApp struct {
 type WasmApp struct {
 	*baseapp.BaseApp
 	legacyAmino       *codec.LegacyAmino
@@ -636,7 +639,8 @@ func NewWasmApp(
 		logger,
 	)
 
-	wasmDir := filepath.Join(homePath, "wasm")
+	// wasmDir := filepath.Join(homePath, "wasm")
+	wasmDir := filepath.Join(homePath, "w3ll")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
 	if err != nil {
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))
@@ -788,6 +792,7 @@ func NewWasmApp(
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		wasmtypes.ModuleName,
+		willtypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -804,6 +809,7 @@ func NewWasmApp(
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		wasmtypes.ModuleName,
+		willtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1008,12 +1014,25 @@ func (app *WasmApp) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*
 }
 
 // BeginBlocker application updates every begin block
+// func (app *WasmApp) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
+// 	fmt.Println("Running BEGIN BLOCKER FOR block: ")
+// 	fmt.Println(ctx.BlockHeight())
+// 	return app.ModuleManager.BeginBlock(ctx)
+// }
+
+// BeginBlocker application updates every begin block.
+// func (app *WasmApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 func (app *WasmApp) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
+	// return app.ModuleManager.BeginBlock(ctx, req)
+	fmt.Println("Running BEGIN BLOCKER FOR block: ")
+	fmt.Println(ctx.BlockHeight())
 	return app.ModuleManager.BeginBlock(ctx)
 }
 
 // EndBlocker application updates every end block
 func (app *WasmApp) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
+	fmt.Println("Running END BLOCKER FOR block: ")
+	fmt.Println(ctx.BlockHeight())
 	return app.ModuleManager.EndBlock(ctx)
 }
 

@@ -9,6 +9,7 @@ import (
 	math "math"
 	math_bits "math/bits"
 
+	types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 )
@@ -26,6 +27,188 @@ var (
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// ExecutionComponent represents a single action within a will.
+type ExecutionComponent struct {
+	// Using oneof to allow for different types of components
+	//
+	// Types that are valid to be assigned to ComponentType:
+	//	*ExecutionComponent_Transfer
+	//	*ExecutionComponent_Claim
+	ComponentType isExecutionComponent_ComponentType `protobuf_oneof:"component_type"`
+}
+
+func (m *ExecutionComponent) Reset()         { *m = ExecutionComponent{} }
+func (m *ExecutionComponent) String() string { return proto.CompactTextString(m) }
+func (*ExecutionComponent) ProtoMessage()    {}
+func (*ExecutionComponent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{0}
+}
+
+func (m *ExecutionComponent) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *ExecutionComponent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ExecutionComponent.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *ExecutionComponent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ExecutionComponent.Merge(m, src)
+}
+
+func (m *ExecutionComponent) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *ExecutionComponent) XXX_DiscardUnknown() {
+	xxx_messageInfo_ExecutionComponent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ExecutionComponent proto.InternalMessageInfo
+
+type isExecutionComponent_ComponentType interface {
+	isExecutionComponent_ComponentType()
+	Equal(interface{}) bool
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type ExecutionComponent_Transfer struct {
+	Transfer *TransferComponent `protobuf:"bytes,1,opt,name=transfer,proto3,oneof" json:"transfer,omitempty"`
+}
+type ExecutionComponent_Claim struct {
+	Claim *ClaimComponent `protobuf:"bytes,2,opt,name=claim,proto3,oneof" json:"claim,omitempty"`
+}
+
+func (*ExecutionComponent_Transfer) isExecutionComponent_ComponentType() {}
+func (*ExecutionComponent_Claim) isExecutionComponent_ComponentType()    {}
+
+func (m *ExecutionComponent) GetComponentType() isExecutionComponent_ComponentType {
+	if m != nil {
+		return m.ComponentType
+	}
+	return nil
+}
+
+func (m *ExecutionComponent) GetTransfer() *TransferComponent {
+	if x, ok := m.GetComponentType().(*ExecutionComponent_Transfer); ok {
+		return x.Transfer
+	}
+	return nil
+}
+
+func (m *ExecutionComponent) GetClaim() *ClaimComponent {
+	if x, ok := m.GetComponentType().(*ExecutionComponent_Claim); ok {
+		return x.Claim
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*ExecutionComponent) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*ExecutionComponent_Transfer)(nil),
+		(*ExecutionComponent_Claim)(nil),
+	}
+}
+
+// TransferComponent represents a straightforward asset transfer.
+type TransferComponent struct {
+	To     string      `protobuf:"bytes,1,opt,name=to,proto3" json:"to,omitempty"`
+	Amount *types.Coin `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
+}
+
+func (m *TransferComponent) Reset()         { *m = TransferComponent{} }
+func (m *TransferComponent) String() string { return proto.CompactTextString(m) }
+func (*TransferComponent) ProtoMessage()    {}
+func (*TransferComponent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{1}
+}
+
+func (m *TransferComponent) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *TransferComponent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TransferComponent.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *TransferComponent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TransferComponent.Merge(m, src)
+}
+
+func (m *TransferComponent) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *TransferComponent) XXX_DiscardUnknown() {
+	xxx_messageInfo_TransferComponent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TransferComponent proto.InternalMessageInfo
+
+// ClaimComponent represents an action that requires a beneficiary to make a
+// claim.
+type ClaimComponent struct {
+	Evidence string `protobuf:"bytes,1,opt,name=evidence,proto3" json:"evidence,omitempty"`
+}
+
+func (m *ClaimComponent) Reset()         { *m = ClaimComponent{} }
+func (m *ClaimComponent) String() string { return proto.CompactTextString(m) }
+func (*ClaimComponent) ProtoMessage()    {}
+func (*ClaimComponent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{2}
+}
+
+func (m *ClaimComponent) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *ClaimComponent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ClaimComponent.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *ClaimComponent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ClaimComponent.Merge(m, src)
+}
+
+func (m *ClaimComponent) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *ClaimComponent) XXX_DiscardUnknown() {
+	xxx_messageInfo_ClaimComponent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ClaimComponent proto.InternalMessageInfo
+
 // WillInfo is the structure that represents the will
 type Will struct {
 	// id is the unique identifier of the will
@@ -33,14 +216,15 @@ type Will struct {
 	// Name is the user_generated name of the will
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// Beneficiary is the private key or address, depending on the purpose of
-	Beneficiary string `protobuf:"bytes,3,opt,name=beneficiary,proto3" json:"beneficiary,omitempty"`
+	Beneficiary string                `protobuf:"bytes,3,opt,name=beneficiary,proto3" json:"beneficiary,omitempty"`
+	Components  []*ExecutionComponent `protobuf:"bytes,4,rep,name=components,proto3" json:"components,omitempty"`
 }
 
 func (m *Will) Reset()         { *m = Will{} }
 func (m *Will) String() string { return proto.CompactTextString(m) }
 func (*Will) ProtoMessage()    {}
 func (*Will) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{0}
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{3}
 }
 
 func (m *Will) XXX_Unmarshal(b []byte) error {
@@ -75,28 +259,178 @@ func (m *Will) XXX_DiscardUnknown() {
 var xxx_messageInfo_Will proto.InternalMessageInfo
 
 func init() {
+	proto.RegisterType((*ExecutionComponent)(nil), "cosmwasm.will.ExecutionComponent")
+	proto.RegisterType((*TransferComponent)(nil), "cosmwasm.will.TransferComponent")
+	proto.RegisterType((*ClaimComponent)(nil), "cosmwasm.will.ClaimComponent")
 	proto.RegisterType((*Will)(nil), "cosmwasm.will.Will")
 }
 
 func init() { proto.RegisterFile("cosmwasm/will/types.proto", fileDescriptor_cec37ad7aa1ffe0b) }
 
 var fileDescriptor_cec37ad7aa1ffe0b = []byte{
-	// 233 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x4c, 0xce, 0x2f, 0xce,
-	0x2d, 0x4f, 0x2c, 0xce, 0xd5, 0x2f, 0xcf, 0xcc, 0xc9, 0xd1, 0x2f, 0xa9, 0x2c, 0x48, 0x2d, 0xd6,
-	0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x85, 0x49, 0xe9, 0x81, 0xa4, 0xa4, 0x44, 0xd2, 0xf3,
-	0xd3, 0xf3, 0xc1, 0x32, 0xfa, 0x20, 0x16, 0x44, 0x91, 0x52, 0x29, 0x17, 0x4b, 0x78, 0x66, 0x4e,
-	0x8e, 0x90, 0x18, 0x17, 0x53, 0x66, 0x8a, 0x04, 0xa3, 0x02, 0xa3, 0x06, 0xa7, 0x13, 0xdb, 0xa3,
-	0x7b, 0xf2, 0x4c, 0x9e, 0x2e, 0x41, 0x4c, 0x99, 0x29, 0x42, 0x32, 0x5c, 0x2c, 0x79, 0x89, 0xb9,
-	0xa9, 0x12, 0x4c, 0x60, 0x19, 0x8e, 0x47, 0xf7, 0xe4, 0x59, 0xfc, 0x12, 0x73, 0x53, 0x83, 0xc0,
-	0xa2, 0x42, 0x86, 0x5c, 0xdc, 0x49, 0xa9, 0x79, 0xa9, 0x69, 0x99, 0xc9, 0x99, 0x89, 0x45, 0x95,
-	0x12, 0xcc, 0x60, 0x45, 0xfc, 0x8f, 0xee, 0xc9, 0x73, 0x3b, 0x21, 0x84, 0x83, 0x90, 0xd5, 0x58,
-	0xb1, 0xbc, 0x58, 0x20, 0xcf, 0xe8, 0xe4, 0x71, 0xe2, 0xa1, 0x1c, 0xc3, 0x8a, 0x47, 0x72, 0x8c,
-	0x27, 0x1e, 0xc9, 0x31, 0x5e, 0x78, 0x24, 0xc7, 0xf8, 0xe0, 0x91, 0x1c, 0xe3, 0x84, 0xc7, 0x72,
-	0x0c, 0x17, 0x1e, 0xcb, 0x31, 0xdc, 0x78, 0x2c, 0xc7, 0x10, 0xa5, 0x96, 0x9e, 0x59, 0x92, 0x51,
-	0x9a, 0xa4, 0x97, 0x9c, 0x9f, 0xab, 0xef, 0x9c, 0x5f, 0x9c, 0x1b, 0x0e, 0xf6, 0x63, 0x62, 0x71,
-	0x6e, 0x8a, 0x7e, 0x05, 0x92, 0x5f, 0x93, 0xd8, 0xc0, 0xfe, 0x30, 0x06, 0x04, 0x00, 0x00, 0xff,
-	0xff, 0xde, 0xf5, 0xd3, 0xbc, 0x09, 0x01, 0x00, 0x00,
+	// 436 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x52, 0x4d, 0x8f, 0xd3, 0x30,
+	0x10, 0x8d, 0xb3, 0xa1, 0xea, 0x4e, 0x45, 0x01, 0x0b, 0xa1, 0x6e, 0x05, 0x4e, 0xe9, 0x01, 0xed,
+	0x01, 0x39, 0xea, 0x22, 0x2e, 0x1c, 0x38, 0xa4, 0x20, 0x2d, 0x17, 0x24, 0x22, 0xc4, 0x4a, 0x5c,
+	0x90, 0x93, 0x7a, 0x8b, 0xa5, 0xd8, 0xae, 0x6a, 0x77, 0x3f, 0xfe, 0x05, 0x7f, 0x00, 0x89, 0x23,
+	0x3f, 0xa5, 0xc7, 0x3d, 0x72, 0xaa, 0x20, 0xbd, 0xf0, 0x33, 0x50, 0x9c, 0x6c, 0xc8, 0x6e, 0x6f,
+	0xf1, 0xbc, 0xf7, 0xe6, 0xcd, 0x9b, 0x0c, 0x1c, 0x64, 0xda, 0xc8, 0x73, 0x66, 0x64, 0x74, 0x2e,
+	0xf2, 0x3c, 0xb2, 0x97, 0x0b, 0x6e, 0xe8, 0x62, 0xa9, 0xad, 0xc6, 0x77, 0xaf, 0x21, 0x5a, 0x42,
+	0xc3, 0x87, 0x73, 0x3d, 0xd7, 0x0e, 0x89, 0xca, 0xaf, 0x8a, 0x34, 0x24, 0x25, 0x49, 0x9b, 0x28,
+	0x65, 0x86, 0x47, 0x67, 0x93, 0x94, 0x5b, 0x36, 0x89, 0x32, 0x2d, 0x54, 0x85, 0x8f, 0xbf, 0x23,
+	0xc0, 0x6f, 0x2f, 0x78, 0xb6, 0xb2, 0x42, 0xab, 0xa9, 0x96, 0x0b, 0xad, 0xb8, 0xb2, 0xf8, 0x35,
+	0x74, 0xed, 0x92, 0x29, 0x73, 0xca, 0x97, 0x03, 0x34, 0x42, 0x87, 0xbd, 0xa3, 0x11, 0xbd, 0x61,
+	0x47, 0x3f, 0xd6, 0x70, 0xa3, 0x39, 0xf6, 0x92, 0x46, 0x83, 0x5f, 0xc2, 0x9d, 0x2c, 0x67, 0x42,
+	0x0e, 0x7c, 0x27, 0x7e, 0x72, 0x4b, 0x3c, 0x2d, 0xb1, 0xb6, 0xb2, 0x62, 0xc7, 0xf7, 0xa1, 0x9f,
+	0x5d, 0x57, 0xbf, 0x94, 0x59, 0xc7, 0x9f, 0xe0, 0xc1, 0x8e, 0x13, 0xee, 0x83, 0x6f, 0xb5, 0x9b,
+	0x6b, 0x3f, 0xf1, 0xad, 0xc6, 0x13, 0xe8, 0x30, 0xa9, 0x57, 0xca, 0xd6, 0x76, 0x07, 0xb4, 0x4a,
+	0x4d, 0xcb, 0xd4, 0xb4, 0x4e, 0x4d, 0xa7, 0x5a, 0xa8, 0xa4, 0x26, 0x8e, 0x9f, 0x43, 0xff, 0xe6,
+	0x10, 0x78, 0x08, 0x5d, 0x7e, 0x26, 0x66, 0x5c, 0x65, 0xbc, 0x6e, 0xdd, 0xbc, 0xc7, 0x6b, 0x04,
+	0xc1, 0x89, 0xc8, 0x73, 0xfc, 0x08, 0x7c, 0x31, 0xab, 0xe0, 0xb8, 0x53, 0x6c, 0x42, 0xff, 0xdd,
+	0x9b, 0xc4, 0x17, 0x33, 0xfc, 0x18, 0x02, 0xc5, 0x24, 0x77, 0xfe, 0xfb, 0x71, 0xb7, 0xd8, 0x84,
+	0xc1, 0x7b, 0x26, 0x79, 0xe2, 0xaa, 0x78, 0x02, 0xbd, 0x94, 0x2b, 0x7e, 0x2a, 0x32, 0xc1, 0x96,
+	0x97, 0x83, 0x3d, 0x47, 0xba, 0x57, 0x6c, 0xc2, 0x5e, 0xfc, 0xbf, 0x9c, 0xb4, 0x39, 0xf8, 0x03,
+	0x40, 0xb3, 0x09, 0x33, 0x08, 0x46, 0x7b, 0x87, 0xbd, 0xa3, 0xa7, 0xb7, 0xb6, 0xb8, 0xfb, 0xdf,
+	0xe2, 0x7e, 0xb1, 0x09, 0xa1, 0x79, 0x9a, 0xa4, 0xd5, 0xe4, 0x55, 0xf0, 0xf7, 0x47, 0x88, 0xe2,
+	0xe3, 0xf5, 0x1f, 0xe2, 0xfd, 0x2c, 0x08, 0x5a, 0x17, 0x04, 0x5d, 0x15, 0x04, 0xfd, 0x2e, 0x08,
+	0xfa, 0xb6, 0x25, 0xde, 0xd5, 0x96, 0x78, 0xbf, 0xb6, 0xc4, 0xfb, 0xfc, 0x6c, 0x2e, 0xec, 0xd7,
+	0x55, 0x4a, 0x33, 0x2d, 0xa3, 0xa9, 0x36, 0xf2, 0xc4, 0x5d, 0x1f, 0x33, 0x72, 0x16, 0x5d, 0xb4,
+	0xae, 0x30, 0xed, 0xb8, 0x0b, 0x7a, 0xf1, 0x2f, 0x00, 0x00, 0xff, 0xff, 0x8d, 0x02, 0x71, 0xca,
+	0xa3, 0x02, 0x00, 0x00,
+}
+
+func (this *ExecutionComponent) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ExecutionComponent)
+	if !ok {
+		that2, ok := that.(ExecutionComponent)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if that1.ComponentType == nil {
+		if this.ComponentType != nil {
+			return false
+		}
+	} else if this.ComponentType == nil {
+		return false
+	} else if !this.ComponentType.Equal(that1.ComponentType) {
+		return false
+	}
+	return true
+}
+
+func (this *ExecutionComponent_Transfer) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ExecutionComponent_Transfer)
+	if !ok {
+		that2, ok := that.(ExecutionComponent_Transfer)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Transfer.Equal(that1.Transfer) {
+		return false
+	}
+	return true
+}
+
+func (this *ExecutionComponent_Claim) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ExecutionComponent_Claim)
+	if !ok {
+		that2, ok := that.(ExecutionComponent_Claim)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Claim.Equal(that1.Claim) {
+		return false
+	}
+	return true
+}
+
+func (this *TransferComponent) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*TransferComponent)
+	if !ok {
+		that2, ok := that.(TransferComponent)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.To != that1.To {
+		return false
+	}
+	if !this.Amount.Equal(that1.Amount) {
+		return false
+	}
+	return true
+}
+
+func (this *ClaimComponent) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ClaimComponent)
+	if !ok {
+		that2, ok := that.(ClaimComponent)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Evidence != that1.Evidence {
+		return false
+	}
+	return true
 }
 
 func (this *Will) Equal(that interface{}) bool {
@@ -127,7 +461,163 @@ func (this *Will) Equal(that interface{}) bool {
 	if this.Beneficiary != that1.Beneficiary {
 		return false
 	}
+	if len(this.Components) != len(that1.Components) {
+		return false
+	}
+	for i := range this.Components {
+		if !this.Components[i].Equal(that1.Components[i]) {
+			return false
+		}
+	}
 	return true
+}
+
+func (m *ExecutionComponent) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ExecutionComponent) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ExecutionComponent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.ComponentType != nil {
+		{
+			size := m.ComponentType.Size()
+			i -= size
+			if _, err := m.ComponentType.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ExecutionComponent_Transfer) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ExecutionComponent_Transfer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Transfer != nil {
+		{
+			size, err := m.Transfer.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTypes(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ExecutionComponent_Claim) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ExecutionComponent_Claim) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Claim != nil {
+		{
+			size, err := m.Claim.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTypes(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TransferComponent) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TransferComponent) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TransferComponent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Amount != nil {
+		{
+			size, err := m.Amount.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTypes(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.To) > 0 {
+		i -= len(m.To)
+		copy(dAtA[i:], m.To)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.To)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ClaimComponent) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ClaimComponent) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ClaimComponent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Evidence) > 0 {
+		i -= len(m.Evidence)
+		copy(dAtA[i:], m.Evidence)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Evidence)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *Will) Marshal() (dAtA []byte, err error) {
@@ -150,6 +640,20 @@ func (m *Will) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.Components) > 0 {
+		for iNdEx := len(m.Components) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Components[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintTypes(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x22
+		}
+	}
 	if len(m.Beneficiary) > 0 {
 		i -= len(m.Beneficiary)
 		copy(dAtA[i:], m.Beneficiary)
@@ -186,6 +690,74 @@ func encodeVarintTypes(dAtA []byte, offset int, v uint64) int {
 	return base
 }
 
+func (m *ExecutionComponent) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.ComponentType != nil {
+		n += m.ComponentType.Size()
+	}
+	return n
+}
+
+func (m *ExecutionComponent_Transfer) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Transfer != nil {
+		l = m.Transfer.Size()
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
+func (m *ExecutionComponent_Claim) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Claim != nil {
+		l = m.Claim.Size()
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
+func (m *TransferComponent) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.To)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	if m.Amount != nil {
+		l = m.Amount.Size()
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
+func (m *ClaimComponent) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Evidence)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
 func (m *Will) Size() (n int) {
 	if m == nil {
 		return 0
@@ -204,6 +776,12 @@ func (m *Will) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
+	if len(m.Components) > 0 {
+		for _, e := range m.Components {
+			l = e.Size()
+			n += 1 + l + sovTypes(uint64(l))
+		}
+	}
 	return n
 }
 
@@ -213,6 +791,329 @@ func sovTypes(x uint64) (n int) {
 
 func sozTypes(x uint64) (n int) {
 	return sovTypes(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+
+func (m *ExecutionComponent) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ExecutionComponent: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ExecutionComponent: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Transfer", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &TransferComponent{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.ComponentType = &ExecutionComponent_Transfer{v}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Claim", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &ClaimComponent{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.ComponentType = &ExecutionComponent_Claim{v}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *TransferComponent) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TransferComponent: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TransferComponent: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field To", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.To = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Amount == nil {
+				m.Amount = &types.Coin{}
+			}
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *ClaimComponent) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ClaimComponent: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ClaimComponent: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Evidence", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Evidence = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
 }
 
 func (m *Will) Unmarshal(dAtA []byte) error {
@@ -339,6 +1240,40 @@ func (m *Will) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Beneficiary = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Components", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Components = append(m.Components, &ExecutionComponent{})
+			if err := m.Components[len(m.Components)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

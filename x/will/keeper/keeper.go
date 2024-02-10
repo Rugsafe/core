@@ -5,21 +5,35 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"strconv"
+	"time"
 
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	storetypes "cosmossdk.io/store/types"
 	"github.com/CosmWasm/wasmd/x/will/types"
 )
+
+type IKeeper interface {
+	CreateWill(
+		ctx context.Context,
+		msg *types.MsgCreateWillRequest,
+	) (*types.Will, error)
+	GetWillByID(ctx context.Context, id string) (*types.Will, error)
+	ListWillsByAddress(ctx context.Context, address string) ([]*types.Will, error)
+}
 
 type Keeper struct {
 	storeService corestoretypes.KVStoreService
 	// storeService storetypes.KVStoreKey
-	cdc codec.Codec
+	cdc      codec.Codec
+	storeKey storetypes.StoreKey // Add this line
 }
 
 func NewKeeper(
@@ -49,7 +63,7 @@ func TruncateHash(input []byte, n int) ([]byte, error) {
 	return hash[:n], nil
 }
 
-func (k Keeper) getWillByID(ctx context.Context, id string) (*types.Will, error) {
+func (k Keeper) GetWillByID(ctx context.Context, id string) (*types.Will, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx) // Make sure you have a way to convert or access sdk.Context
 	store := k.storeService.OpenKVStore(sdkCtx)
 	var will types.Will
@@ -64,7 +78,7 @@ func (k Keeper) getWillByID(ctx context.Context, id string) (*types.Will, error)
 	return &will, nil
 }
 
-func (k Keeper) createWill(ctx context.Context, msg *types.MsgCreateWillRequest) (*types.Will, error) {
+func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest) (*types.Will, error) {
 	store := k.storeService.OpenKVStore(ctx)
 
 	// Concatenate values to generate a unique hash
@@ -112,7 +126,7 @@ func (k Keeper) createWill(ctx context.Context, msg *types.MsgCreateWillRequest)
 	return &will, nil
 }
 
-func (k Keeper) listWillsByAddress(ctx context.Context, address string) ([]*types.Will, error) {
+func (k Keeper) ListWillsByAddress(ctx context.Context, address string) ([]*types.Will, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	store := k.storeService.OpenKVStore(sdkCtx)
 
@@ -138,4 +152,58 @@ func (k Keeper) listWillsByAddress(ctx context.Context, address string) ([]*type
 
 	fmt.Println("listWillsByAddress: Completed listing wills")
 	return wills, nil
+}
+
+func (k Keeper) SetWillExpiryIndex(ctx sdk.Context, expiryHeight int64, willID string) {
+	store := ctx.KVStore(k.storeKey)
+	expiryKey := []byte(fmt.Sprintf("expiry:%d:%s", expiryHeight, willID))
+	store.Set(expiryKey, []byte(willID))
+}
+
+func (k Keeper) GetWillsByExpiry(ctx sdk.Context, expiryHeight int64) ([]*types.Will, error) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := storetypes.KVStorePrefixIterator(store, []byte(fmt.Sprintf("expiry:%d:", expiryHeight)))
+	defer iterator.Close()
+
+	var wills []*types.Will
+	for ; iterator.Valid(); iterator.Next() {
+		willID := string(iterator.Value())
+		will, err := k.GetWillByID(ctx, willID)
+		if err != nil {
+			return nil, err
+		}
+		wills = append(wills, will)
+	}
+	return wills, nil
+}
+
+func (k Keeper) BeginBlocker(ctx sdk.Context) error {
+	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
+
+	//get all wills that are indexed for this block
+	var block_height int64 = ctx.BlockHeight()
+	fmt.Println("TODO: get all wills indexed at block height: %i", block_height)
+
+	// determine the total power signing the block
+	var previousTotalPower int64
+	for _, voteInfo := range ctx.VoteInfos() {
+		fmt.Println("Voting power:")
+		fmt.Printf("voteInfo.Validator.Power: %s", strconv.Itoa(int(voteInfo.Validator.Power)))
+		previousTotalPower += voteInfo.Validator.Power
+	}
+
+	// TODO this is Tendermint-dependent
+	// ref https://github.com/cosmos/cosmos-sdk/issues/3095
+	if ctx.BlockHeight() > 1 {
+		var block_height int64 = ctx.BlockHeight()
+		fmt.Printf("BEGIN BLOCKER WE ARE ON: %s", strconv.Itoa(int(block_height)))
+	}
+
+	return nil
+}
+
+func (k *Keeper) EndBlocker(ctx context.Context) error {
+	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
+
+	return nil
 }

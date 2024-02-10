@@ -35,7 +35,7 @@ func (q queryServer) GetWill(c context.Context, req *types.QueryGetWillRequest) 
 
 func queryGetWill(ctx sdk.Context, id string, keeper *Keeper) (*types.QueryGetWillResponse, error) {
 	fmt.Println("QUERY SERVER.GO, Getting will by ID")
-	will, err := keeper.getWillByID(ctx, id)
+	will, err := keeper.GetWillByID(ctx, id)
 	fmt.Println("=======QUERY GET WILL=======")
 	fmt.Println(will)
 	if err != nil {
@@ -48,7 +48,7 @@ func queryGetWill(ctx sdk.Context, id string, keeper *Keeper) (*types.QueryGetWi
 
 func queryListWills(ctx context.Context, keeper *Keeper, req *types.QueryListWillsRequest) (*types.QueryListWillsResponse, error) {
 	fmt.Println("QUERY SERVER.GO, Getting wills by address", req.Address)
-	wills, err := keeper.listWillsByAddress(ctx, req.Address)
+	wills, err := keeper.ListWillsByAddress(ctx, req.Address)
 	if err != nil {
 		fmt.Println("queryListWills: Error listing wills for address", req.Address, err)
 		return nil, errors.Wrapf(err, "queryListWills: error when listing wills for address: %s", req.Address)
@@ -67,7 +67,7 @@ func queryListWills(ctx context.Context, keeper *Keeper, req *types.QueryListWil
 }
 
 func (q queryServer) ListWills(ctx context.Context, req *types.QueryListWillsRequest) (*types.QueryListWillsResponse, error) {
-	wills, err := q.keeper.listWillsByAddress(ctx, req.Address)
+	wills, err := q.keeper.ListWillsByAddress(ctx, req.Address)
 	if err != nil {
 		return nil, err
 	}

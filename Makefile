@@ -54,12 +54,12 @@ comma := ,
 build_tags_comma_sep := $(subst $(empty),$(comma),$(build_tags))
 
 # process linker flags
-
+#-X github.com/CosmWasm/wasmd/app.Bech32Prefix=wasm
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=wasm \
 		  -X github.com/cosmos/cosmos-sdk/version.AppName=wasmd \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X github.com/CosmWasm/wasmd/app.Bech32Prefix=wasm \
+		  -X github.com/CosmWasm/wasmd/app.Bech32Prefix=w3ll \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
 ifeq ($(WITH_CLEVELDB),yes)
@@ -216,13 +216,15 @@ alice_c:
 	./build/wasmd keys add alice --recover
 alice_d:
 	 ./build/wasmd keys delete alice 
+will_test: will_cx
+	echo "Done with will tests"
 will_c:
-	./build/wasmd tx will create "test will 1" "benefivvvciary" --from alice --chain-id w3ll-chain -y
+	./build/wasmd tx will create "test will ${i}" "benefivvvciary" --from alice --chain-id w3ll-chain -y
 	sleep 1
 will_cx:
-	@for i in {1..10}; do \
+	@for i in {1..20}; do \
 		echo "Running command $$i time(s)"; \
-		make will_c; \
+		i=$$i make will_c; \
 	done
 will_g:
 	./build/wasmd query will get "zmxjiudojne844jdsbndsbdyuikdbaazxqetrsdshudjsdhuekdsxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxnxnmcnmcndhdiohsiodsdhsdoshdsdjksdhjksdsdsdhjsdjsdhjksdjshjdhjshdjksjdhsjdhks"
