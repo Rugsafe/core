@@ -4,6 +4,7 @@
 package types
 
 import (
+	bytes "bytes"
 	fmt "fmt"
 	io "io"
 	math "math"
@@ -27,9 +28,10 @@ var (
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// ExecutionComponent represents a single action within a will.
+// ExecutionComponent defines a single actionable component within a will.
 type ExecutionComponent struct {
-	// Using oneof to allow for different types of components
+	// component_type enables the inclusion of different types of execution
+	// components within a will.
 	//
 	// Types that are valid to be assigned to ComponentType:
 	//	*ExecutionComponent_Transfer
@@ -121,7 +123,7 @@ func (*ExecutionComponent) XXX_OneofWrappers() []interface{} {
 	}
 }
 
-// TransferComponent represents a straightforward asset transfer.
+// TransferComponent is used for direct asset transfers.
 type TransferComponent struct {
 	To     string      `protobuf:"bytes,1,opt,name=to,proto3" json:"to,omitempty"`
 	Amount *types.Coin `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
@@ -165,10 +167,16 @@ func (m *TransferComponent) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_TransferComponent proto.InternalMessageInfo
 
-// ClaimComponent represents an action that requires a beneficiary to make a
-// claim.
+// ClaimComponent is designed for actions requiring a claim with proof.
 type ClaimComponent struct {
 	Evidence string `protobuf:"bytes,1,opt,name=evidence,proto3" json:"evidence,omitempty"`
+	// scheme_type allows for different cryptographic schemes for claims.
+	//
+	// Types that are valid to be assigned to SchemeType:
+	//	*ClaimComponent_Pedersen
+	//	*ClaimComponent_Schnorr
+	//	*ClaimComponent_Gnark
+	SchemeType isClaimComponent_SchemeType `protobuf_oneof:"scheme_type"`
 }
 
 func (m *ClaimComponent) Reset()         { *m = ClaimComponent{} }
@@ -209,22 +217,217 @@ func (m *ClaimComponent) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ClaimComponent proto.InternalMessageInfo
 
-// WillInfo is the structure that represents the will
+type isClaimComponent_SchemeType interface {
+	isClaimComponent_SchemeType()
+	Equal(interface{}) bool
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type ClaimComponent_Pedersen struct {
+	Pedersen *PedersenCommitment `protobuf:"bytes,2,opt,name=pedersen,proto3,oneof" json:"pedersen,omitempty"`
+}
+type ClaimComponent_Schnorr struct {
+	Schnorr *SchnorrSignature `protobuf:"bytes,3,opt,name=schnorr,proto3,oneof" json:"schnorr,omitempty"`
+}
+type ClaimComponent_Gnark struct {
+	Gnark *GnarkZkSnark `protobuf:"bytes,4,opt,name=gnark,proto3,oneof" json:"gnark,omitempty"`
+}
+
+func (*ClaimComponent_Pedersen) isClaimComponent_SchemeType() {}
+func (*ClaimComponent_Schnorr) isClaimComponent_SchemeType()  {}
+func (*ClaimComponent_Gnark) isClaimComponent_SchemeType()    {}
+
+func (m *ClaimComponent) GetSchemeType() isClaimComponent_SchemeType {
+	if m != nil {
+		return m.SchemeType
+	}
+	return nil
+}
+
+func (m *ClaimComponent) GetPedersen() *PedersenCommitment {
+	if x, ok := m.GetSchemeType().(*ClaimComponent_Pedersen); ok {
+		return x.Pedersen
+	}
+	return nil
+}
+
+func (m *ClaimComponent) GetSchnorr() *SchnorrSignature {
+	if x, ok := m.GetSchemeType().(*ClaimComponent_Schnorr); ok {
+		return x.Schnorr
+	}
+	return nil
+}
+
+func (m *ClaimComponent) GetGnark() *GnarkZkSnark {
+	if x, ok := m.GetSchemeType().(*ClaimComponent_Gnark); ok {
+		return x.Gnark
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*ClaimComponent) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*ClaimComponent_Pedersen)(nil),
+		(*ClaimComponent_Schnorr)(nil),
+		(*ClaimComponent_Gnark)(nil),
+	}
+}
+
+// SchnorrSignature is used for claims that require a Schnorr signature.
+type SchnorrSignature struct {
+	PublicKey       []byte `protobuf:"bytes,1,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	UniqueSessionId []byte `protobuf:"bytes,2,opt,name=unique_session_id,json=uniqueSessionId,proto3" json:"unique_session_id,omitempty"`
+	Signature       []byte `protobuf:"bytes,3,opt,name=signature,proto3" json:"signature,omitempty"`
+	Message         string `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
+}
+
+func (m *SchnorrSignature) Reset()         { *m = SchnorrSignature{} }
+func (m *SchnorrSignature) String() string { return proto.CompactTextString(m) }
+func (*SchnorrSignature) ProtoMessage()    {}
+func (*SchnorrSignature) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{3}
+}
+
+func (m *SchnorrSignature) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *SchnorrSignature) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_SchnorrSignature.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *SchnorrSignature) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SchnorrSignature.Merge(m, src)
+}
+
+func (m *SchnorrSignature) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *SchnorrSignature) XXX_DiscardUnknown() {
+	xxx_messageInfo_SchnorrSignature.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SchnorrSignature proto.InternalMessageInfo
+
+// PedersenCommitment enables the use of a Pedersen commitment for claims.
+type PedersenCommitment struct {
+	Commitment   []byte `protobuf:"bytes,1,opt,name=commitment,proto3" json:"commitment,omitempty"`
+	RandomFactor []byte `protobuf:"bytes,2,opt,name=random_factor,json=randomFactor,proto3" json:"random_factor,omitempty"`
+	// enhancing privacy.
+	Value          []byte `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
+	BlindingFactor []byte `protobuf:"bytes,4,opt,name=blinding_factor,json=blindingFactor,proto3" json:"blinding_factor,omitempty"`
+}
+
+func (m *PedersenCommitment) Reset()         { *m = PedersenCommitment{} }
+func (m *PedersenCommitment) String() string { return proto.CompactTextString(m) }
+func (*PedersenCommitment) ProtoMessage()    {}
+func (*PedersenCommitment) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{4}
+}
+
+func (m *PedersenCommitment) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *PedersenCommitment) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_PedersenCommitment.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *PedersenCommitment) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PedersenCommitment.Merge(m, src)
+}
+
+func (m *PedersenCommitment) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *PedersenCommitment) XXX_DiscardUnknown() {
+	xxx_messageInfo_PedersenCommitment.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PedersenCommitment proto.InternalMessageInfo
+
+// GnarkZkSnark is for claims using zero-knowledge succinct non-interactive
+// arguments of knowledge.
+type GnarkZkSnark struct {
+	VerificationKey []byte `protobuf:"bytes,1,opt,name=verification_key,json=verificationKey,proto3" json:"verification_key,omitempty"`
+	PublicInputs    []byte `protobuf:"bytes,2,opt,name=public_inputs,json=publicInputs,proto3" json:"public_inputs,omitempty"`
+	Proof           []byte `protobuf:"bytes,3,opt,name=proof,proto3" json:"proof,omitempty"`
+}
+
+func (m *GnarkZkSnark) Reset()         { *m = GnarkZkSnark{} }
+func (m *GnarkZkSnark) String() string { return proto.CompactTextString(m) }
+func (*GnarkZkSnark) ProtoMessage()    {}
+func (*GnarkZkSnark) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{5}
+}
+
+func (m *GnarkZkSnark) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *GnarkZkSnark) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_GnarkZkSnark.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *GnarkZkSnark) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GnarkZkSnark.Merge(m, src)
+}
+
+func (m *GnarkZkSnark) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *GnarkZkSnark) XXX_DiscardUnknown() {
+	xxx_messageInfo_GnarkZkSnark.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GnarkZkSnark proto.InternalMessageInfo
+
+// Will represents the entire structure of a will.
 type Will struct {
-	// id is the unique identifier of the will
-	ID string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// Name is the user_generated name of the will
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	// Beneficiary is the private key or address, depending on the purpose of
+	ID          string                `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name        string                `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Beneficiary string                `protobuf:"bytes,3,opt,name=beneficiary,proto3" json:"beneficiary,omitempty"`
-	Components  []*ExecutionComponent `protobuf:"bytes,4,rep,name=components,proto3" json:"components,omitempty"`
+	Height      int64                 `protobuf:"varint,4,opt,name=height,proto3" json:"height,omitempty"`
+	Components  []*ExecutionComponent `protobuf:"bytes,5,rep,name=components,proto3" json:"components,omitempty"`
 }
 
 func (m *Will) Reset()         { *m = Will{} }
 func (m *Will) String() string { return proto.CompactTextString(m) }
 func (*Will) ProtoMessage()    {}
 func (*Will) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{3}
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{6}
 }
 
 func (m *Will) XXX_Unmarshal(b []byte) error {
@@ -262,41 +465,63 @@ func init() {
 	proto.RegisterType((*ExecutionComponent)(nil), "cosmwasm.will.ExecutionComponent")
 	proto.RegisterType((*TransferComponent)(nil), "cosmwasm.will.TransferComponent")
 	proto.RegisterType((*ClaimComponent)(nil), "cosmwasm.will.ClaimComponent")
+	proto.RegisterType((*SchnorrSignature)(nil), "cosmwasm.will.SchnorrSignature")
+	proto.RegisterType((*PedersenCommitment)(nil), "cosmwasm.will.PedersenCommitment")
+	proto.RegisterType((*GnarkZkSnark)(nil), "cosmwasm.will.GnarkZkSnark")
 	proto.RegisterType((*Will)(nil), "cosmwasm.will.Will")
 }
 
 func init() { proto.RegisterFile("cosmwasm/will/types.proto", fileDescriptor_cec37ad7aa1ffe0b) }
 
 var fileDescriptor_cec37ad7aa1ffe0b = []byte{
-	// 436 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x64, 0x52, 0x4d, 0x8f, 0xd3, 0x30,
-	0x10, 0x8d, 0xb3, 0xa1, 0xea, 0x4e, 0x45, 0x01, 0x0b, 0xa1, 0x6e, 0x05, 0x4e, 0xe9, 0x01, 0xed,
-	0x01, 0x39, 0xea, 0x22, 0x2e, 0x1c, 0x38, 0xa4, 0x20, 0x2d, 0x17, 0x24, 0x22, 0xc4, 0x4a, 0x5c,
-	0x90, 0x93, 0x7a, 0x8b, 0xa5, 0xd8, 0xae, 0x6a, 0x77, 0x3f, 0xfe, 0x05, 0x7f, 0x00, 0x89, 0x23,
-	0x3f, 0xa5, 0xc7, 0x3d, 0x72, 0xaa, 0x20, 0xbd, 0xf0, 0x33, 0x50, 0x9c, 0x6c, 0xc8, 0x6e, 0x6f,
-	0xf1, 0xbc, 0xf7, 0xe6, 0xcd, 0x9b, 0x0c, 0x1c, 0x64, 0xda, 0xc8, 0x73, 0x66, 0x64, 0x74, 0x2e,
-	0xf2, 0x3c, 0xb2, 0x97, 0x0b, 0x6e, 0xe8, 0x62, 0xa9, 0xad, 0xc6, 0x77, 0xaf, 0x21, 0x5a, 0x42,
-	0xc3, 0x87, 0x73, 0x3d, 0xd7, 0x0e, 0x89, 0xca, 0xaf, 0x8a, 0x34, 0x24, 0x25, 0x49, 0x9b, 0x28,
-	0x65, 0x86, 0x47, 0x67, 0x93, 0x94, 0x5b, 0x36, 0x89, 0x32, 0x2d, 0x54, 0x85, 0x8f, 0xbf, 0x23,
-	0xc0, 0x6f, 0x2f, 0x78, 0xb6, 0xb2, 0x42, 0xab, 0xa9, 0x96, 0x0b, 0xad, 0xb8, 0xb2, 0xf8, 0x35,
-	0x74, 0xed, 0x92, 0x29, 0x73, 0xca, 0x97, 0x03, 0x34, 0x42, 0x87, 0xbd, 0xa3, 0x11, 0xbd, 0x61,
-	0x47, 0x3f, 0xd6, 0x70, 0xa3, 0x39, 0xf6, 0x92, 0x46, 0x83, 0x5f, 0xc2, 0x9d, 0x2c, 0x67, 0x42,
-	0x0e, 0x7c, 0x27, 0x7e, 0x72, 0x4b, 0x3c, 0x2d, 0xb1, 0xb6, 0xb2, 0x62, 0xc7, 0xf7, 0xa1, 0x9f,
-	0x5d, 0x57, 0xbf, 0x94, 0x59, 0xc7, 0x9f, 0xe0, 0xc1, 0x8e, 0x13, 0xee, 0x83, 0x6f, 0xb5, 0x9b,
-	0x6b, 0x3f, 0xf1, 0xad, 0xc6, 0x13, 0xe8, 0x30, 0xa9, 0x57, 0xca, 0xd6, 0x76, 0x07, 0xb4, 0x4a,
-	0x4d, 0xcb, 0xd4, 0xb4, 0x4e, 0x4d, 0xa7, 0x5a, 0xa8, 0xa4, 0x26, 0x8e, 0x9f, 0x43, 0xff, 0xe6,
-	0x10, 0x78, 0x08, 0x5d, 0x7e, 0x26, 0x66, 0x5c, 0x65, 0xbc, 0x6e, 0xdd, 0xbc, 0xc7, 0x6b, 0x04,
-	0xc1, 0x89, 0xc8, 0x73, 0xfc, 0x08, 0x7c, 0x31, 0xab, 0xe0, 0xb8, 0x53, 0x6c, 0x42, 0xff, 0xdd,
-	0x9b, 0xc4, 0x17, 0x33, 0xfc, 0x18, 0x02, 0xc5, 0x24, 0x77, 0xfe, 0xfb, 0x71, 0xb7, 0xd8, 0x84,
-	0xc1, 0x7b, 0x26, 0x79, 0xe2, 0xaa, 0x78, 0x02, 0xbd, 0x94, 0x2b, 0x7e, 0x2a, 0x32, 0xc1, 0x96,
-	0x97, 0x83, 0x3d, 0x47, 0xba, 0x57, 0x6c, 0xc2, 0x5e, 0xfc, 0xbf, 0x9c, 0xb4, 0x39, 0xf8, 0x03,
-	0x40, 0xb3, 0x09, 0x33, 0x08, 0x46, 0x7b, 0x87, 0xbd, 0xa3, 0xa7, 0xb7, 0xb6, 0xb8, 0xfb, 0xdf,
-	0xe2, 0x7e, 0xb1, 0x09, 0xa1, 0x79, 0x9a, 0xa4, 0xd5, 0xe4, 0x55, 0xf0, 0xf7, 0x47, 0x88, 0xe2,
-	0xe3, 0xf5, 0x1f, 0xe2, 0xfd, 0x2c, 0x08, 0x5a, 0x17, 0x04, 0x5d, 0x15, 0x04, 0xfd, 0x2e, 0x08,
-	0xfa, 0xb6, 0x25, 0xde, 0xd5, 0x96, 0x78, 0xbf, 0xb6, 0xc4, 0xfb, 0xfc, 0x6c, 0x2e, 0xec, 0xd7,
-	0x55, 0x4a, 0x33, 0x2d, 0xa3, 0xa9, 0x36, 0xf2, 0xc4, 0x5d, 0x1f, 0x33, 0x72, 0x16, 0x5d, 0xb4,
-	0xae, 0x30, 0xed, 0xb8, 0x0b, 0x7a, 0xf1, 0x2f, 0x00, 0x00, 0xff, 0xff, 0x8d, 0x02, 0x71, 0xca,
-	0xa3, 0x02, 0x00, 0x00,
+	// 738 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x54, 0x4d, 0x6f, 0xeb, 0x44,
+	0x14, 0x8d, 0xd3, 0x24, 0x2f, 0xb9, 0xf9, 0xea, 0x1b, 0x3d, 0xa1, 0xbc, 0xc2, 0x73, 0x4a, 0x9e,
+	0xc4, 0xd7, 0xc2, 0x56, 0xa8, 0xd8, 0x80, 0x04, 0x92, 0xc3, 0x47, 0x2a, 0x24, 0x04, 0x0e, 0xa2,
+	0x52, 0x37, 0xd1, 0xc4, 0x9e, 0x38, 0xa3, 0x7a, 0x66, 0x82, 0x67, 0x9c, 0x36, 0xff, 0x82, 0x0d,
+	0x12, 0x1b, 0x24, 0x96, 0xfc, 0x94, 0x2e, 0xbb, 0x64, 0x15, 0x81, 0xbb, 0x61, 0x81, 0xf8, 0x0d,
+	0xc8, 0x63, 0x3b, 0x75, 0x53, 0x56, 0xc9, 0x3d, 0xe7, 0x9e, 0xb9, 0xf7, 0x9c, 0x64, 0x06, 0x5e,
+	0x7a, 0x42, 0xb2, 0x6b, 0x2c, 0x99, 0x7d, 0x4d, 0xc3, 0xd0, 0x56, 0xdb, 0x35, 0x91, 0xd6, 0x3a,
+	0x12, 0x4a, 0xa0, 0x6e, 0x41, 0x59, 0x29, 0x75, 0xf2, 0x22, 0x10, 0x81, 0xd0, 0x8c, 0x9d, 0x7e,
+	0xcb, 0x9a, 0x4e, 0xcc, 0xb4, 0x49, 0x48, 0x7b, 0x81, 0x25, 0xb1, 0x37, 0xe3, 0x05, 0x51, 0x78,
+	0x6c, 0x7b, 0x82, 0xf2, 0x8c, 0x1f, 0xfd, 0x6a, 0x00, 0xfa, 0xe2, 0x86, 0x78, 0xb1, 0xa2, 0x82,
+	0x4f, 0x04, 0x5b, 0x0b, 0x4e, 0xb8, 0x42, 0x9f, 0x42, 0x53, 0x45, 0x98, 0xcb, 0x25, 0x89, 0x06,
+	0xc6, 0xa9, 0xf1, 0x5e, 0xfb, 0xc3, 0x53, 0xeb, 0xd1, 0x38, 0xeb, 0xfb, 0x9c, 0xde, 0x6b, 0xa6,
+	0x15, 0x77, 0xaf, 0x41, 0x1f, 0x41, 0xdd, 0x0b, 0x31, 0x65, 0x83, 0xaa, 0x16, 0xbf, 0x3a, 0x10,
+	0x4f, 0x52, 0xae, 0xac, 0xcc, 0xba, 0x9d, 0x63, 0xe8, 0x79, 0x05, 0x3a, 0x4f, 0xbd, 0x8e, 0x7e,
+	0x80, 0xe7, 0x4f, 0x26, 0xa1, 0x1e, 0x54, 0x95, 0xd0, 0x7b, 0xb5, 0xdc, 0xaa, 0x12, 0x68, 0x0c,
+	0x0d, 0xcc, 0x44, 0xcc, 0x55, 0x3e, 0xee, 0xa5, 0x95, 0xb9, 0xb6, 0x52, 0xd7, 0x56, 0xee, 0xda,
+	0x9a, 0x08, 0xca, 0xdd, 0xbc, 0x71, 0xf4, 0xaf, 0x01, 0xbd, 0xc7, 0x5b, 0xa0, 0x13, 0x68, 0x92,
+	0x0d, 0xf5, 0x09, 0xf7, 0x48, 0x7e, 0xf6, 0xbe, 0x46, 0x9f, 0x41, 0x73, 0x4d, 0x7c, 0x12, 0x49,
+	0xc2, 0xf3, 0x19, 0x6f, 0x1f, 0x58, 0xfa, 0x36, 0xa7, 0x27, 0x82, 0x31, 0xaa, 0x58, 0x1e, 0x48,
+	0x21, 0x42, 0x9f, 0xc0, 0x33, 0xe9, 0xad, 0xb8, 0x88, 0xa2, 0xc1, 0x91, 0xd6, 0x0f, 0x0f, 0xf4,
+	0xb3, 0x8c, 0x9d, 0xd1, 0x80, 0x63, 0x15, 0x47, 0x64, 0x5a, 0x71, 0x0b, 0x05, 0x3a, 0x83, 0x7a,
+	0xc0, 0x71, 0x74, 0x35, 0xa8, 0x69, 0xe9, 0x9b, 0x07, 0xd2, 0xaf, 0x52, 0xee, 0xf2, 0x6a, 0x96,
+	0x7e, 0xa4, 0x59, 0xea, 0x5e, 0xa7, 0x0b, 0x6d, 0xe9, 0xad, 0x08, 0x23, 0x59, 0x90, 0x3f, 0x1b,
+	0x70, 0x7c, 0x38, 0x03, 0xbd, 0x02, 0x58, 0xc7, 0x8b, 0x90, 0x7a, 0xf3, 0x2b, 0xb2, 0xd5, 0xa6,
+	0x3b, 0x6e, 0x2b, 0x43, 0xbe, 0x26, 0x5b, 0xf4, 0x01, 0x3c, 0x8f, 0x39, 0xfd, 0x31, 0x26, 0x73,
+	0x49, 0xa4, 0xa4, 0x82, 0xcf, 0xa9, 0xaf, 0xed, 0x77, 0xdc, 0x7e, 0x46, 0xcc, 0x32, 0xfc, 0xdc,
+	0x47, 0x6f, 0x41, 0x4b, 0x16, 0xe7, 0x6a, 0x8b, 0x1d, 0xf7, 0x01, 0x40, 0x03, 0x78, 0xc6, 0x88,
+	0x94, 0x38, 0x20, 0xda, 0x43, 0xcb, 0x2d, 0xca, 0xd1, 0x2f, 0x06, 0xa0, 0xa7, 0xd9, 0x21, 0x13,
+	0xc0, 0xdb, 0x57, 0xf9, 0x66, 0x25, 0x04, 0xbd, 0x86, 0x6e, 0x84, 0xb9, 0x2f, 0xd8, 0x7c, 0x89,
+	0x3d, 0x25, 0xa2, 0x7c, 0xad, 0x4e, 0x06, 0x7e, 0xa9, 0x31, 0xf4, 0x02, 0xea, 0x1b, 0x1c, 0xc6,
+	0xc5, 0x3e, 0x59, 0x81, 0xde, 0x85, 0xfe, 0x22, 0xa4, 0xdc, 0xa7, 0x3c, 0x28, 0xc4, 0x35, 0xcd,
+	0xf7, 0x0a, 0x38, 0x93, 0x8f, 0x14, 0x74, 0xca, 0xd1, 0xa2, 0xf7, 0xe1, 0x78, 0x43, 0x22, 0xba,
+	0xa4, 0x1e, 0x4e, 0x6f, 0x4b, 0x29, 0xb3, 0x7e, 0x19, 0x4f, 0x93, 0x7b, 0x0d, 0xdd, 0x3c, 0x58,
+	0xca, 0xd7, 0xb1, 0x92, 0xc5, 0x7a, 0x19, 0x78, 0xae, 0xb1, 0x74, 0xbd, 0x75, 0x24, 0xc4, 0xb2,
+	0x58, 0x4f, 0x17, 0xa3, 0x7f, 0x0c, 0xa8, 0x5d, 0xd0, 0x30, 0x44, 0x6f, 0x40, 0x95, 0xfa, 0xd9,
+	0x3f, 0xd1, 0x69, 0x24, 0xbb, 0x61, 0xf5, 0xfc, 0x73, 0xb7, 0x4a, 0xd3, 0xa4, 0x6b, 0x1c, 0x33,
+	0xa2, 0x8f, 0x6c, 0x39, 0xcd, 0x64, 0x37, 0xac, 0x7d, 0x83, 0x19, 0x71, 0x35, 0x8a, 0xc6, 0xd0,
+	0x5e, 0x10, 0x4e, 0x96, 0xd4, 0xa3, 0x38, 0xda, 0xea, 0xa3, 0x5b, 0x4e, 0x3f, 0xd9, 0x0d, 0xdb,
+	0xce, 0x03, 0xec, 0x96, 0x7b, 0xd0, 0x08, 0x1a, 0x2b, 0x42, 0x83, 0x95, 0xd2, 0x39, 0x1c, 0x39,
+	0x90, 0xec, 0x86, 0x8d, 0xa9, 0x46, 0xdc, 0x9c, 0x41, 0xdf, 0xe9, 0xdf, 0x23, 0xbb, 0x29, 0x72,
+	0x50, 0x3f, 0x3d, 0xfa, 0x9f, 0x2b, 0xf0, 0xf4, 0x1d, 0x71, 0x7a, 0xc9, 0x6e, 0x08, 0xfb, 0x52,
+	0xba, 0xa5, 0x43, 0x3e, 0xae, 0xfd, 0xfd, 0xdb, 0xd0, 0x70, 0xa6, 0xb7, 0x7f, 0x99, 0x95, 0xdf,
+	0x13, 0xd3, 0xb8, 0x4d, 0x4c, 0xe3, 0x2e, 0x31, 0x8d, 0x3f, 0x13, 0xd3, 0xf8, 0xe9, 0xde, 0xac,
+	0xdc, 0xdd, 0x9b, 0x95, 0x3f, 0xee, 0xcd, 0xca, 0xe5, 0x3b, 0x01, 0x55, 0xab, 0x78, 0x61, 0x79,
+	0x82, 0xd9, 0x13, 0x21, 0xd9, 0x85, 0x7e, 0x0d, 0xb1, 0x64, 0xbe, 0x7d, 0x53, 0x7a, 0x15, 0x17,
+	0x0d, 0xfd, 0xa2, 0x9d, 0xfd, 0x17, 0x00, 0x00, 0xff, 0xff, 0xe9, 0x60, 0x73, 0x40, 0x33, 0x05,
+	0x00, 0x00,
 }
 
 func (this *ExecutionComponent) Equal(that interface{}) bool {
@@ -430,6 +655,189 @@ func (this *ClaimComponent) Equal(that interface{}) bool {
 	if this.Evidence != that1.Evidence {
 		return false
 	}
+	if that1.SchemeType == nil {
+		if this.SchemeType != nil {
+			return false
+		}
+	} else if this.SchemeType == nil {
+		return false
+	} else if !this.SchemeType.Equal(that1.SchemeType) {
+		return false
+	}
+	return true
+}
+
+func (this *ClaimComponent_Pedersen) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ClaimComponent_Pedersen)
+	if !ok {
+		that2, ok := that.(ClaimComponent_Pedersen)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Pedersen.Equal(that1.Pedersen) {
+		return false
+	}
+	return true
+}
+
+func (this *ClaimComponent_Schnorr) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ClaimComponent_Schnorr)
+	if !ok {
+		that2, ok := that.(ClaimComponent_Schnorr)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Schnorr.Equal(that1.Schnorr) {
+		return false
+	}
+	return true
+}
+
+func (this *ClaimComponent_Gnark) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ClaimComponent_Gnark)
+	if !ok {
+		that2, ok := that.(ClaimComponent_Gnark)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.Gnark.Equal(that1.Gnark) {
+		return false
+	}
+	return true
+}
+
+func (this *SchnorrSignature) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*SchnorrSignature)
+	if !ok {
+		that2, ok := that.(SchnorrSignature)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !bytes.Equal(this.PublicKey, that1.PublicKey) {
+		return false
+	}
+	if !bytes.Equal(this.UniqueSessionId, that1.UniqueSessionId) {
+		return false
+	}
+	if !bytes.Equal(this.Signature, that1.Signature) {
+		return false
+	}
+	if this.Message != that1.Message {
+		return false
+	}
+	return true
+}
+
+func (this *PedersenCommitment) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*PedersenCommitment)
+	if !ok {
+		that2, ok := that.(PedersenCommitment)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !bytes.Equal(this.Commitment, that1.Commitment) {
+		return false
+	}
+	if !bytes.Equal(this.RandomFactor, that1.RandomFactor) {
+		return false
+	}
+	if !bytes.Equal(this.Value, that1.Value) {
+		return false
+	}
+	if !bytes.Equal(this.BlindingFactor, that1.BlindingFactor) {
+		return false
+	}
+	return true
+}
+
+func (this *GnarkZkSnark) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*GnarkZkSnark)
+	if !ok {
+		that2, ok := that.(GnarkZkSnark)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !bytes.Equal(this.VerificationKey, that1.VerificationKey) {
+		return false
+	}
+	if !bytes.Equal(this.PublicInputs, that1.PublicInputs) {
+		return false
+	}
+	if !bytes.Equal(this.Proof, that1.Proof) {
+		return false
+	}
 	return true
 }
 
@@ -459,6 +867,9 @@ func (this *Will) Equal(that interface{}) bool {
 		return false
 	}
 	if this.Beneficiary != that1.Beneficiary {
+		return false
+	}
+	if this.Height != that1.Height {
 		return false
 	}
 	if len(this.Components) != len(that1.Components) {
@@ -610,10 +1021,231 @@ func (m *ClaimComponent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.SchemeType != nil {
+		{
+			size := m.SchemeType.Size()
+			i -= size
+			if _, err := m.SchemeType.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
 	if len(m.Evidence) > 0 {
 		i -= len(m.Evidence)
 		copy(dAtA[i:], m.Evidence)
 		i = encodeVarintTypes(dAtA, i, uint64(len(m.Evidence)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ClaimComponent_Pedersen) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ClaimComponent_Pedersen) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Pedersen != nil {
+		{
+			size, err := m.Pedersen.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTypes(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ClaimComponent_Schnorr) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ClaimComponent_Schnorr) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Schnorr != nil {
+		{
+			size, err := m.Schnorr.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTypes(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ClaimComponent_Gnark) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ClaimComponent_Gnark) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.Gnark != nil {
+		{
+			size, err := m.Gnark.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTypes(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x22
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *SchnorrSignature) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SchnorrSignature) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *SchnorrSignature) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Message) > 0 {
+		i -= len(m.Message)
+		copy(dAtA[i:], m.Message)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Message)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.Signature) > 0 {
+		i -= len(m.Signature)
+		copy(dAtA[i:], m.Signature)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Signature)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.UniqueSessionId) > 0 {
+		i -= len(m.UniqueSessionId)
+		copy(dAtA[i:], m.UniqueSessionId)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.UniqueSessionId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.PublicKey) > 0 {
+		i -= len(m.PublicKey)
+		copy(dAtA[i:], m.PublicKey)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.PublicKey)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *PedersenCommitment) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *PedersenCommitment) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *PedersenCommitment) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.BlindingFactor) > 0 {
+		i -= len(m.BlindingFactor)
+		copy(dAtA[i:], m.BlindingFactor)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.BlindingFactor)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.Value) > 0 {
+		i -= len(m.Value)
+		copy(dAtA[i:], m.Value)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Value)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.RandomFactor) > 0 {
+		i -= len(m.RandomFactor)
+		copy(dAtA[i:], m.RandomFactor)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.RandomFactor)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Commitment) > 0 {
+		i -= len(m.Commitment)
+		copy(dAtA[i:], m.Commitment)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Commitment)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *GnarkZkSnark) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GnarkZkSnark) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GnarkZkSnark) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Proof) > 0 {
+		i -= len(m.Proof)
+		copy(dAtA[i:], m.Proof)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Proof)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.PublicInputs) > 0 {
+		i -= len(m.PublicInputs)
+		copy(dAtA[i:], m.PublicInputs)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.PublicInputs)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.VerificationKey) > 0 {
+		i -= len(m.VerificationKey)
+		copy(dAtA[i:], m.VerificationKey)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.VerificationKey)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -651,8 +1283,13 @@ func (m *Will) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintTypes(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x22
+			dAtA[i] = 0x2a
 		}
+	}
+	if m.Height != 0 {
+		i = encodeVarintTypes(dAtA, i, uint64(m.Height))
+		i--
+		dAtA[i] = 0x20
 	}
 	if len(m.Beneficiary) > 0 {
 		i -= len(m.Beneficiary)
@@ -755,6 +1392,119 @@ func (m *ClaimComponent) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
+	if m.SchemeType != nil {
+		n += m.SchemeType.Size()
+	}
+	return n
+}
+
+func (m *ClaimComponent_Pedersen) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Pedersen != nil {
+		l = m.Pedersen.Size()
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
+func (m *ClaimComponent_Schnorr) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Schnorr != nil {
+		l = m.Schnorr.Size()
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
+func (m *ClaimComponent_Gnark) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Gnark != nil {
+		l = m.Gnark.Size()
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
+func (m *SchnorrSignature) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.PublicKey)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.UniqueSessionId)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.Signature)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.Message)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
+func (m *PedersenCommitment) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Commitment)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.RandomFactor)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.Value)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.BlindingFactor)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
+func (m *GnarkZkSnark) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.VerificationKey)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.PublicInputs)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.Proof)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
 	return n
 }
 
@@ -775,6 +1525,9 @@ func (m *Will) Size() (n int) {
 	l = len(m.Beneficiary)
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
+	}
+	if m.Height != 0 {
+		n += 1 + sovTypes(uint64(m.Height))
 	}
 	if len(m.Components) > 0 {
 		for _, e := range m.Components {
@@ -1094,6 +1847,636 @@ func (m *ClaimComponent) Unmarshal(dAtA []byte) error {
 			}
 			m.Evidence = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pedersen", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &PedersenCommitment{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.SchemeType = &ClaimComponent_Pedersen{v}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Schnorr", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &SchnorrSignature{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.SchemeType = &ClaimComponent_Schnorr{v}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Gnark", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &GnarkZkSnark{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.SchemeType = &ClaimComponent_Gnark{v}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *SchnorrSignature) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SchnorrSignature: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SchnorrSignature: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PublicKey", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PublicKey = append(m.PublicKey[:0], dAtA[iNdEx:postIndex]...)
+			if m.PublicKey == nil {
+				m.PublicKey = []byte{}
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UniqueSessionId", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.UniqueSessionId = append(m.UniqueSessionId[:0], dAtA[iNdEx:postIndex]...)
+			if m.UniqueSessionId == nil {
+				m.UniqueSessionId = []byte{}
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Signature", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Signature = append(m.Signature[:0], dAtA[iNdEx:postIndex]...)
+			if m.Signature == nil {
+				m.Signature = []byte{}
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Message", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Message = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *PedersenCommitment) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: PedersenCommitment: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: PedersenCommitment: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Commitment", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Commitment = append(m.Commitment[:0], dAtA[iNdEx:postIndex]...)
+			if m.Commitment == nil {
+				m.Commitment = []byte{}
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RandomFactor", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RandomFactor = append(m.RandomFactor[:0], dAtA[iNdEx:postIndex]...)
+			if m.RandomFactor == nil {
+				m.RandomFactor = []byte{}
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Value = append(m.Value[:0], dAtA[iNdEx:postIndex]...)
+			if m.Value == nil {
+				m.Value = []byte{}
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlindingFactor", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.BlindingFactor = append(m.BlindingFactor[:0], dAtA[iNdEx:postIndex]...)
+			if m.BlindingFactor == nil {
+				m.BlindingFactor = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *GnarkZkSnark) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GnarkZkSnark: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GnarkZkSnark: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field VerificationKey", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.VerificationKey = append(m.VerificationKey[:0], dAtA[iNdEx:postIndex]...)
+			if m.VerificationKey == nil {
+				m.VerificationKey = []byte{}
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PublicInputs", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PublicInputs = append(m.PublicInputs[:0], dAtA[iNdEx:postIndex]...)
+			if m.PublicInputs == nil {
+				m.PublicInputs = []byte{}
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Proof", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Proof = append(m.Proof[:0], dAtA[iNdEx:postIndex]...)
+			if m.Proof == nil {
+				m.Proof = []byte{}
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTypes(dAtA[iNdEx:])
@@ -1242,6 +2625,25 @@ func (m *Will) Unmarshal(dAtA []byte) error {
 			m.Beneficiary = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Height", wireType)
+			}
+			m.Height = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Height |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Components", wireType)
 			}

@@ -33,6 +33,7 @@ func (m msgServer) CreateWill(
 		Creator:     msg.GetCreator(),
 		Name:        will.Name,
 		Beneficiary: will.Beneficiary,
+		Height:      will.Height,
 	}, nil
 }
 

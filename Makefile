@@ -219,7 +219,7 @@ alice_d:
 will_test: will_cx
 	echo "Done with will tests"
 will_c:
-	./build/wasmd tx will create "test will ${i}" "benefivvvciary" --from alice --chain-id w3ll-chain -y
+	./build/wasmd tx will create "test will ${i}" "benefivvvciary" 100 --from alice --chain-id w3ll-chain -y
 	sleep 1
 will_cx:
 	@for i in {1..20}; do \

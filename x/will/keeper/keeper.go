@@ -11,12 +11,12 @@ import (
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
+	storetypes "cosmossdk.io/store/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	storetypes "cosmossdk.io/store/types"
 	"github.com/CosmWasm/wasmd/x/will/types"
 )
 
@@ -100,6 +100,8 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 		ID:          idString,
 		Name:        msg.Name,
 		Beneficiary: msg.Beneficiary,
+		Height:      msg.Height,
+		Components:  msg.Components,
 	}
 
 	// Marshal the will object to bytes
@@ -122,6 +124,10 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 	if storeErr != nil {
 		return nil, errors.Wrap(storeErr, "inside k.createWill, KV store set threw an error")
 	}
+
+	// SetWillExpiryIndex
+	// heightKey := types.GetWillKey(ctx)
+	// storeHeightIndex := store.Set(heightKey)
 
 	return &will, nil
 }

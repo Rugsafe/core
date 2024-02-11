@@ -14,13 +14,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
 	// "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmd/x/will/client/cli"
 	"github.com/CosmWasm/wasmd/x/will/keeper"
 	"github.com/CosmWasm/wasmd/x/will/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type AppModuleBasic struct{}
@@ -102,13 +102,16 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 	fmt.Println("NOW IM ACTUALLY IN THE WILL MODULES BEGIN BLOCKER 2")
 	fmt.Println(ctx)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	denom, _ := sdk.GetBaseDenom()
+	denom_log, _ := fmt.Printf("Base Denom %s", denom)
+	fmt.Println(denom_log)
+	// sdk.NewSearchBlocksResult()
 	endBlockerError := am.keeper.EndBlocker(sdkCtx)
-	// if endBlockerError != nil {
-	// 	error_msg, _ := fmt.Printf("ERROR RUNNING will.am.keeper.BeginBlock: %s", endBlockerError)
-	// 	fmt.Println(error_msg)
-	// } else {
-
-	// }
+	if endBlockerError != nil {
+		error_msg, _ := fmt.Printf("ERROR RUNNING will.am.keeper.BeginBlock: %s", endBlockerError)
+		fmt.Println(error_msg)
+	} else {
+	}
 	return nil
 }
 

@@ -8,9 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
+	storetypes "cosmossdk.io/store/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	storetypes "cosmossdk.io/store/types"
 	"github.com/CosmWasm/wasmd/x/will/keeper"
 	"github.com/CosmWasm/wasmd/x/will/types"
 )
@@ -40,7 +41,6 @@ func (mkvs *MockKVStoreService) OpenKVStore(ctx sdk.Context) storetypes.KVStore 
 }
 
 func (mkvs *MockKVStoreService) Delete() {
-
 }
 
 // Update the GetMsgAnySigners to match expected signature
