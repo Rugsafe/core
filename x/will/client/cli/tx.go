@@ -54,6 +54,7 @@ func CreateWillCmd() *cobra.Command {
 			var components []*types.ExecutionComponent
 			for _, compArg := range componentsArgs {
 				component, err := parseComponentFromString(compArg)
+				fmt.Println(component)
 				if err != nil {
 					return fmt.Errorf("failed to parse component: %w", err)
 				}
@@ -79,10 +80,10 @@ func CreateWillCmd() *cobra.Command {
 }
 
 func parseComponentFromString(compArg string) (*types.ExecutionComponent, error) {
-	// Splitting the input on the first colon to separate the type from its parameters
+	// Split the input to separate the type from the parameters
 	parts := strings.SplitN(compArg, ":", 2)
 	if len(parts) != 2 {
-		return nil, fmt.Errorf("invalid component format, expected '<type>:<params>' but got: %s", compArg)
+		return nil, fmt.Errorf("invalid component format, expected '<type>:<params...>' but got: %s", compArg)
 	}
 
 	componentType, paramsStr := parts[0], parts[1]
@@ -90,30 +91,29 @@ func parseComponentFromString(compArg string) (*types.ExecutionComponent, error)
 
 	switch componentType {
 	case "transfer":
+		// For 'transfer', expect 'to,amount'
 		params := strings.Split(paramsStr, ",")
 		if len(params) != 2 {
 			return nil, fmt.Errorf("transfer component expects 'to,amount', but got: %s", paramsStr)
 		}
 
 		to, amountStr := params[0], params[1]
-
-		// Directly convert the string amount to an sdk.Int
-		// amount, ok := sdk.NewInt64Coin(amountStr)
-
-		// Constructing the sdk.Coin type for the amount
-		atoi, atoiError := strconv.Atoi(amountStr)
-		if atoiError != nil {
+		amount, err := strconv.ParseInt(amountStr, 10, 64)
+		if err != nil {
 			return nil, fmt.Errorf("invalid amount format for transfer component: %s", amountStr)
 		}
-		amountCoin := sdk.NewInt64Coin("w3ll", int64(atoi))
-		// Assigning the constructed TransferComponent to the component's oneof field
+		amountCoin := sdk.NewInt64Coin("w3ll", amount) // Ensure "w3ll" matches your denomination
+
 		component.ComponentType = &types.ExecutionComponent_Transfer{
 			Transfer: &types.TransferComponent{
 				To:     to,
-				Amount: &amountCoin, // Note: amountCoin is already of type sdk.Coin
+				Amount: &amountCoin,
 			},
 		}
-	// Handle other component types as needed
+
+	// Add additional cases for other component types
+	// Ensure to handle their parameters according to each type's expected format
+
 	default:
 		return nil, fmt.Errorf("unsupported component type: %s", componentType)
 	}

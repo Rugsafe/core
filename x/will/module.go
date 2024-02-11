@@ -106,7 +106,7 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 	denom_log, _ := fmt.Printf("Base Denom %s", denom)
 	fmt.Println(denom_log)
 	// sdk.NewSearchBlocksResult()
-	endBlockerError := am.keeper.EndBlocker(sdkCtx)
+	endBlockerError := am.keeper.BeginBlocker(sdkCtx)
 	if endBlockerError != nil {
 		error_msg, _ := fmt.Printf("ERROR RUNNING will.am.keeper.BeginBlock: %s", endBlockerError)
 		fmt.Println(error_msg)

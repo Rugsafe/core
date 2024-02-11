@@ -80,7 +80,7 @@ func ListWillsCmd() *cobra.Command {
 			}
 
 			address := clientCtx.GetFromAddress()
-			fmt.Printf("ListWillsCmd address: %s", address)
+			fmt.Printf("ListWillsCmd address...: %s", address)
 			queryClient := types.NewQueryClient(clientCtx)
 
 			res, err := queryClient.ListWills(

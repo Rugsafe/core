@@ -67,6 +67,7 @@ func queryListWills(ctx context.Context, keeper *Keeper, req *types.QueryListWil
 }
 
 func (q queryServer) ListWills(ctx context.Context, req *types.QueryListWillsRequest) (*types.QueryListWillsResponse, error) {
+	fmt.Println(req.Address)
 	wills, err := q.keeper.ListWillsByAddress(ctx, req.Address)
 	if err != nil {
 		return nil, err
