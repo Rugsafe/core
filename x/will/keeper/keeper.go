@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	corestoretypes "cosmossdk.io/core/store"
@@ -122,12 +123,30 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 	storeErr := store.Set(key, willBz)
 
 	if storeErr != nil {
-		return nil, errors.Wrap(storeErr, "inside k.createWill, KV store set threw an error")
+		return nil, errors.Wrap(storeErr, "inside k.createWill storeErr, KV store set threw an error")
 	}
 
-	// SetWillExpiryIndex
-	// heightKey := types.GetWillKey(ctx)
-	// storeHeightIndex := store.Set(heightKey)
+	// Assuming you want to store the will's ID under a key derived from its height for some indexing purpose
+	heightKey := types.GetWillKey(strconv.Itoa(int(will.Height)))
+	existingWillsBz, existingWillsErr := store.Get(heightKey)
+
+	if existingWillsErr != nil {
+		return nil, errors.Wrap(storeErr, "inside k.createWill existingWillsErr, KV store set threw an error")
+	}
+
+	var willsAtHeight []string
+	if existingWillsBz != nil {
+		// Deserialize existing wills if any
+		existingWills := string(existingWillsBz)
+		willsAtHeight = strings.Split(existingWills, ",")
+	}
+
+	// Add the new will ID to the set of wills at this height
+	willsAtHeight = append(willsAtHeight, will.ID)
+
+	// Serialize the updated set of wills and store it
+	updatedWillsBz := []byte(strings.Join(willsAtHeight, ","))
+	store.Set(heightKey, updatedWillsBz)
 
 	return &will, nil
 }
@@ -184,26 +203,51 @@ func (k Keeper) GetWillsByExpiry(ctx sdk.Context, expiryHeight int64) ([]*types.
 }
 
 func (k Keeper) BeginBlocker(ctx sdk.Context) error {
-	// func (k Keeper) BeginBlocker(ctx context.Context) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
-	// //get all wills that are indexed for this block
-	var block_height int64 = ctx.BlockHeight()
-	fmt.Println("TODO: get all wills indexed at block height: %i", block_height)
+	// Get the current block height
+	blockHeight := ctx.BlockHeight()
+	fmt.Printf("Processing wills at block height: %d\n", blockHeight)
 
-	// determine the total power signing the block
-	var previousTotalPower int64
-	for _, voteInfo := range ctx.VoteInfos() {
-		fmt.Println("Voting power:")
-		fmt.Printf("voteInfo.Validator.Power: %s", strconv.Itoa(int(voteInfo.Validator.Power)))
-		previousTotalPower += voteInfo.Validator.Power
+	// Access the store
+	store := k.storeService.OpenKVStore(ctx)
+
+	// Construct the height key to fetch will IDs associated with the current block height
+	heightKey := types.GetWillKey(strconv.Itoa(int(blockHeight)))
+	willIDsBz, err := store.Get(heightKey)
+
+	// If there is an error fetching the will IDs or if there are no wills for this block height, return early
+	if err != nil || willIDsBz == nil {
+		fmt.Println("No wills to process for this block height or unable to fetch will IDs.")
+		return nil // You might want to handle the error more gracefully depending on your application's needs
 	}
 
-	// TODO this is Tendermint-dependent
-	// ref https://github.com/cosmos/cosmos-sdk/issues/3095
-	if ctx.BlockHeight() > 1 {
-		var block_height int64 = ctx.BlockHeight()
-		fmt.Printf("BEGIN BLOCKER WE ARE ON: %s", strconv.Itoa(int(block_height)))
+	// Deserialize the list of will IDs
+	willIDs := strings.Split(string(willIDsBz), ",")
+
+	// Iterate over each will ID
+	for _, willID := range willIDs {
+		// Fetch the will object using its ID
+		willBz, willFetchErr := store.Get(types.GetWillKey(willID))
+		if willFetchErr != nil {
+			fmt.Printf("Error fetching will with ID %s: %v\n", willID, willFetchErr)
+			continue // Proceed to the next will if there's an issue fetching this one
+		}
+
+		var will types.Will
+		unmarshalErr := k.cdc.Unmarshal(willBz, &will)
+		if unmarshalErr != nil {
+			fmt.Printf("Error unmarshaling will with ID %s: %v\n", willID, unmarshalErr)
+			continue // Continue to the next will if unmarshaling fails
+		}
+
+		// Perform the desired operations on the will object here
+		// For example, checking conditions, updating state, etc.
+		fmt.Printf("Successfully fetched and unmarshaled will with ID %s for further processing.\n", will.ID)
+
+		// Example operation: Print will details
+		// Adjust this section based on what you actually need to do with each will
+		fmt.Printf("Will ID: %s, Name: %s, Beneficiary: %s, Height: %d\n", will.ID, will.Name, will.Beneficiary, will.Height)
 	}
 
 	return nil

@@ -11,9 +11,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/CosmWasm/wasmd/x/will/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func GetTxCmd() *cobra.Command {
@@ -77,6 +77,7 @@ func CreateWillCmd() *cobra.Command {
 
 	return cmd
 }
+
 func parseComponentFromString(compArg string) (*types.ExecutionComponent, error) {
 	// Splitting the input on the first colon to separate the type from its parameters
 	parts := strings.SplitN(compArg, ":", 2)
