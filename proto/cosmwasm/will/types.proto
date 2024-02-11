@@ -14,8 +14,7 @@ message ExecutionComponent {
   // components within a will.
   oneof component_type {
     TransferComponent transfer = 1; // Represents an asset transfer action.
-    ClaimComponent claim =
-        2; // Represents a claim action that a beneficiary must perform.
+    ClaimComponent claim = 2; // Represents a claim action that a beneficiary must perform.
     // ContractComponent contract = 3; // Future use: Represents an interaction
     // with a smart contract.
   }
@@ -24,8 +23,7 @@ message ExecutionComponent {
 // TransferComponent is used for direct asset transfers.
 message TransferComponent {
   string to = 1; // Destination address for the asset transfer.
-  cosmos.base.v1beta1.Coin amount =
-      2; // The amount and type of asset to transfer.
+  cosmos.base.v1beta1.Coin amount = 2; // The amount and type of asset to transfer.
 }
 
 // ClaimComponent is designed for actions requiring a claim with proof.
@@ -42,8 +40,7 @@ message ClaimComponent {
 // SchnorrSignature is used for claims that require a Schnorr signature.
 message SchnorrSignature {
   bytes public_key = 1; // The public key associated with the signature.
-  bytes unique_session_id =
-      2; // A unique identifier for the session, enhancing security.
+  bytes unique_session_id = 2; // A unique identifier for the session, enhancing security.
   bytes signature = 3; // The digital signature for claim verification.
   string message = 4;  // An optional message that may accompany the signature.
 }
@@ -54,15 +51,13 @@ message PedersenCommitment {
   bytes random_factor = 2; // The random factor used to generate the commitment,
                            // enhancing privacy.
   bytes value = 3; // The actual value being committed, revealed during claim.
-  bytes blinding_factor =
-      4; // The blinding factor used alongside the value for claim verification.
+  bytes blinding_factor = 4; // The blinding factor used alongside the value for claim verification.
 }
 
 // GnarkZkSnark is for claims using zero-knowledge succinct non-interactive
 // arguments of knowledge.
 message GnarkZkSnark {
-  bytes verification_key =
-      1;                   // The public key for verifying the zk-SNARK proof.
+  bytes verification_key = 1;                   // The public key for verifying the zk-SNARK proof.
   bytes public_inputs = 2; // Public inputs required for the proof verification.
   bytes proof = 3; // The zk-SNARK proof demonstrating knowledge of a secret
                    // without revealing it.

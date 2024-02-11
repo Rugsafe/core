@@ -81,11 +81,14 @@ func CreateWillCmd() *cobra.Command {
 func parseComponentFromString(compArg string) (*types.ExecutionComponent, error) {
 	// Split the input to separate the type from the parameters
 	parts := strings.SplitN(compArg, ":", 2)
+	fmt.Println(parts)
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("invalid component format, expected '<type>:<params...>' but got: %s", compArg)
 	}
 
 	componentType, paramsStr := parts[0], parts[1]
+	fmt.Println(componentType)
+	fmt.Println(paramsStr)
 	component := &types.ExecutionComponent{}
 
 	switch componentType {
