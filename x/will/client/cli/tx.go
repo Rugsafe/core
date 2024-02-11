@@ -78,7 +78,6 @@ func CreateWillCmd() *cobra.Command {
 
 	return cmd
 }
-
 func parseComponentFromString(compArg string) (*types.ExecutionComponent, error) {
 	// Split the input to separate the type from the parameters
 	parts := strings.SplitN(compArg, ":", 2)
@@ -91,10 +90,10 @@ func parseComponentFromString(compArg string) (*types.ExecutionComponent, error)
 
 	switch componentType {
 	case "transfer":
-		// For 'transfer', expect 'to,amount'
+		// 'transfer' expects 'to,amount', but let's keep it flexible
 		params := strings.Split(paramsStr, ",")
-		if len(params) != 2 {
-			return nil, fmt.Errorf("transfer component expects 'to,amount', but got: %s", paramsStr)
+		if len(params) < 2 {
+			return nil, fmt.Errorf("transfer component expects at least 'to,amount', but got: %s", paramsStr)
 		}
 
 		to, amountStr := params[0], params[1]
@@ -111,8 +110,22 @@ func parseComponentFromString(compArg string) (*types.ExecutionComponent, error)
 			},
 		}
 
-	// Add additional cases for other component types
-	// Ensure to handle their parameters according to each type's expected format
+	// Example for a component type that might have a variable number of parameters
+	case "customType":
+		// 'customType' expects a variable number of parameters
+		params := strings.Split(paramsStr, ",")
+		// Process params based on your custom logic here
+		// For example, you might only need to check if at least one parameter is provided
+		if len(params) < 1 {
+			return nil, fmt.Errorf("customType component expects at least one parameter, but got: %s", paramsStr)
+		}
+
+		// Assuming a hypothetical structure for CustomTypeComponent that takes a slice of strings as params
+		// component.ComponentType = &types.ExecutionComponent_CustomType{
+		//     CustomType: &types.CustomTypeComponent{
+		//         Params: params,
+		//     },
+		// }
 
 	default:
 		return nil, fmt.Errorf("unsupported component type: %s", componentType)
