@@ -78,6 +78,7 @@ func CreateWillCmd() *cobra.Command {
 
 	return cmd
 }
+
 func parseComponentFromString(compArg string) (*types.ExecutionComponent, error) {
 	// Split the input to separate the type from the parameters
 	parts := strings.SplitN(compArg, ":", 2)
