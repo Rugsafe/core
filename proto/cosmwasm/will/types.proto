@@ -90,3 +90,6 @@ message Wills {
   // the set of wills to return
   repeated Will wills = 1 [ (gogoproto.customname) = "Wills" ];
 }
+
+// WillIds represents a list of will IDs.
+message WillIds { repeated string ids = 1; }

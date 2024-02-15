@@ -129,102 +129,106 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 
 	///////////// store at height
 	// Assuming you want to store the will's ID under a key derived from its height for some indexing purpose
+	// Handling storage for heightKey with WillIds message
 	heightKey := types.GetWillKey(strconv.Itoa(int(will.Height)))
-	existingWillsBz, existingWillsErr := store.Get(heightKey)
-
-	if existingWillsErr != nil {
-		return nil, errors.Wrap(existingWillsErr, "inside k.createWill existingWillsErr, KV store set threw an error")
-	}
-
-	var willsAtHeight []string
+	var willIdsAtHeight types.WillIds
+	existingWillsBz, _ := store.Get([]byte(heightKey)) // Simplified error handling
 	if existingWillsBz != nil {
-		// Deserialize existing wills if any
-		existingWills := string(existingWillsBz)
-		willsAtHeight = strings.Split(existingWills, ",")
+		k.cdc.MustUnmarshal(existingWillsBz, &willIdsAtHeight)
 	}
+	willIdsAtHeight.Ids = append(willIdsAtHeight.Ids, will.ID)
+	updatedHeightBz := k.cdc.MustMarshal(&willIdsAtHeight)
+	store.Set([]byte(heightKey), updatedHeightBz)
 
-	// Add the new will ID to the set of wills at this height
-	willsAtHeight = append(willsAtHeight, will.ID)
-
-	// Serialize the updated set of wills and store it
-	updatedWillsBz := []byte(strings.Join(willsAtHeight, ","))
-	store.Set(heightKey, updatedWillsBz)
-
-	/////////////// store for creator
+	// Handling storage for creator key, ensuring unique insertion
 	creatorKey := types.GetWillKey(msg.Creator)
-	existingWillsForCreatorBz, existingWillsForCreatorErr := store.Get(creatorKey)
-
-	if existingWillsForCreatorErr != nil {
-		return nil, errors.Wrap(existingWillsForCreatorErr, "inside k.createWill existingWillsForCreatorErr, KV store set threw an error")
-	}
-
-	var willsAtCreator []string
+	var willIdsAtCreator types.WillIds
+	existingWillsForCreatorBz, _ := store.Get([]byte(creatorKey)) // Simplified error handling
 	if existingWillsForCreatorBz != nil {
-		existingWillsForCreator := string(existingWillsBz)
-		willsAtCreator = strings.Split(existingWillsForCreator, ",")
+		k.cdc.MustUnmarshal(existingWillsForCreatorBz, &willIdsAtCreator)
 	}
-
-	// Add the new will ID to the set of wills at this height
-	willsAtHeight = append(willsAtCreator, will.ID)
+	if !contains(willIdsAtCreator.Ids, will.ID) {
+		willIdsAtCreator.Ids = append(willIdsAtCreator.Ids, will.ID)
+	}
+	updatedCreatorBz := k.cdc.MustMarshal(&willIdsAtCreator)
+	store.Set([]byte(creatorKey), updatedCreatorBz)
 
 	return &will, nil
 }
 
-// func (k Keeper) ListWillsByAddress(ctx context.Context, address string) ([]*types.Will, error) {
+// contains checks if a string is present in a slice of strings.
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
+}
+
+// func (k Keeper) ListWillsByAddress(ctx context.Context, address string) (*types.Wills, error) {
 // 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 // 	store := k.storeService.OpenKVStore(sdkCtx)
 
-// 	fmt.Println("listWillsByAddress: Starting to list wills for address", address)
+// 	// Assuming you're storing a 'Wills' object under a specific key related to the address
+// 	key := types.GetWillKey(address) // Ensure you have a method to generate a unique key for storing `Wills` by address
 
-// 	// Use address to generate prefix for will keys.
-// 	prefix := types.GetWillKey(address)
-// 	// Iterator with prefix and nil as end parameter to get all keys with the prefix.
-// 	iterator, _ := store.Iterator(prefix, nil)
-// 	defer iterator.Close()
+// 	bz, err := store.Get(key)
+// 	if err != nil {
+// 		fmt.Println("listWillsByAddress: Error fetching wills for address", err)
+// 		return nil, errors.Wrap(err, "failed to fetch wills for address")
+// 	}
 
-// 	var wills []*types.Will
-// 	// var wills *types.Wills
-// 	for ; iterator.Valid(); iterator.Next() {
-// 		fmt.Println("listWillsByAddress: Found will in store")
-// 		var will types.Will
-// 		fmt.Println(iterator.Value())
-// 		err := k.cdc.Unmarshal(iterator.Value(), &will)
-// 		if err != nil {
-// 			fmt.Println("listWillsByAddress: Error unmarshaling will", err)
-// 			return nil, errors.Wrap(err, "failed to unmarshal will")
-// 		}
-// 		wills = append(wills, &will)
+// 	if bz == nil {
+// 		// No wills found for this address
+// 		return &types.Wills{}, nil
+// 	}
+
+// 	var wills types.Wills
+// 	err = k.cdc.Unmarshal(bz, &wills)
+// 	if err != nil {
+// 		fmt.Println("listWillsByAddress: Error unmarshaling wills", err)
+// 		return nil, errors.Wrap(err, "failed to unmarshal wills")
 // 	}
 
 //		fmt.Println("listWillsByAddress: Completed listing wills")
-//		return wills, nil
+//		return &wills, nil // Assuming 'Wills' type has a field named 'Wills' which is a slice of *Will
 //	}
 func (k Keeper) ListWillsByAddress(ctx context.Context, address string) ([]*types.Will, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	store := k.storeService.OpenKVStore(sdkCtx)
 
-	// Assuming you're storing a 'Wills' object under a specific key related to the address
-	key := types.GetWillKey(address) // Ensure you have a method to generate a unique key for storing `Wills` by address
-
-	bz, err := store.Get(key)
+	// Use address to construct the key for fetching associated will IDs
+	addressKey := types.GetWillKey(address)
+	willIDsBz, err := store.Get([]byte(addressKey))
 	if err != nil {
-		fmt.Println("listWillsByAddress: Error fetching wills for address", err)
-		return nil, errors.Wrap(err, "failed to fetch wills for address")
+		return nil, errors.Wrap(err, "failed to fetch will IDs for address")
 	}
-	if bz == nil {
-		// No wills found for this address
+	if willIDsBz == nil {
+		// No wills associated with this address
 		return []*types.Will{}, nil
 	}
 
-	var wills types.Wills
-	err = k.cdc.Unmarshal(bz, &wills)
+	// Deserialize the will IDs
+	var willIds types.WillIds
+	err = k.cdc.Unmarshal(willIDsBz, &willIds)
 	if err != nil {
-		fmt.Println("listWillsByAddress: Error unmarshaling wills", err)
-		return nil, errors.Wrap(err, "failed to unmarshal wills")
+		return nil, errors.Wrap(err, "failed to unmarshal will IDs")
 	}
 
-	fmt.Println("listWillsByAddress: Completed listing wills")
-	return wills.Wills, nil // Assuming 'Wills' type has a field named 'Wills' which is a slice of *Will
+	// Fetch and collect the wills by their IDs
+	var wills []*types.Will
+	for _, willID := range willIds.Ids {
+		will, err := k.GetWillByID(ctx, willID)
+		if err != nil {
+			// Log the error and continue to the next ID if a specific will cannot be fetched
+			fmt.Printf("Error fetching will by ID %s: %v\n", willID, err)
+			continue
+		}
+		wills = append(wills, will)
+	}
+
+	return wills, nil
 }
 
 func (k Keeper) SetWillExpiryIndex(ctx sdk.Context, expiryHeight int64, willID string) {

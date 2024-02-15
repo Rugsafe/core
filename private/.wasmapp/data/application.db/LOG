@@ -1,28 +1,8 @@
 =============== Feb 15, 2024 (EST) ===============
-01:56:06.932214 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-01:56:06.990074 db@open opening
-01:56:06.990455 version@stat F·[] S·0B[] Sc·[]
-01:56:07.010226 db@janitor F·2 G·0
-01:56:07.010247 db@open done T·20.153791ms
-02:36:44.836514 memdb@flush N·49974 S·3MiB
-02:36:44.920180 memdb@flush created L0@3 N·49974 S·1MiB "s/1,v348":"s/latest,v349"
-02:36:44.920213 version@stat F·[1] S·1MiB[1MiB] Sc·[0.25]
-02:36:44.938567 memdb@flush committed F·1 T·101.213708ms
-02:36:44.969769 journal@remove removed @1
-03:16:45.651768 memdb@flush N·49762 S·3MiB
-03:16:45.757841 memdb@flush created L0@5 N·49762 S·1MiB "s/476,v50024":"s/latest,v50025"
-03:16:45.757879 version@stat F·[2] S·3MiB[3MiB] Sc·[0.50]
-03:16:45.776185 memdb@flush committed F·1 T·124.276125ms
-03:16:45.804848 journal@remove removed @2
-03:19:46.964206 table@compaction L0·2 -> L1·0 S·3MiB Q·103454
-03:19:47.135369 table@build created L1@6 N·48097 S·2MiB "s/1,v348":"s/k..\x00\x00\x06,v14884"
-03:19:47.171696 table@build created L1@7 N·15798 S·757KiB "s/k..\x00\x00\a,v14880":"s/latest,v99709"
-03:19:47.171824 version@stat F·[0 2] S·2MiB[0B 2MiB] Sc·[0.00 0.03]
-03:19:47.189191 table@compaction committed F~ S-452KiB Ke·0 D·35841 T·224.486959ms
-03:19:47.191366 table@remove removed @5
-03:19:47.193490 table@remove removed @3
-12:30:06.856288 memdb@flush N·49625 S·3MiB
-12:30:07.098640 memdb@flush created L0@9 N·49625 S·1MiB "s/1000,v105807":"s/latest,v99816"
-12:30:07.098689 version@stat F·[1 2] S·4MiB[1MiB 2MiB] Sc·[0.25 0.03]
-12:30:07.123029 memdb@flush committed F·1 T·263.994042ms
-12:30:07.659840 journal@remove removed @4
+13:01:41.128111 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+13:01:41.187241 db@open opening
+13:01:41.187518 version@stat F·[] S·0B[] Sc·[]
+13:01:41.207311 db@janitor F·2 G·0
+13:01:41.207337 db@open done T·20.077416ms
+13:04:37.732009 db@close closing
+13:04:37.732177 db@close done T·167.667µs
