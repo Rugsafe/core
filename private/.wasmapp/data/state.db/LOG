@@ -1,8 +1,11 @@
-=============== Feb 11, 2024 (EST) ===============
-17:54:19.572584 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-17:54:19.627911 db@open opening
-17:54:19.628180 version@stat F·[] S·0B[] Sc·[]
-17:54:19.661970 db@janitor F·2 G·0
-17:54:19.661997 db@open done T·34.067333ms
-17:55:52.616854 db@close closing
-17:55:52.616973 db@close done T·118.291µs
+=============== Feb 15, 2024 (EST) ===============
+01:56:07.193639 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+01:56:07.246000 db@open opening
+01:56:07.246306 version@stat F·[] S·0B[] Sc·[]
+01:56:07.251012 db@janitor F·2 G·0
+01:56:07.251140 db@open done T·5.099334ms
+03:17:22.902868 memdb@flush N·4757 S·3MiB
+03:17:23.061934 memdb@flush created L0@3 N·4757 S·913KiB "abc..y:1,v7":"val..:99,v489"
+03:17:23.062074 version@stat F·[1] S·913KiB[913KiB] Sc·[0.25]
+03:17:23.080072 memdb@flush committed F·1 T·176.784917ms
+03:17:23.115905 journal@remove removed @1

@@ -67,30 +67,66 @@ func GetWillCmd() *cobra.Command {
 	return cmd
 }
 
+// func ListWillsCmd() *cobra.Command {
+// 	cmd := &cobra.Command{
+// 		Use:   "list",
+// 		Short: "Fetch a list of will by your address",
+// 		Args:  cobra.ExactArgs(0),
+// 		RunE: func(cmd *cobra.Command, args []string) error {
+// 			clientCtx, err := client.GetClientQueryContext(cmd)
+// 			if err != nil {
+// 				fmt.Println("INSIDE LIST WILL QUERY.GO, ERROR 1")
+// 				return err
+// 			}
+
+// 			address := clientCtx.GetFromAddress()
+
+// 			fmt.Printf("ListWillsCmd address...: %s --- %s", address, clientCtx.FromAddress)
+// 			queryClient := types.NewQueryClient(clientCtx)
+
+// 			res, err := queryClient.ListWills(
+// 				context.Background(),
+// 				&types.QueryListWillsRequest{
+// 					Address: address.String(),
+// 				},
+// 			)
+// 			if err != nil {
+// 				fmt.Println("INSIDE LIST WILL QUERY.GO, ERROR 2")
+// 				return err
+// 			}
+
+// 			return clientCtx.PrintProto(res)
+// 		},
+// 	}
+// 	flags.AddQueryFlagsToCmd(cmd)
+// 	return cmd
+// }
+
 func ListWillsCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "Fetch a list of will by your address",
-		Args:  cobra.ExactArgs(0),
+		Use:   "list [address]",
+		Short: "Fetch a list of will by the specified address",
+		Args:  cobra.ExactArgs(1), // Now requires exactly one argument: the address
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
-				fmt.Println("INSIDE LIST WILL QUERY.GO, ERROR 1")
+				fmt.Println("Error obtaining client context:", err)
 				return err
 			}
 
-			address := clientCtx.GetFromAddress()
-			fmt.Printf("ListWillsCmd address...: %s", address)
+			address := args[0] // Use the first argument as the address
+
+			fmt.Printf("Fetching wills for address: %s\n", address)
 			queryClient := types.NewQueryClient(clientCtx)
 
 			res, err := queryClient.ListWills(
 				context.Background(),
 				&types.QueryListWillsRequest{
-					Address: address.String(),
+					Address: address,
 				},
 			)
 			if err != nil {
-				fmt.Println("INSIDE LIST WILL QUERY.GO, ERROR 2")
+				fmt.Println("Error querying wills:", err)
 				return err
 			}
 
