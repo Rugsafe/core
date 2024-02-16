@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	corestoretypes "cosmossdk.io/core/store"
@@ -99,6 +98,7 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 	// Construct the will object
 	will := types.Will{
 		ID:          idString,
+		Creator:     msg.Creator,
 		Name:        msg.Name,
 		Beneficiary: msg.Beneficiary,
 		Height:      msg.Height,
@@ -254,6 +254,57 @@ func (k Keeper) GetWillsByExpiry(ctx sdk.Context, expiryHeight int64) ([]*types.
 	return wills, nil
 }
 
+// func (k Keeper) BeginBlocker(ctx sdk.Context) error {
+// 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
+
+// 	// Get the current block height
+// 	blockHeight := ctx.BlockHeight()
+// 	fmt.Printf("Processing wills at block height: %d\n", blockHeight)
+
+// 	// Access the store
+// 	store := k.storeService.OpenKVStore(ctx)
+
+// 	// Construct the height key to fetch will IDs associated with the current block height
+// 	heightKey := types.GetWillKey(strconv.Itoa(int(blockHeight)))
+// 	willIDsBz, err := store.Get(heightKey)
+
+// 	// If there is an error fetching the will IDs or if there are no wills for this block height, return early
+// 	if err != nil || willIDsBz == nil {
+// 		fmt.Println("No wills to process for this block height or unable to fetch will IDs.")
+// 		return nil // You might want to handle the error more gracefully depending on your application's needs
+// 	}
+
+// 	// Deserialize the list of will IDs
+// 	willIDs := strings.Split(string(willIDsBz), ",")
+
+// 	// Iterate over each will ID
+// 	for _, willID := range willIDs {
+// 		// Fetch the will object using its ID
+// 		willBz, willFetchErr := store.Get(types.GetWillKey(willID))
+// 		if willFetchErr != nil {
+// 			fmt.Printf("Error fetching will with ID %s: %v\n", willID, willFetchErr)
+// 			continue // Proceed to the next will if there's an issue fetching this one
+// 		}
+
+// 		var will types.Will
+// 		unmarshalErr := k.cdc.Unmarshal(willBz, &will)
+// 		if unmarshalErr != nil {
+// 			fmt.Printf("Error unmarshaling will with ID %s: %v\n", willID, unmarshalErr)
+// 			continue // Continue to the next will if unmarshaling fails
+// 		}
+
+// 		// Perform the desired operations on the will object here
+// 		// For example, checking conditions, updating state, etc.
+// 		fmt.Printf("Successfully fetched and unmarshaled will with ID %s for further processing.\n", will.ID)
+
+// 		// Example operation: Print will details
+// 		// Adjust this section based on what you actually need to do with each will
+// 		fmt.Printf("Will ID: %s, Name: %s, Beneficiary: %s, Height: %d\n", will.ID, will.Name, will.Beneficiary, will.Height)
+// 	}
+
+//		return nil
+//	}
+
 func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
@@ -266,39 +317,52 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 
 	// Construct the height key to fetch will IDs associated with the current block height
 	heightKey := types.GetWillKey(strconv.Itoa(int(blockHeight)))
-	willIDsBz, err := store.Get(heightKey)
+	willIDsBz, err := store.Get([]byte(heightKey))
 
 	// If there is an error fetching the will IDs or if there are no wills for this block height, return early
 	if err != nil || willIDsBz == nil {
 		fmt.Println("No wills to process for this block height or unable to fetch will IDs.")
-		return nil // You might want to handle the error more gracefully depending on your application's needs
+		return nil
 	}
 
 	// Deserialize the list of will IDs
-	willIDs := strings.Split(string(willIDsBz), ",")
+	var willIds types.WillIds
+	err = k.cdc.Unmarshal(willIDsBz, &willIds)
+	if err != nil {
+		fmt.Printf("Error unmarshaling will IDs: %v\n", err)
+		return nil
+	}
 
 	// Iterate over each will ID
-	for _, willID := range willIDs {
+	for _, willID := range willIds.Ids {
 		// Fetch the will object using its ID
-		willBz, willFetchErr := store.Get(types.GetWillKey(willID))
-		if willFetchErr != nil {
-			fmt.Printf("Error fetching will with ID %s: %v\n", willID, willFetchErr)
+		will, err := k.GetWillByID(ctx, willID)
+		if err != nil {
+			fmt.Printf("Error fetching will with ID %s: %v\n", willID, err)
 			continue // Proceed to the next will if there's an issue fetching this one
 		}
 
-		var will types.Will
-		unmarshalErr := k.cdc.Unmarshal(willBz, &will)
-		if unmarshalErr != nil {
-			fmt.Printf("Error unmarshaling will with ID %s: %v\n", willID, unmarshalErr)
-			continue // Continue to the next will if unmarshaling fails
+		// Perform the desired operations on the will object here
+		// This is where you would implement the logic specific to your application's requirements
+		fmt.Printf("Successfully fetched will with ID %s for further processing.\n", will.ID)
+
+		for component_index, component := range will.Components {
+			fmt.Printf("Iterating over compnents for will ID %s for further processing.\n", will.ID)
+			fmt.Println(component_index)
+			fmt.Println(component)
+			switch c := component.ComponentType.(type) {
+			case *types.ExecutionComponent_Transfer:
+				fmt.Printf("Transfer component found, to: %s, amount: %s\n", c.Transfer.To, c.Transfer.Amount.String())
+			case *types.ExecutionComponent_Claim:
+				fmt.Printf("Claim component found, evidence: %s\n", c.Claim.Evidence)
+				// case *types.ExecutionComponent_ContractCall:
+
+			default:
+				fmt.Println("Unknown component type found")
+			}
 		}
 
-		// Perform the desired operations on the will object here
-		// For example, checking conditions, updating state, etc.
-		fmt.Printf("Successfully fetched and unmarshaled will with ID %s for further processing.\n", will.ID)
-
 		// Example operation: Print will details
-		// Adjust this section based on what you actually need to do with each will
 		fmt.Printf("Will ID: %s, Name: %s, Beneficiary: %s, Height: %d\n", will.ID, will.Name, will.Beneficiary, will.Height)
 	}
 

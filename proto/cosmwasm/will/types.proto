@@ -73,14 +73,15 @@ message Will {
   option (gogoproto.equal) = true;
   string id = 1
       [ (gogoproto.customname) = "ID" ]; // Unique identifier for the will.
-  string name = 2
+  string creator = 2 [ (gogoproto.customname) = "Creator" ]; // will creator
+  string name = 3
       [ (gogoproto.customname) = "Name" ]; // User-generated name for the will.
-  string beneficiary = 3 [
+  string beneficiary = 4 [
     (gogoproto.customname) = "Beneficiary"
   ]; // The designated beneficiary or receiver of the will's assets.
-  int64 height = 4 [ (gogoproto.customname) =
+  int64 height = 5 [ (gogoproto.customname) =
                          "Height" ]; // The designated block to trigger the will
-  repeated ExecutionComponent components = 5 [
+  repeated ExecutionComponent components = 6 [
     (gogoproto.customname) = "Components"
   ]; // The list of execution components that make up the will.
 }

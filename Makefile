@@ -229,6 +229,6 @@ will_cx:
 will_g:
 	./build/wasmd query will get "zmxjiudojne844jdsbndsbdyuikdbaazxqetrsdshudjsdhuekdsxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxnxnmcnmcndhdiohsiodsdhsdoshdsdjksdhjksdsdsdhjsdjsdhjksdjshjdhjshdjksjdhsjdhks"
 will_l:
-	./build/wasmd query will list w3ll15yn69tp4yv5cuw6sx0u8ls4fwmhz8vwtza05rg
+	./build/wasmd query will list w3ll1tq2mhnaulx68uc4de8g6uks6udxwfnv02wtlvp
 run:
 	bash run.sh 
