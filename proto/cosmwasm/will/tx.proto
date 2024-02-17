@@ -25,6 +25,9 @@ service Msg {
 
   // checkin into a will
   rpc CheckIn(MsgCheckInRequest) returns (MsgCheckInResponse);
+
+  // make a claim
+  rpc Claim(MsgClaimRequest) returns (MsgClaimResponse);
 }
 
 // MsgUpdateParams is the Msg/UpdateParams request type.
@@ -67,7 +70,8 @@ message MsgCreateWillResponse {
   int64 height = 5;
 }
 
-// message for checking in
+// checkins
+//  message for checking in
 message MsgCheckInRequest {
   option (cosmos.msg.v1.signer) = "creator";
   option (amino.name) = "wasmd/x/will/MsgCheckInRequest";
@@ -80,4 +84,56 @@ message MsgCheckInRequest {
 message MsgCheckInResponse {
   bool status = 1;
   int64 height = 2;
+}
+
+// claims
+message MsgClaimRequest {
+  option (cosmos.msg.v1.signer) = "claimer";
+  option (amino.name) = "wasmd/x/will/MsgClaimRequest";
+
+  // ID of the will being claimed
+  string will_id = 1;
+
+  // Claimer's address
+  string claimer = 2;
+
+  // OneOf claim data that contains the specific claim information based on the
+  // will's execution component
+  oneof claim_type {
+    SchnorrClaim schnorr_claim = 3;
+    PedersenClaim pedersen_claim = 4;
+    GnarkClaim gnark_claim = 5;
+  }
+}
+
+// schnorr
+message SchnorrClaim {
+  // Specific fields for Schnorr claims, e.g., signature, message, etc.
+  bytes signature = 1;
+  string message = 2; // Optional message that was signed, if applicable
+}
+
+// pedersen
+message PedersenClaim {
+  // Specific fields for Pedersen claims, e.g., commitment, blinding factor,
+  // etc.
+  bytes commitment = 1;
+  bytes blinding_factor = 2;
+  bytes value = 3; // The actual value being revealed in the claim
+}
+
+// gnark
+message GnarkClaim {
+  // Specific fields for Gnark zk-SNARK claims, e.g., proof, public inputs, etc.
+  bytes proof = 1;
+  bytes public_inputs = 2; // Public inputs required for the proof verification
+}
+
+// MsgClaimResponse
+message MsgClaimResponse {
+  // Indicates whether the claim was successful or not
+  bool success = 1;
+
+  // Optional message providing more details on the claim result
+  string message = 2;
 }

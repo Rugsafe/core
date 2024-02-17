@@ -23,14 +23,15 @@ message ExecutionComponent {
 
 // TransferComponent is used for direct asset transfers.
 message TransferComponent {
-  string to = 1; // Destination address for the asset transfer.
+  string status = 1;
+  string to = 2; // Destination address for the asset transfer.
   cosmos.base.v1beta1.Coin amount =
-      2; // The amount and type of asset to transfer.
+      3; // The amount and type of asset to transfer.
 }
 
 // ClaimComponent is designed for actions requiring a claim with proof.
 message ClaimComponent {
-  string evidence = 1; // Evidence required to support the claim.
+  string status = 1; // Evidence required to support the claim.
   // scheme_type allows for different cryptographic schemes for claims.
   oneof scheme_type {
     PedersenCommitment pedersen = 2; // Represents a Pedersen commitment scheme.
@@ -81,7 +82,10 @@ message Will {
   ]; // The designated beneficiary or receiver of the will's assets.
   int64 height = 5 [ (gogoproto.customname) =
                          "Height" ]; // The designated block to trigger the will
-  repeated ExecutionComponent components = 6 [
+  string status = 6
+      [ (gogoproto.customname) =
+            "Status" ]; // The designated block to trigger the will
+  repeated ExecutionComponent components = 7 [
     (gogoproto.customname) = "Components"
   ]; // The list of execution components that make up the will.
 }

@@ -28,6 +28,7 @@ func GetTxCmd() *cobra.Command {
 	txCmd.AddCommand(
 		CreateWillCmd(),
 		CheckInCmd(),
+		ClaimCmd(),
 	)
 	return txCmd
 }
@@ -109,6 +110,7 @@ func parseComponentFromString(compArg string) (*types.ExecutionComponent, error)
 
 		component.ComponentType = &types.ExecutionComponent_Transfer{
 			Transfer: &types.TransferComponent{
+				Status: "inactive",
 				To:     to,
 				Amount: &amountCoin,
 			},
@@ -176,6 +178,96 @@ func CheckInCmd() *cobra.Command {
 	}
 
 	// addInstantiatePermissionFlags(cmd)
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func ClaimCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "claim [will-id] [claim-type] [claim-data]",
+		Short: "Submit a claim for a will",
+		Long: `Submit a claim for a will with specific data based on the claim type.
+Example:
+./build/wasmd tx will claim "will-id" "schnorr" "signature:data" --from alice --chain-id w3ll-chain -y
+./build/wasmd tx will claim "will-id" "pedersen" "commitment:blinding_factor:value" --from alice --chain-id w3ll-chain -y
+./build/wasmd tx will claim "will-id" "gnark" "proof:public_inputs" --from alice --chain-id w3ll-chain -y`,
+		Args: cobra.ExactArgs(3), // Ensuring exactly 3 arguments
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			willID := args[0]
+			claimType := args[1]
+			claimData := args[2]
+
+			// Construct the claim message based on the claim type
+			var msg *types.MsgClaimRequest
+			switch claimType {
+			case "schnorr":
+				// Parse the claim data for SchnorrClaim
+				parts := strings.Split(claimData, ":")
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid data format for Schnorr claim, expected 'signature:data'")
+				}
+				msg = &types.MsgClaimRequest{
+					WillId:  willID,
+					Claimer: clientCtx.GetFromAddress().String(),
+					ClaimType: &types.MsgClaimRequest_SchnorrClaim{
+						SchnorrClaim: &types.SchnorrClaim{
+							Signature: []byte(parts[0]),
+							Message:   parts[1],
+						},
+					},
+				}
+
+			case "pedersen":
+				// Parse the claim data for PedersenClaim
+				parts := strings.Split(claimData, ":")
+				if len(parts) != 3 {
+					return fmt.Errorf("invalid data format for Pedersen claim, expected 'commitment:blinding_factor:value'")
+				}
+				// Additional parsing and validation of parts[0], parts[1], and parts[2] needed here
+				msg = &types.MsgClaimRequest{
+					WillId:  willID,
+					Claimer: clientCtx.GetFromAddress().String(),
+					ClaimType: &types.MsgClaimRequest_PedersenClaim{
+						PedersenClaim: &types.PedersenClaim{
+							Commitment:     []byte(parts[0]),
+							BlindingFactor: []byte(parts[1]),
+							Value:          []byte(parts[2]),
+						},
+					},
+				}
+
+			case "gnark":
+				// Parse the claim data for GnarkClaim
+				parts := strings.Split(claimData, ":")
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid data format for Gnark claim, expected 'proof:public_inputs'")
+				}
+				// Additional parsing and validation of parts[0] and parts[1] needed here
+				msg = &types.MsgClaimRequest{
+					WillId:  willID,
+					Claimer: clientCtx.GetFromAddress().String(),
+					ClaimType: &types.MsgClaimRequest_GnarkClaim{
+						GnarkClaim: &types.GnarkClaim{
+							Proof:        []byte(parts[0]),
+							PublicInputs: []byte(parts[1]),
+						},
+					},
+				}
+
+			default:
+				return fmt.Errorf("unsupported claim type: %s", claimType)
+			}
+
+			// Submit the transaction
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

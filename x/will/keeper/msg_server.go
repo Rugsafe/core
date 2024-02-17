@@ -44,6 +44,14 @@ func (m msgServer) CheckIn(
 	return &types.MsgCheckInResponse{}, nil
 }
 
+func (m msgServer) Claim(ctx context.Context, msg *types.MsgClaimRequest) (*types.MsgClaimResponse, error) {
+	m.keeper.Claim(ctx, msg)
+	return &types.MsgClaimResponse{
+		Success: true,
+		Message: "Claim processed successfully",
+	}, nil
+}
+
 // UpdateParams updates the module parameters
 func (m msgServer) UpdateParams(ctx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
 	return &types.MsgUpdateParamsResponse{}, nil

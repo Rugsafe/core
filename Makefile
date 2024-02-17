@@ -208,6 +208,8 @@ proto-check-breaking:
 ################################
 _env_:
 	export PATH=$PATH:$(go env GOPATH)/bin
+_clean_:
+	go clean -modcache
 save:
 	git add * -v; git commit -am "autosave"; git push
 alice_test: alice_d alice_c
@@ -227,8 +229,8 @@ will_cx:
 		i=$$i make will_c; \
 	done
 will_g:
-	./build/wasmd query will get "zmxjiudojne844jdsbndsbdyuikdbaazxqetrsdshudjsdhuekdsxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxnxnmcnmcndhdiohsiodsdhsdoshdsdjksdhjksdsdsdhjsdjsdhjksdjshjdhjshdjksjdhsjdhks"
+	./build/wasmd query will get "77336c6c3172387267746a6b68793773373073737361796e34357a6b636c6d7a376366366d686e3064386d2d746573742077696c6c202d62656e6566696369617279"
 will_l:
-	./build/wasmd query will list w3ll1tq2mhnaulx68uc4de8g6uks6udxwfnv02wtlvp
+	./build/wasmd query will list w3ll1r8rgtjkhy7s70sssayn45zkclmz7cf6mhn0d8m
 run:
 	bash run.sh 

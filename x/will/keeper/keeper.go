@@ -78,11 +78,15 @@ func (k Keeper) GetWillByID(ctx context.Context, id string) (*types.Will, error)
 	return &will, nil
 }
 
+func createWillId(creator string, name string, beneficiary string) string {
+	return fmt.Sprintf("%s-%s-%s", creator, name, beneficiary)
+}
+
 func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest) (*types.Will, error) {
 	store := k.storeService.OpenKVStore(ctx)
 
 	// Concatenate values to generate a unique hash
-	concatValues := fmt.Sprintf("%s-%s-%s", msg.Creator, msg.Name, msg.Beneficiary)
+	concatValues := createWillId(msg.Creator, msg.Name, msg.Beneficiary)
 	idBytes := []byte(concatValues)
 
 	// Generate a truncated hash of the concatenated values
@@ -102,6 +106,7 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 		Name:        msg.Name,
 		Beneficiary: msg.Beneficiary,
 		Height:      msg.Height,
+		Status:      "live",
 		Components:  msg.Components,
 	}
 
@@ -166,34 +171,6 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
-// func (k Keeper) ListWillsByAddress(ctx context.Context, address string) (*types.Wills, error) {
-// 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-// 	store := k.storeService.OpenKVStore(sdkCtx)
-
-// 	// Assuming you're storing a 'Wills' object under a specific key related to the address
-// 	key := types.GetWillKey(address) // Ensure you have a method to generate a unique key for storing `Wills` by address
-
-// 	bz, err := store.Get(key)
-// 	if err != nil {
-// 		fmt.Println("listWillsByAddress: Error fetching wills for address", err)
-// 		return nil, errors.Wrap(err, "failed to fetch wills for address")
-// 	}
-
-// 	if bz == nil {
-// 		// No wills found for this address
-// 		return &types.Wills{}, nil
-// 	}
-
-// 	var wills types.Wills
-// 	err = k.cdc.Unmarshal(bz, &wills)
-// 	if err != nil {
-// 		fmt.Println("listWillsByAddress: Error unmarshaling wills", err)
-// 		return nil, errors.Wrap(err, "failed to unmarshal wills")
-// 	}
-
-//		fmt.Println("listWillsByAddress: Completed listing wills")
-//		return &wills, nil // Assuming 'Wills' type has a field named 'Wills' which is a slice of *Will
-//	}
 func (k Keeper) ListWillsByAddress(ctx context.Context, address string) ([]*types.Will, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	store := k.storeService.OpenKVStore(sdkCtx)
@@ -254,56 +231,9 @@ func (k Keeper) GetWillsByExpiry(ctx sdk.Context, expiryHeight int64) ([]*types.
 	return wills, nil
 }
 
-// func (k Keeper) BeginBlocker(ctx sdk.Context) error {
-// 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
-
-// 	// Get the current block height
-// 	blockHeight := ctx.BlockHeight()
-// 	fmt.Printf("Processing wills at block height: %d\n", blockHeight)
-
-// 	// Access the store
-// 	store := k.storeService.OpenKVStore(ctx)
-
-// 	// Construct the height key to fetch will IDs associated with the current block height
-// 	heightKey := types.GetWillKey(strconv.Itoa(int(blockHeight)))
-// 	willIDsBz, err := store.Get(heightKey)
-
-// 	// If there is an error fetching the will IDs or if there are no wills for this block height, return early
-// 	if err != nil || willIDsBz == nil {
-// 		fmt.Println("No wills to process for this block height or unable to fetch will IDs.")
-// 		return nil // You might want to handle the error more gracefully depending on your application's needs
-// 	}
-
-// 	// Deserialize the list of will IDs
-// 	willIDs := strings.Split(string(willIDsBz), ",")
-
-// 	// Iterate over each will ID
-// 	for _, willID := range willIDs {
-// 		// Fetch the will object using its ID
-// 		willBz, willFetchErr := store.Get(types.GetWillKey(willID))
-// 		if willFetchErr != nil {
-// 			fmt.Printf("Error fetching will with ID %s: %v\n", willID, willFetchErr)
-// 			continue // Proceed to the next will if there's an issue fetching this one
-// 		}
-
-// 		var will types.Will
-// 		unmarshalErr := k.cdc.Unmarshal(willBz, &will)
-// 		if unmarshalErr != nil {
-// 			fmt.Printf("Error unmarshaling will with ID %s: %v\n", willID, unmarshalErr)
-// 			continue // Continue to the next will if unmarshaling fails
-// 		}
-
-// 		// Perform the desired operations on the will object here
-// 		// For example, checking conditions, updating state, etc.
-// 		fmt.Printf("Successfully fetched and unmarshaled will with ID %s for further processing.\n", will.ID)
-
-// 		// Example operation: Print will details
-// 		// Adjust this section based on what you actually need to do with each will
-// 		fmt.Printf("Will ID: %s, Name: %s, Beneficiary: %s, Height: %d\n", will.ID, will.Name, will.Beneficiary, will.Height)
-// 	}
-
-//		return nil
-//	}
+func (k Keeper) Claim(ctx sdk.Context, msg *types.MsgClaimRequest) {
+	// claim specific component
+}
 
 func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
@@ -354,7 +284,8 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 			case *types.ExecutionComponent_Transfer:
 				fmt.Printf("Transfer component found, to: %s, amount: %s\n", c.Transfer.To, c.Transfer.Amount.String())
 			case *types.ExecutionComponent_Claim:
-				fmt.Printf("Claim component found, evidence: %s\n", c.Claim.Evidence)
+				fmt.Printf("Claim component found, evidence")
+				// fmt.Printf("Claim component found, evidence: %s\n", c.Claim.Evidence)
 				// case *types.ExecutionComponent_ContractCall:
 
 			default:
@@ -362,8 +293,25 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 			}
 		}
 
-		// Example operation: Print will details
 		fmt.Printf("Will ID: %s, Name: %s, Beneficiary: %s, Height: %d\n", will.ID, will.Name, will.Beneficiary, will.Height)
+
+		// update will
+		will.Status = "expired"
+		// Store the marshaled will in the module's store
+		// storeErr := store.Set(key, willBz)
+		concatValues := createWillId(will.Creator, will.Name, will.Beneficiary)
+		idBytes := []byte(concatValues)
+		idString := hex.EncodeToString(idBytes)
+		key := types.GetWillKey(idString)
+		fmt.Println(fmt.Printf("BEGIN BLOCKER WILL EXECUTED: %s", idString))
+
+		willBz := k.cdc.MustMarshal(will)
+		storeErr := store.Set([]byte(key), willBz)
+
+		if storeErr != nil {
+			return errors.Wrapf(storeErr, "inside k.beginBlocker storeErr, KV store set threw an error after updating will: %s", will.ID)
+		}
+
 	}
 
 	return nil

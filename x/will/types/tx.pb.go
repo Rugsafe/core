@@ -305,7 +305,9 @@ func (m *MsgCreateWillResponse) GetHeight() int64 {
 	return 0
 }
 
-// message for checking in
+// checkins
+//
+//	message for checking in
 type MsgCheckInRequest struct {
 	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
 	Id      string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
@@ -429,6 +431,377 @@ func (m *MsgCheckInResponse) GetHeight() int64 {
 	return 0
 }
 
+// claims
+type MsgClaimRequest struct {
+	// ID of the will being claimed
+	WillId string `protobuf:"bytes,1,opt,name=will_id,json=willId,proto3" json:"will_id,omitempty"`
+	// Claimer's address
+	Claimer string `protobuf:"bytes,2,opt,name=claimer,proto3" json:"claimer,omitempty"`
+	// OneOf claim data that contains the specific claim information based on the
+	// will's execution component
+	//
+	// Types that are valid to be assigned to ClaimType:
+	//	*MsgClaimRequest_SchnorrClaim
+	//	*MsgClaimRequest_PedersenClaim
+	//	*MsgClaimRequest_GnarkClaim
+	ClaimType isMsgClaimRequest_ClaimType `protobuf_oneof:"claim_type"`
+}
+
+func (m *MsgClaimRequest) Reset()         { *m = MsgClaimRequest{} }
+func (m *MsgClaimRequest) String() string { return proto.CompactTextString(m) }
+func (*MsgClaimRequest) ProtoMessage()    {}
+func (*MsgClaimRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_22e268a87ad78580, []int{6}
+}
+
+func (m *MsgClaimRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *MsgClaimRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgClaimRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *MsgClaimRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgClaimRequest.Merge(m, src)
+}
+
+func (m *MsgClaimRequest) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *MsgClaimRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgClaimRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgClaimRequest proto.InternalMessageInfo
+
+type isMsgClaimRequest_ClaimType interface {
+	isMsgClaimRequest_ClaimType()
+	MarshalTo([]byte) (int, error)
+	Size() int
+}
+
+type MsgClaimRequest_SchnorrClaim struct {
+	SchnorrClaim *SchnorrClaim `protobuf:"bytes,3,opt,name=schnorr_claim,json=schnorrClaim,proto3,oneof" json:"schnorr_claim,omitempty"`
+}
+type MsgClaimRequest_PedersenClaim struct {
+	PedersenClaim *PedersenClaim `protobuf:"bytes,4,opt,name=pedersen_claim,json=pedersenClaim,proto3,oneof" json:"pedersen_claim,omitempty"`
+}
+type MsgClaimRequest_GnarkClaim struct {
+	GnarkClaim *GnarkClaim `protobuf:"bytes,5,opt,name=gnark_claim,json=gnarkClaim,proto3,oneof" json:"gnark_claim,omitempty"`
+}
+
+func (*MsgClaimRequest_SchnorrClaim) isMsgClaimRequest_ClaimType()  {}
+func (*MsgClaimRequest_PedersenClaim) isMsgClaimRequest_ClaimType() {}
+func (*MsgClaimRequest_GnarkClaim) isMsgClaimRequest_ClaimType()    {}
+
+func (m *MsgClaimRequest) GetClaimType() isMsgClaimRequest_ClaimType {
+	if m != nil {
+		return m.ClaimType
+	}
+	return nil
+}
+
+func (m *MsgClaimRequest) GetWillId() string {
+	if m != nil {
+		return m.WillId
+	}
+	return ""
+}
+
+func (m *MsgClaimRequest) GetClaimer() string {
+	if m != nil {
+		return m.Claimer
+	}
+	return ""
+}
+
+func (m *MsgClaimRequest) GetSchnorrClaim() *SchnorrClaim {
+	if x, ok := m.GetClaimType().(*MsgClaimRequest_SchnorrClaim); ok {
+		return x.SchnorrClaim
+	}
+	return nil
+}
+
+func (m *MsgClaimRequest) GetPedersenClaim() *PedersenClaim {
+	if x, ok := m.GetClaimType().(*MsgClaimRequest_PedersenClaim); ok {
+		return x.PedersenClaim
+	}
+	return nil
+}
+
+func (m *MsgClaimRequest) GetGnarkClaim() *GnarkClaim {
+	if x, ok := m.GetClaimType().(*MsgClaimRequest_GnarkClaim); ok {
+		return x.GnarkClaim
+	}
+	return nil
+}
+
+// XXX_OneofWrappers is for the internal use of the proto package.
+func (*MsgClaimRequest) XXX_OneofWrappers() []interface{} {
+	return []interface{}{
+		(*MsgClaimRequest_SchnorrClaim)(nil),
+		(*MsgClaimRequest_PedersenClaim)(nil),
+		(*MsgClaimRequest_GnarkClaim)(nil),
+	}
+}
+
+// schnorr
+type SchnorrClaim struct {
+	// Specific fields for Schnorr claims, e.g., signature, message, etc.
+	Signature []byte `protobuf:"bytes,1,opt,name=signature,proto3" json:"signature,omitempty"`
+	Message   string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+}
+
+func (m *SchnorrClaim) Reset()         { *m = SchnorrClaim{} }
+func (m *SchnorrClaim) String() string { return proto.CompactTextString(m) }
+func (*SchnorrClaim) ProtoMessage()    {}
+func (*SchnorrClaim) Descriptor() ([]byte, []int) {
+	return fileDescriptor_22e268a87ad78580, []int{7}
+}
+
+func (m *SchnorrClaim) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *SchnorrClaim) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_SchnorrClaim.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *SchnorrClaim) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SchnorrClaim.Merge(m, src)
+}
+
+func (m *SchnorrClaim) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *SchnorrClaim) XXX_DiscardUnknown() {
+	xxx_messageInfo_SchnorrClaim.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SchnorrClaim proto.InternalMessageInfo
+
+func (m *SchnorrClaim) GetSignature() []byte {
+	if m != nil {
+		return m.Signature
+	}
+	return nil
+}
+
+func (m *SchnorrClaim) GetMessage() string {
+	if m != nil {
+		return m.Message
+	}
+	return ""
+}
+
+// pedersen
+type PedersenClaim struct {
+	// Specific fields for Pedersen claims, e.g., commitment, blinding factor,
+	// etc.
+	Commitment     []byte `protobuf:"bytes,1,opt,name=commitment,proto3" json:"commitment,omitempty"`
+	BlindingFactor []byte `protobuf:"bytes,2,opt,name=blinding_factor,json=blindingFactor,proto3" json:"blinding_factor,omitempty"`
+	Value          []byte `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
+}
+
+func (m *PedersenClaim) Reset()         { *m = PedersenClaim{} }
+func (m *PedersenClaim) String() string { return proto.CompactTextString(m) }
+func (*PedersenClaim) ProtoMessage()    {}
+func (*PedersenClaim) Descriptor() ([]byte, []int) {
+	return fileDescriptor_22e268a87ad78580, []int{8}
+}
+
+func (m *PedersenClaim) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *PedersenClaim) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_PedersenClaim.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *PedersenClaim) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PedersenClaim.Merge(m, src)
+}
+
+func (m *PedersenClaim) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *PedersenClaim) XXX_DiscardUnknown() {
+	xxx_messageInfo_PedersenClaim.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PedersenClaim proto.InternalMessageInfo
+
+func (m *PedersenClaim) GetCommitment() []byte {
+	if m != nil {
+		return m.Commitment
+	}
+	return nil
+}
+
+func (m *PedersenClaim) GetBlindingFactor() []byte {
+	if m != nil {
+		return m.BlindingFactor
+	}
+	return nil
+}
+
+func (m *PedersenClaim) GetValue() []byte {
+	if m != nil {
+		return m.Value
+	}
+	return nil
+}
+
+// gnark
+type GnarkClaim struct {
+	// Specific fields for Gnark zk-SNARK claims, e.g., proof, public inputs, etc.
+	Proof        []byte `protobuf:"bytes,1,opt,name=proof,proto3" json:"proof,omitempty"`
+	PublicInputs []byte `protobuf:"bytes,2,opt,name=public_inputs,json=publicInputs,proto3" json:"public_inputs,omitempty"`
+}
+
+func (m *GnarkClaim) Reset()         { *m = GnarkClaim{} }
+func (m *GnarkClaim) String() string { return proto.CompactTextString(m) }
+func (*GnarkClaim) ProtoMessage()    {}
+func (*GnarkClaim) Descriptor() ([]byte, []int) {
+	return fileDescriptor_22e268a87ad78580, []int{9}
+}
+
+func (m *GnarkClaim) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *GnarkClaim) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_GnarkClaim.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *GnarkClaim) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GnarkClaim.Merge(m, src)
+}
+
+func (m *GnarkClaim) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *GnarkClaim) XXX_DiscardUnknown() {
+	xxx_messageInfo_GnarkClaim.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GnarkClaim proto.InternalMessageInfo
+
+func (m *GnarkClaim) GetProof() []byte {
+	if m != nil {
+		return m.Proof
+	}
+	return nil
+}
+
+func (m *GnarkClaim) GetPublicInputs() []byte {
+	if m != nil {
+		return m.PublicInputs
+	}
+	return nil
+}
+
+// MsgClaimResponse
+type MsgClaimResponse struct {
+	// Indicates whether the claim was successful or not
+	Success bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	// Optional message providing more details on the claim result
+	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+}
+
+func (m *MsgClaimResponse) Reset()         { *m = MsgClaimResponse{} }
+func (m *MsgClaimResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgClaimResponse) ProtoMessage()    {}
+func (*MsgClaimResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_22e268a87ad78580, []int{10}
+}
+
+func (m *MsgClaimResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *MsgClaimResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgClaimResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *MsgClaimResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgClaimResponse.Merge(m, src)
+}
+
+func (m *MsgClaimResponse) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *MsgClaimResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgClaimResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgClaimResponse proto.InternalMessageInfo
+
+func (m *MsgClaimResponse) GetSuccess() bool {
+	if m != nil {
+		return m.Success
+	}
+	return false
+}
+
+func (m *MsgClaimResponse) GetMessage() string {
+	if m != nil {
+		return m.Message
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*MsgUpdateParams)(nil), "cosmwasm.will.MsgUpdateParams")
 	proto.RegisterType((*MsgUpdateParamsResponse)(nil), "cosmwasm.will.MsgUpdateParamsResponse")
@@ -436,51 +809,74 @@ func init() {
 	proto.RegisterType((*MsgCreateWillResponse)(nil), "cosmwasm.will.MsgCreateWillResponse")
 	proto.RegisterType((*MsgCheckInRequest)(nil), "cosmwasm.will.MsgCheckInRequest")
 	proto.RegisterType((*MsgCheckInResponse)(nil), "cosmwasm.will.MsgCheckInResponse")
+	proto.RegisterType((*MsgClaimRequest)(nil), "cosmwasm.will.MsgClaimRequest")
+	proto.RegisterType((*SchnorrClaim)(nil), "cosmwasm.will.SchnorrClaim")
+	proto.RegisterType((*PedersenClaim)(nil), "cosmwasm.will.PedersenClaim")
+	proto.RegisterType((*GnarkClaim)(nil), "cosmwasm.will.GnarkClaim")
+	proto.RegisterType((*MsgClaimResponse)(nil), "cosmwasm.will.MsgClaimResponse")
 }
 
 func init() { proto.RegisterFile("cosmwasm/will/tx.proto", fileDescriptor_22e268a87ad78580) }
 
 var fileDescriptor_22e268a87ad78580 = []byte{
-	// 613 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x54, 0x3f, 0x6f, 0xd3, 0x4e,
-	0x18, 0xce, 0xd9, 0x6d, 0xfa, 0xcb, 0xf5, 0x07, 0xa8, 0xa7, 0xfe, 0x71, 0x2d, 0x64, 0x5c, 0x83,
-	0xaa, 0xa8, 0x12, 0xb1, 0x08, 0x12, 0x42, 0x9d, 0x68, 0x0b, 0x03, 0x43, 0x11, 0x32, 0x82, 0x4a,
-	0x2c, 0xc8, 0xb5, 0x0f, 0xe7, 0x44, 0xec, 0x33, 0xbe, 0x0b, 0x4d, 0x36, 0xc4, 0xc0, 0x80, 0x84,
-	0xe0, 0x63, 0x30, 0x66, 0xe8, 0x87, 0xe8, 0x58, 0x31, 0x31, 0x21, 0x94, 0x0c, 0xf9, 0x04, 0xec,
-	0xc8, 0xbe, 0x4b, 0x73, 0x71, 0x4a, 0x58, 0x12, 0xbf, 0xcf, 0xfb, 0xef, 0x79, 0x9f, 0xf7, 0xee,
-	0xe0, 0x7a, 0x40, 0x59, 0x7c, 0xe2, 0xb3, 0xd8, 0x3d, 0x21, 0xed, 0xb6, 0xcb, 0xbb, 0x8d, 0x34,
-	0xa3, 0x9c, 0xa2, 0x2b, 0x63, 0xbc, 0x91, 0xe3, 0xe6, 0x8a, 0x1f, 0x93, 0x84, 0xba, 0xc5, 0xaf,
-	0x88, 0x30, 0x37, 0xf2, 0x08, 0xca, 0xdc, 0x98, 0x45, 0xee, 0xbb, 0x3b, 0xf9, 0x9f, 0x74, 0x6c,
-	0x0a, 0xc7, 0xab, 0xc2, 0x72, 0x85, 0x21, 0x5d, 0xab, 0x11, 0x8d, 0xa8, 0xc0, 0xf3, 0x2f, 0x89,
-	0x9a, 0xd3, 0x1c, 0x52, 0x3f, 0xf3, 0x63, 0xa6, 0x16, 0x53, 0xf8, 0xf5, 0x52, 0x2c, 0x5d, 0xce,
-	0x29, 0x80, 0xd7, 0x0e, 0x59, 0xf4, 0x3c, 0x0d, 0x7d, 0x8e, 0x9f, 0x16, 0x49, 0xe8, 0x1e, 0xac,
-	0xf9, 0x1d, 0xde, 0xa2, 0x19, 0xe1, 0x3d, 0x03, 0xd8, 0xa0, 0x5e, 0xdb, 0x37, 0xbe, 0x9f, 0xde,
-	0x5e, 0x95, 0x2c, 0xf6, 0xc2, 0x30, 0xc3, 0x8c, 0x3d, 0xe3, 0x19, 0x49, 0x22, 0x6f, 0x12, 0x8a,
-	0xee, 0xc3, 0xaa, 0x68, 0x6b, 0x68, 0x36, 0xa8, 0x2f, 0x37, 0xd7, 0x1a, 0x53, 0xf3, 0x37, 0x44,
-	0xf9, 0xfd, 0xda, 0xd9, 0xcf, 0x1b, 0x95, 0x6f, 0xa3, 0xfe, 0x0e, 0xf0, 0x64, 0xfc, 0xae, 0xfb,
-	0x61, 0xd4, 0xdf, 0x99, 0x54, 0xfa, 0x34, 0xea, 0xef, 0x5c, 0xcf, 0xf3, 0x42, 0xb7, 0x2b, 0x28,
-	0x97, 0x28, 0x3a, 0x9b, 0x70, 0xa3, 0x04, 0x79, 0x98, 0xa5, 0x34, 0x61, 0xd8, 0xf9, 0x0d, 0xe0,
-	0xea, 0x21, 0x8b, 0x0e, 0x32, 0xec, 0x73, 0x7c, 0x44, 0xda, 0x6d, 0x0f, 0xbf, 0xed, 0x60, 0xc6,
-	0x91, 0x01, 0x97, 0x82, 0x1c, 0xa4, 0x99, 0x18, 0xca, 0x1b, 0x9b, 0x08, 0xc1, 0x85, 0xc4, 0x8f,
-	0x71, 0x41, 0xbb, 0xe6, 0x15, 0xdf, 0xc8, 0x86, 0xcb, 0xc7, 0x38, 0xc1, 0xaf, 0x49, 0x40, 0xfc,
-	0xac, 0x67, 0xe8, 0x85, 0x4b, 0x85, 0xd0, 0x3a, 0xac, 0xb6, 0x30, 0x89, 0x5a, 0xdc, 0x58, 0xb0,
-	0x41, 0x5d, 0xf7, 0xa4, 0x85, 0xf6, 0x20, 0x0c, 0x68, 0x9c, 0xd2, 0x04, 0x27, 0x9c, 0x19, 0x8b,
-	0xb6, 0x5e, 0x5f, 0x6e, 0x6e, 0x95, 0xa4, 0x78, 0xd4, 0xc5, 0x41, 0x87, 0x13, 0x9a, 0x1c, 0x8c,
-	0x23, 0x3d, 0x25, 0x69, 0xb7, 0x99, 0xeb, 0x31, 0xa6, 0x97, 0xab, 0xb1, 0x55, 0x56, 0x63, 0x66,
-	0x3c, 0xe7, 0x0b, 0x80, 0x6b, 0x25, 0x87, 0x50, 0x04, 0x5d, 0x85, 0x1a, 0x09, 0xe5, 0xcc, 0x1a,
-	0x09, 0x55, 0x21, 0xb4, 0xcb, 0x85, 0xd0, 0xff, 0x2e, 0xc4, 0xc2, 0x3c, 0x21, 0x16, 0x55, 0x21,
-	0x9c, 0x8f, 0x00, 0xae, 0xe4, 0x8c, 0x5a, 0x38, 0x78, 0xf3, 0x38, 0xf9, 0xf7, 0x1a, 0x04, 0x4f,
-	0xed, 0x82, 0xe7, 0xa4, 0xae, 0xae, 0xd6, 0x15, 0xa7, 0x45, 0x55, 0xc7, 0x9a, 0x51, 0x67, 0xaa,
-	0xa5, 0xf3, 0x10, 0x22, 0x15, 0x94, 0xb2, 0xac, 0xc3, 0x2a, 0xe3, 0x3e, 0xef, 0xb0, 0x82, 0xc7,
-	0x7f, 0x9e, 0xb4, 0x94, 0xb6, 0x9a, 0xda, 0xb6, 0xf9, 0x59, 0x83, 0xfa, 0x21, 0x8b, 0xd0, 0x0b,
-	0xf8, 0xff, 0xd4, 0x75, 0xb1, 0x4a, 0xbb, 0x2d, 0x1d, 0x4c, 0x73, 0x7b, 0xbe, 0xff, 0x82, 0xcf,
-	0x11, 0x84, 0x93, 0xe5, 0xa1, 0x9b, 0xb3, 0x59, 0x33, 0x3b, 0x37, 0x6f, 0xcd, 0x0f, 0x92, 0x85,
-	0x9f, 0xc0, 0x25, 0x39, 0x3b, 0xb2, 0x2f, 0x49, 0x98, 0xd2, 0xca, 0xdc, 0x9a, 0x13, 0x21, 0xea,
-	0x99, 0x8b, 0xef, 0xf3, 0xcb, 0xbb, 0xff, 0xe0, 0x6c, 0x60, 0x81, 0xf3, 0x81, 0x05, 0x7e, 0x0d,
-	0x2c, 0xf0, 0x75, 0x68, 0x55, 0xce, 0x87, 0x56, 0xe5, 0xc7, 0xd0, 0xaa, 0xbc, 0xdc, 0x8e, 0x08,
-	0x6f, 0x75, 0x8e, 0x1b, 0x01, 0x8d, 0xdd, 0x03, 0xca, 0xe2, 0xa3, 0xe2, 0xe9, 0x51, 0x77, 0x54,
-	0x3c, 0x41, 0xc7, 0xd5, 0xe2, 0x0d, 0xba, 0xfb, 0x27, 0x00, 0x00, 0xff, 0xff, 0xb8, 0x69, 0x75,
-	0x8b, 0x40, 0x05, 0x00, 0x00,
+	// 897 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x55, 0x41, 0x6f, 0x1b, 0x45,
+	0x14, 0xf6, 0xda, 0xb1, 0x83, 0x9f, 0xed, 0x94, 0x8e, 0xd2, 0xc4, 0x31, 0xd1, 0xd6, 0xd9, 0xa2,
+	0x12, 0x45, 0xaa, 0x57, 0x18, 0x09, 0xa1, 0x88, 0x03, 0x75, 0x68, 0xda, 0x1c, 0x82, 0xd0, 0x56,
+	0x10, 0x89, 0x8b, 0xb5, 0x5e, 0x4f, 0xd6, 0xa3, 0x7a, 0x67, 0x96, 0x9d, 0xd9, 0x36, 0xb9, 0x21,
+	0x0e, 0x1c, 0xb8, 0xc0, 0xcf, 0xe0, 0x98, 0x43, 0x7f, 0x44, 0xc5, 0x29, 0xe2, 0x02, 0x27, 0x84,
+	0x92, 0x43, 0x7e, 0x01, 0x77, 0xb4, 0x33, 0xb3, 0xf1, 0x78, 0x93, 0x98, 0x4b, 0xe2, 0xf7, 0xbd,
+	0x6f, 0xbe, 0x79, 0xef, 0xdb, 0x79, 0x33, 0xb0, 0x16, 0x30, 0x1e, 0xbd, 0xf1, 0x79, 0xe4, 0xbe,
+	0x21, 0xd3, 0xa9, 0x2b, 0x4e, 0x7a, 0x71, 0xc2, 0x04, 0x43, 0xad, 0x1c, 0xef, 0x65, 0x78, 0xe7,
+	0xbe, 0x1f, 0x11, 0xca, 0x5c, 0xf9, 0x57, 0x31, 0x3a, 0xeb, 0x19, 0x83, 0x71, 0x37, 0xe2, 0xa1,
+	0xfb, 0xfa, 0xe3, 0xec, 0x9f, 0x4e, 0x6c, 0xa8, 0xc4, 0x50, 0x46, 0xae, 0x0a, 0x74, 0x6a, 0x35,
+	0x64, 0x21, 0x53, 0x78, 0xf6, 0x4b, 0xa3, 0x9d, 0xf9, 0x1a, 0x62, 0x3f, 0xf1, 0x23, 0x6e, 0x8a,
+	0x19, 0xf5, 0x9d, 0xc6, 0x58, 0xa7, 0x9c, 0xb7, 0x16, 0xdc, 0x3b, 0xe4, 0xe1, 0x37, 0xf1, 0xd8,
+	0x17, 0xf8, 0x6b, 0xb9, 0x08, 0x7d, 0x0a, 0x75, 0x3f, 0x15, 0x13, 0x96, 0x10, 0x71, 0xda, 0xb6,
+	0xba, 0xd6, 0x76, 0x7d, 0xd0, 0xfe, 0xe3, 0xed, 0x93, 0x55, 0x5d, 0xc5, 0xd3, 0xf1, 0x38, 0xc1,
+	0x9c, 0xbf, 0x14, 0x09, 0xa1, 0xa1, 0x37, 0xa3, 0xa2, 0xcf, 0xa0, 0xa6, 0xb6, 0x6d, 0x97, 0xbb,
+	0xd6, 0x76, 0xa3, 0xff, 0xa0, 0x37, 0xd7, 0x7f, 0x4f, 0xc9, 0x0f, 0xea, 0xef, 0xfe, 0x7e, 0x58,
+	0xfa, 0xed, 0xea, 0x6c, 0xc7, 0xf2, 0x34, 0x7f, 0xd7, 0xfd, 0xf1, 0xea, 0x6c, 0x67, 0xa6, 0xf4,
+	0xf3, 0xd5, 0xd9, 0xce, 0x66, 0xb6, 0x6e, 0xec, 0x9e, 0xa8, 0x92, 0x0b, 0x25, 0x3a, 0x1b, 0xb0,
+	0x5e, 0x80, 0x3c, 0xcc, 0x63, 0x46, 0x39, 0x76, 0xfe, 0xb5, 0x60, 0xf5, 0x90, 0x87, 0x7b, 0x09,
+	0xf6, 0x05, 0x3e, 0x22, 0xd3, 0xa9, 0x87, 0xbf, 0x4f, 0x31, 0x17, 0xa8, 0x0d, 0xcb, 0x41, 0x06,
+	0xb2, 0x44, 0x35, 0xe5, 0xe5, 0x21, 0x42, 0xb0, 0x44, 0xfd, 0x08, 0xcb, 0xb2, 0xeb, 0x9e, 0xfc,
+	0x8d, 0xba, 0xd0, 0x18, 0x61, 0x8a, 0x8f, 0x49, 0x40, 0xfc, 0xe4, 0xb4, 0x5d, 0x91, 0x29, 0x13,
+	0x42, 0x6b, 0x50, 0x9b, 0x60, 0x12, 0x4e, 0x44, 0x7b, 0xa9, 0x6b, 0x6d, 0x57, 0x3c, 0x1d, 0xa1,
+	0xa7, 0x00, 0x01, 0x8b, 0x62, 0x46, 0x31, 0x15, 0xbc, 0x5d, 0xed, 0x56, 0xb6, 0x1b, 0xfd, 0xad,
+	0x82, 0x15, 0xcf, 0x4e, 0x70, 0x90, 0x0a, 0xc2, 0xe8, 0x5e, 0xce, 0xf4, 0x8c, 0x45, 0xbb, 0xfd,
+	0xcc, 0x8f, 0xbc, 0xbc, 0xcc, 0x8d, 0xad, 0xa2, 0x1b, 0x37, 0xda, 0x73, 0x7e, 0xb1, 0xe0, 0x41,
+	0x21, 0xa1, 0x1c, 0x41, 0x2b, 0x50, 0x26, 0x63, 0xdd, 0x73, 0x99, 0x8c, 0x4d, 0x23, 0xca, 0xb7,
+	0x1b, 0x51, 0xb9, 0xdb, 0x88, 0xa5, 0x45, 0x46, 0x54, 0x4d, 0x23, 0x9c, 0x9f, 0x2c, 0xb8, 0x9f,
+	0x55, 0x34, 0xc1, 0xc1, 0xab, 0x03, 0xfa, 0xff, 0x9f, 0x41, 0xd5, 0x59, 0xbe, 0xae, 0x73, 0xa6,
+	0x5b, 0x31, 0x75, 0xd5, 0x69, 0x31, 0xdd, 0xb1, 0x6f, 0xb8, 0x33, 0xb7, 0xa5, 0xf3, 0x25, 0x20,
+	0x13, 0xd4, 0xb6, 0xac, 0x41, 0x8d, 0x0b, 0x5f, 0xa4, 0x5c, 0xd6, 0xf1, 0x9e, 0xa7, 0x23, 0x63,
+	0xdb, 0xf2, 0x5c, 0x3b, 0xbf, 0x97, 0xe5, 0xa8, 0xec, 0x4d, 0x7d, 0x12, 0xe5, 0xcd, 0xac, 0xc3,
+	0x72, 0xb6, 0xe7, 0xf0, 0xda, 0xdf, 0x5a, 0x16, 0x1e, 0x28, 0x8f, 0x33, 0x22, 0x9e, 0x79, 0xac,
+	0x42, 0x34, 0x80, 0x16, 0x0f, 0x26, 0x94, 0x25, 0xc9, 0x50, 0x42, 0xb2, 0xb9, 0x46, 0xff, 0x83,
+	0xc2, 0x09, 0x79, 0xa9, 0x38, 0x72, 0xb7, 0x17, 0x25, 0xaf, 0xc9, 0x8d, 0x18, 0x3d, 0x83, 0x95,
+	0x18, 0x8f, 0x71, 0xc2, 0x31, 0xd5, 0x22, 0x4b, 0x52, 0x64, 0xb3, 0x38, 0x71, 0x9a, 0x94, 0xab,
+	0xb4, 0x62, 0x13, 0x40, 0x9f, 0x43, 0x23, 0xa4, 0x7e, 0xf2, 0x4a, 0x6b, 0x54, 0xa5, 0xc6, 0x46,
+	0x41, 0xe3, 0x79, 0xc6, 0xc8, 0x05, 0x20, 0xbc, 0x8e, 0x76, 0x9f, 0xa8, 0xcf, 0xa0, 0xda, 0xba,
+	0x75, 0x64, 0x4d, 0xab, 0x06, 0x4d, 0x00, 0xc9, 0x1d, 0x66, 0xd7, 0x8f, 0xb3, 0x0f, 0x4d, 0xb3,
+	0x43, 0xb4, 0x09, 0x75, 0x4e, 0x42, 0xea, 0x8b, 0x34, 0xc1, 0xd2, 0xca, 0xa6, 0x37, 0x03, 0x32,
+	0x37, 0x23, 0xcc, 0xb9, 0x1f, 0xe6, 0x33, 0x9a, 0x87, 0x0e, 0x85, 0xd6, 0x5c, 0x93, 0xc8, 0x96,
+	0xd3, 0x17, 0x11, 0x11, 0x61, 0x2a, 0xb4, 0x92, 0x81, 0xa0, 0x8f, 0xe0, 0xde, 0x68, 0x4a, 0xe8,
+	0x98, 0xd0, 0x70, 0x78, 0xec, 0x07, 0xf9, 0x10, 0x34, 0xbd, 0x95, 0x1c, 0xde, 0x97, 0x28, 0x5a,
+	0x85, 0xea, 0x6b, 0x7f, 0x9a, 0xaa, 0x61, 0x68, 0x7a, 0x2a, 0x70, 0x9e, 0x03, 0xcc, 0x0c, 0xc9,
+	0x38, 0x71, 0xc2, 0xd8, 0xb1, 0xde, 0x47, 0x05, 0xe8, 0x11, 0xb4, 0xe2, 0x74, 0x34, 0x25, 0xc1,
+	0x90, 0xd0, 0x38, 0x15, 0x5c, 0x6f, 0xd0, 0x54, 0xe0, 0x81, 0xc4, 0x9c, 0x7d, 0x78, 0x7f, 0xe6,
+	0x90, 0x3e, 0x91, 0x6d, 0x58, 0xe6, 0x69, 0x10, 0x60, 0x9e, 0x1f, 0xc9, 0x3c, 0xbc, 0xdb, 0x80,
+	0xfe, 0x9f, 0x65, 0xa8, 0x1c, 0xf2, 0x10, 0x7d, 0x0b, 0xcd, 0xb9, 0x4b, 0xdc, 0x2e, 0x7c, 0xc6,
+	0xc2, 0x75, 0xd9, 0x79, 0xbc, 0x38, 0x7f, 0x5d, 0xd3, 0x11, 0xc0, 0xec, 0x4a, 0x41, 0x8f, 0x6e,
+	0xae, 0xba, 0x71, 0x13, 0x75, 0x3e, 0x5c, 0x4c, 0xd2, 0xc2, 0x5f, 0xc1, 0xb2, 0x9e, 0x48, 0xd4,
+	0xbd, 0x65, 0xc1, 0xdc, 0x04, 0x77, 0xb6, 0x16, 0x30, 0xb4, 0xde, 0x0b, 0xa8, 0xea, 0x13, 0x70,
+	0x0b, 0xd7, 0x38, 0x88, 0x9d, 0x87, 0x77, 0xe6, 0x95, 0x52, 0xa7, 0xfa, 0x43, 0xf6, 0x38, 0x0d,
+	0xbe, 0x78, 0x77, 0x61, 0x5b, 0xe7, 0x17, 0xb6, 0xf5, 0xcf, 0x85, 0x6d, 0xfd, 0x7a, 0x69, 0x97,
+	0xce, 0x2f, 0xed, 0xd2, 0x5f, 0x97, 0x76, 0xe9, 0xbb, 0xc7, 0x21, 0x11, 0x93, 0x74, 0xd4, 0x0b,
+	0x58, 0xe4, 0xee, 0x31, 0x1e, 0x1d, 0xc9, 0xa7, 0xd5, 0x3c, 0xfc, 0xf2, 0x89, 0x1d, 0xd5, 0xe4,
+	0x1b, 0xfb, 0xc9, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xb7, 0x3e, 0x6f, 0x79, 0x20, 0x08, 0x00,
+	0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -504,6 +900,8 @@ type MsgClient interface {
 	CreateWill(ctx context.Context, in *MsgCreateWillRequest, opts ...grpc.CallOption) (*MsgCreateWillResponse, error)
 	// checkin into a will
 	CheckIn(ctx context.Context, in *MsgCheckInRequest, opts ...grpc.CallOption) (*MsgCheckInResponse, error)
+	// make a claim
+	Claim(ctx context.Context, in *MsgClaimRequest, opts ...grpc.CallOption) (*MsgClaimResponse, error)
 }
 
 type msgClient struct {
@@ -541,6 +939,15 @@ func (c *msgClient) CheckIn(ctx context.Context, in *MsgCheckInRequest, opts ...
 	return out, nil
 }
 
+func (c *msgClient) Claim(ctx context.Context, in *MsgClaimRequest, opts ...grpc.CallOption) (*MsgClaimResponse, error) {
+	out := new(MsgClaimResponse)
+	err := c.cc.Invoke(ctx, "/cosmwasm.will.Msg/Claim", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	// UpdateParams defines a (governance) operation for updating the module
@@ -550,6 +957,8 @@ type MsgServer interface {
 	CreateWill(context.Context, *MsgCreateWillRequest) (*MsgCreateWillResponse, error)
 	// checkin into a will
 	CheckIn(context.Context, *MsgCheckInRequest) (*MsgCheckInResponse, error)
+	// make a claim
+	Claim(context.Context, *MsgClaimRequest) (*MsgClaimResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -565,6 +974,10 @@ func (*UnimplementedMsgServer) CreateWill(ctx context.Context, req *MsgCreateWil
 
 func (*UnimplementedMsgServer) CheckIn(ctx context.Context, req *MsgCheckInRequest) (*MsgCheckInResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckIn not implemented")
+}
+
+func (*UnimplementedMsgServer) Claim(ctx context.Context, req *MsgClaimRequest) (*MsgClaimResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Claim not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -625,6 +1038,24 @@ func _Msg_CheckIn_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_Claim_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgClaimRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).Claim(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/cosmwasm.will.Msg/Claim",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).Claim(ctx, req.(*MsgClaimRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "cosmwasm.will.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -640,6 +1071,10 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckIn",
 			Handler:    _Msg_CheckIn_Handler,
+		},
+		{
+			MethodName: "Claim",
+			Handler:    _Msg_Claim_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -908,6 +1343,276 @@ func (m *MsgCheckInResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgClaimRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgClaimRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgClaimRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.ClaimType != nil {
+		{
+			size := m.ClaimType.Size()
+			i -= size
+			if _, err := m.ClaimType.MarshalTo(dAtA[i:]); err != nil {
+				return 0, err
+			}
+		}
+	}
+	if len(m.Claimer) > 0 {
+		i -= len(m.Claimer)
+		copy(dAtA[i:], m.Claimer)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Claimer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.WillId) > 0 {
+		i -= len(m.WillId)
+		copy(dAtA[i:], m.WillId)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.WillId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgClaimRequest_SchnorrClaim) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgClaimRequest_SchnorrClaim) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.SchnorrClaim != nil {
+		{
+			size, err := m.SchnorrClaim.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTx(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgClaimRequest_PedersenClaim) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgClaimRequest_PedersenClaim) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.PedersenClaim != nil {
+		{
+			size, err := m.PedersenClaim.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTx(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x22
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgClaimRequest_GnarkClaim) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgClaimRequest_GnarkClaim) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.GnarkClaim != nil {
+		{
+			size, err := m.GnarkClaim.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTx(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x2a
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *SchnorrClaim) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SchnorrClaim) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *SchnorrClaim) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Message) > 0 {
+		i -= len(m.Message)
+		copy(dAtA[i:], m.Message)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Message)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Signature) > 0 {
+		i -= len(m.Signature)
+		copy(dAtA[i:], m.Signature)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Signature)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *PedersenClaim) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *PedersenClaim) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *PedersenClaim) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Value) > 0 {
+		i -= len(m.Value)
+		copy(dAtA[i:], m.Value)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Value)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.BlindingFactor) > 0 {
+		i -= len(m.BlindingFactor)
+		copy(dAtA[i:], m.BlindingFactor)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.BlindingFactor)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Commitment) > 0 {
+		i -= len(m.Commitment)
+		copy(dAtA[i:], m.Commitment)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Commitment)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *GnarkClaim) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GnarkClaim) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GnarkClaim) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.PublicInputs) > 0 {
+		i -= len(m.PublicInputs)
+		copy(dAtA[i:], m.PublicInputs)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.PublicInputs)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Proof) > 0 {
+		i -= len(m.Proof)
+		copy(dAtA[i:], m.Proof)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Proof)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgClaimResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgClaimResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgClaimResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Message) > 0 {
+		i -= len(m.Message)
+		copy(dAtA[i:], m.Message)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Message)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Success {
+		i--
+		if m.Success {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -1033,6 +1738,136 @@ func (m *MsgCheckInResponse) Size() (n int) {
 	}
 	if m.Height != 0 {
 		n += 1 + sovTx(uint64(m.Height))
+	}
+	return n
+}
+
+func (m *MsgClaimRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.WillId)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Claimer)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.ClaimType != nil {
+		n += m.ClaimType.Size()
+	}
+	return n
+}
+
+func (m *MsgClaimRequest_SchnorrClaim) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.SchnorrClaim != nil {
+		l = m.SchnorrClaim.Size()
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgClaimRequest_PedersenClaim) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.PedersenClaim != nil {
+		l = m.PedersenClaim.Size()
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgClaimRequest_GnarkClaim) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.GnarkClaim != nil {
+		l = m.GnarkClaim.Size()
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *SchnorrClaim) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Signature)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Message)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *PedersenClaim) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Commitment)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.BlindingFactor)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Value)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *GnarkClaim) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Proof)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.PublicInputs)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgClaimResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Success {
+		n += 2
+	}
+	l = len(m.Message)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
 	}
 	return n
 }
@@ -1812,6 +2647,718 @@ func (m *MsgCheckInResponse) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *MsgClaimRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgClaimRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgClaimRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field WillId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.WillId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Claimer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Claimer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SchnorrClaim", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &SchnorrClaim{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.ClaimType = &MsgClaimRequest_SchnorrClaim{v}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PedersenClaim", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &PedersenClaim{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.ClaimType = &MsgClaimRequest_PedersenClaim{v}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GnarkClaim", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &GnarkClaim{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.ClaimType = &MsgClaimRequest_GnarkClaim{v}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *SchnorrClaim) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SchnorrClaim: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SchnorrClaim: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Signature", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Signature = append(m.Signature[:0], dAtA[iNdEx:postIndex]...)
+			if m.Signature == nil {
+				m.Signature = []byte{}
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Message", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Message = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *PedersenClaim) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: PedersenClaim: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: PedersenClaim: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Commitment", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Commitment = append(m.Commitment[:0], dAtA[iNdEx:postIndex]...)
+			if m.Commitment == nil {
+				m.Commitment = []byte{}
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlindingFactor", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.BlindingFactor = append(m.BlindingFactor[:0], dAtA[iNdEx:postIndex]...)
+			if m.BlindingFactor == nil {
+				m.BlindingFactor = []byte{}
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Value = append(m.Value[:0], dAtA[iNdEx:postIndex]...)
+			if m.Value == nil {
+				m.Value = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *GnarkClaim) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GnarkClaim: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GnarkClaim: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Proof", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Proof = append(m.Proof[:0], dAtA[iNdEx:postIndex]...)
+			if m.Proof == nil {
+				m.Proof = []byte{}
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PublicInputs", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PublicInputs = append(m.PublicInputs[:0], dAtA[iNdEx:postIndex]...)
+			if m.PublicInputs == nil {
+				m.PublicInputs = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *MsgClaimResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgClaimResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgClaimResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Success", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Success = bool(v != 0)
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Message", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Message = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
