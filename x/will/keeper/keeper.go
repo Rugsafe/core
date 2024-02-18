@@ -287,7 +287,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 			case *types.ExecutionComponent_Claim:
 				fmt.Printf("Claim component found, evidence")
 				// fmt.Printf("Claim component found, evidence: %s\n", c.Claim.Evidence)
-				// case *types.ExecutionComponent_ContractCall:
+			// case *types.ExecutionComponent_ContractCall:
 
 			default:
 				fmt.Println("Unknown component type found")
@@ -298,14 +298,9 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 
 		// update will
 		will.Status = "expired"
-		// Store the marshaled will in the module's store
-		// storeErr := store.Set(key, willBz)
-		// concatValues := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
-		// idBytes := []byte(concatValues)
-		// idString := hex.EncodeToString(idBytes)
-		idString := hex.EncodeToString([]byte(will.ID))
-		key := types.GetWillKey(idString)
-		fmt.Println(fmt.Printf("BEGIN BLOCKER WILL EXECUTED: %s", idString))
+		willID := hex.EncodeToString([]byte(will.ID))
+		key := types.GetWillKey(willID)
+		fmt.Println(fmt.Printf("BEGIN BLOCKER WILL EXECUTED: %s", willID))
 
 		willBz := k.cdc.MustMarshal(will)
 		storeErr := store.Set([]byte(key), willBz)
@@ -316,6 +311,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 
 	}
 
+	// DEBUG
 	os.Exit(10)
 
 	return nil

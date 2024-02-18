@@ -234,9 +234,11 @@ will_get:
 	./build/wasmd query will get "77336c6c3172387267746a6b68793773373073737361796e34357a6b636c6d7a376366366d686e3064386d2d746573742077696c6c202d62656e6566696369617279"
 will_list:
 	./build/wasmd query will list w3ll1ajld4yurd4ft9dqtztewrhn7u2t7pvhq82xq2m
-will_claim:
+will_claim_schnorr:
 	./build/wasmd tx will claim "${WID}" "schnorr" "signature:data" --from alice --chain-id w3ll-chain -y
+will_claim_pedersen:
 	./build/wasmd tx will claim "${WID}" "pedersen" "commitment:blinding_factor:value" --from alice --chain-id w3ll-chain -y
+will_claim_gnark:
 	./build/wasmd tx will claim "${WID}" "gnark" "proof:public_inputs" --from alice --chain-id w3ll-chain -y
 run:
 	bash run.sh 
