@@ -14,6 +14,8 @@ BUF_IMAGE=bufbuild/buf@sha256:3cb1f8a4b48bd5ad8f09168f10f607ddc318af202f5c057d52
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(BUF_IMAGE)
 HTTPS_GIT := https://github.com/CosmWasm/wasmd.git
 
+WID=77336c6c3172387267746a6b68793773373073737361796e34357a6b636c6d7a376366366d686e3064386d2d746573742077696c6c202d62656e6566696369617279
+
 export GO111MODULE = on
 
 # process build tags
@@ -220,17 +222,21 @@ alice_d:
 	 ./build/wasmd keys delete alice 
 will_test: will_cx
 	echo "Done with will tests"
-will_c:
-	./build/wasmd tx will create "test will ${i}" "beneficiary" 25 --component "transfer:w3ll1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,1" --component "transfer:w3ll1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,5" --from alice --chain-id w3ll-chain -y
+will_create:
+	./build/wasmd tx will create "test will ${i}" "beneficiary" 25 --component-name "component1" --component-args "transfer:w3ll1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,1" --component-name "component2" --component-args "transfer:w3ll1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,5" --from alice --chain-id w3ll-chain -y
 	sleep 1
 will_cx:
 	@for i in {1..20}; do \
 		echo "Running command $$i time(s)"; \
 		i=$$i make will_c; \
 	done
-will_g:
+will_get:
 	./build/wasmd query will get "77336c6c3172387267746a6b68793773373073737361796e34357a6b636c6d7a376366366d686e3064386d2d746573742077696c6c202d62656e6566696369617279"
-will_l:
-	./build/wasmd query will list w3ll1r8rgtjkhy7s70sssayn45zkclmz7cf6mhn0d8m
+will_list:
+	./build/wasmd query will list w3ll1ajld4yurd4ft9dqtztewrhn7u2t7pvhq82xq2m
+will_claim:
+	./build/wasmd tx will claim "${WID}" "schnorr" "signature:data" --from alice --chain-id w3ll-chain -y
+	./build/wasmd tx will claim "${WID}" "pedersen" "commitment:blinding_factor:value" --from alice --chain-id w3ll-chain -y
+	./build/wasmd tx will claim "${WID}" "gnark" "proof:public_inputs" --from alice --chain-id w3ll-chain -y
 run:
 	bash run.sh 

@@ -11,11 +11,16 @@ option (gogoproto.equal_all) = true;
 // ExecutionComponent defines a single actionable component within a will.
 message ExecutionComponent {
   // component_type enables the inclusion of different types of execution
+  // component name
+  string name = 1;
+  // component id
+  string id = 2;
   // components within a will.
+  string status = 3;
+  // component type
   oneof component_type {
-    TransferComponent transfer = 1; // Represents an asset transfer action.
-    ClaimComponent claim =
-        2; // Represents a claim action that a beneficiary must perform.
+    TransferComponent transfer = 4; // Represents an asset transfer action.
+    ClaimComponent claim = 5; // Represents a claim action that a beneficiary must perform.
     // ContractComponent contract = 3; // Future use: Represents an interaction
     // with a smart contract.
   }
@@ -23,15 +28,13 @@ message ExecutionComponent {
 
 // TransferComponent is used for direct asset transfers.
 message TransferComponent {
-  string status = 1;
-  string to = 2; // Destination address for the asset transfer.
+  string to = 1; // Destination address for the asset transfer.
   cosmos.base.v1beta1.Coin amount =
       3; // The amount and type of asset to transfer.
 }
 
 // ClaimComponent is designed for actions requiring a claim with proof.
 message ClaimComponent {
-  string status = 1; // Evidence required to support the claim.
   // scheme_type allows for different cryptographic schemes for claims.
   oneof scheme_type {
     PedersenCommitment pedersen = 2; // Represents a Pedersen commitment scheme.

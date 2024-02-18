@@ -14,6 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/CosmWasm/wasmd/x/will/types"
+	"github.com/google/uuid"
 )
 
 func GetTxCmd() *cobra.Command {
@@ -50,12 +51,26 @@ func CreateWillCmd() *cobra.Command {
 				return fmt.Errorf("failed to parse height '%s' into int64: %w", args[2], err)
 			}
 
-			// Parsing components
-			componentsArgs, _ := cmd.Flags().GetStringArray("component")
+			componentNames, err := cmd.Flags().GetStringArray("component-name")
+			if err != nil {
+				return fmt.Errorf("failed to parse component names: %w", err)
+			}
+
+			componentArgs, err := cmd.Flags().GetStringArray("component-args")
+			if err != nil {
+				return fmt.Errorf("failed to parse component arguments: %w", err)
+			}
+
+			if len(componentNames) != len(componentArgs) {
+				return fmt.Errorf("mismatch between component names and arguments count")
+			}
+
 			var components []*types.ExecutionComponent
-			for _, compArg := range componentsArgs {
-				component, err := parseComponentFromString(compArg)
-				fmt.Println(component)
+			for i, componentName := range componentNames {
+				componentArg := componentArgs[i]
+				// component, err := parseComponent(componentName, componentArg)
+				component, err := parseComponentFromString(componentName, componentArg)
+
 				if err != nil {
 					return fmt.Errorf("failed to parse component: %w", err)
 				}
@@ -70,38 +85,45 @@ func CreateWillCmd() *cobra.Command {
 				Components:  components,
 			}
 
+			fmt.Println(msg)
+
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
 
-	cmd.Flags().StringArray("component", []string{}, "Add components to the will. Format: --component <type> <params>. Can be used multiple times for different components.")
+	cmd.Flags().StringArray("component-name", []string{}, "Names of the components. Use multiple --component-name flags for multiple components.")
+	cmd.Flags().StringArray("component-args", []string{}, "Arguments for the components. Use multiple --component-args flags for multiple components. Must match the order of --component-name flags.")
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
 }
 
-func parseComponentFromString(compArg string) (*types.ExecutionComponent, error) {
-	// Split the input to separate the type from the parameters
-	parts := strings.SplitN(compArg, ":", 2)
-	fmt.Println(parts)
-	if len(parts) != 2 {
-		return nil, fmt.Errorf("invalid component format, expected '<type>:<params...>' but got: %s", compArg)
+func generateUniqueComponentID() string {
+	return uuid.New().String()
+}
+
+func parseComponentFromString(componentName, componentData string) (*types.ExecutionComponent, error) {
+	// The componentName is already separated, now just need to parse componentData
+	typeParts := strings.SplitN(componentData, ":", 2)
+	if len(typeParts) != 2 {
+		return nil, fmt.Errorf("invalid component data format, expected 'componentType:componentParams'")
 	}
 
-	componentType, paramsStr := parts[0], parts[1]
-	fmt.Println(componentType)
-	fmt.Println(paramsStr)
-	component := &types.ExecutionComponent{}
+	componentType, params := typeParts[0], typeParts[1]
+	componentID := generateUniqueComponentID() // Function to generate a unique ID for each component
+
+	var component types.ExecutionComponent
+	component.Name = componentName
+	component.Id = componentID
+	component.Status = "inactive"
 
 	switch componentType {
 	case "transfer":
-		// 'transfer' expects 'to,amount', but let's keep it flexible
-		params := strings.Split(paramsStr, ",")
-		if len(params) < 2 {
-			return nil, fmt.Errorf("transfer component expects at least 'to,amount', but got: %s", paramsStr)
+		dataParts := strings.Split(params, ",")
+		if len(dataParts) != 2 {
+			return nil, fmt.Errorf("invalid transfer component params, expected 'to,amount'")
 		}
-
-		to, amountStr := params[0], params[1]
+		to, amountStr := dataParts[0], dataParts[1]
 		amount, err := strconv.ParseInt(amountStr, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("invalid amount format for transfer component: %s", amountStr)
@@ -110,34 +132,16 @@ func parseComponentFromString(compArg string) (*types.ExecutionComponent, error)
 
 		component.ComponentType = &types.ExecutionComponent_Transfer{
 			Transfer: &types.TransferComponent{
-				Status: "inactive",
 				To:     to,
 				Amount: &amountCoin,
 			},
 		}
-
-	// Example for a component type that might have a variable number of parameters
-	case "customType":
-		// 'customType' expects a variable number of parameters
-		params := strings.Split(paramsStr, ",")
-		// Process params based on your custom logic here
-		// For example, you might only need to check if at least one parameter is provided
-		if len(params) < 1 {
-			return nil, fmt.Errorf("customType component expects at least one parameter, but got: %s", paramsStr)
-		}
-
-		// Assuming a hypothetical structure for CustomTypeComponent that takes a slice of strings as params
-		// component.ComponentType = &types.ExecutionComponent_CustomType{
-		//     CustomType: &types.CustomTypeComponent{
-		//         Params: params,
-		//     },
-		// }
-
+	// Handle other component types as needed
 	default:
 		return nil, fmt.Errorf("unsupported component type: %s", componentType)
 	}
 
-	return component, nil
+	return &component, nil
 }
 
 func CheckInCmd() *cobra.Command {

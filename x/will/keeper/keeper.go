@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 
@@ -78,15 +79,15 @@ func (k Keeper) GetWillByID(ctx context.Context, id string) (*types.Will, error)
 	return &will, nil
 }
 
-func createWillId(creator string, name string, beneficiary string) string {
-	return fmt.Sprintf("%s-%s-%s", creator, name, beneficiary)
+func createWillId(creator string, name string, beneficiary string, height int64) string {
+	return fmt.Sprintf("%s-%s-%s-%s", creator, name, beneficiary, height)
 }
 
 func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest) (*types.Will, error) {
 	store := k.storeService.OpenKVStore(ctx)
 
 	// Concatenate values to generate a unique hash
-	concatValues := createWillId(msg.Creator, msg.Name, msg.Beneficiary)
+	concatValues := createWillId(msg.Creator, msg.Name, msg.Beneficiary, msg.Height)
 	idBytes := []byte(concatValues)
 
 	// Generate a truncated hash of the concatenated values
@@ -299,9 +300,10 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 		will.Status = "expired"
 		// Store the marshaled will in the module's store
 		// storeErr := store.Set(key, willBz)
-		concatValues := createWillId(will.Creator, will.Name, will.Beneficiary)
-		idBytes := []byte(concatValues)
-		idString := hex.EncodeToString(idBytes)
+		// concatValues := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
+		// idBytes := []byte(concatValues)
+		// idString := hex.EncodeToString(idBytes)
+		idString := hex.EncodeToString([]byte(will.ID))
 		key := types.GetWillKey(idString)
 		fmt.Println(fmt.Printf("BEGIN BLOCKER WILL EXECUTED: %s", idString))
 
@@ -313,6 +315,8 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 		}
 
 	}
+
+	os.Exit(10)
 
 	return nil
 }

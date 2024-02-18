@@ -45,7 +45,7 @@ func (m msgServer) CheckIn(
 }
 
 func (m msgServer) Claim(ctx context.Context, msg *types.MsgClaimRequest) (*types.MsgClaimResponse, error) {
-	m.keeper.Claim(ctx, msg)
+	// m.keeper.Claim(ctx, msg)
 	return &types.MsgClaimResponse{
 		Success: true,
 		Message: "Claim processed successfully",
