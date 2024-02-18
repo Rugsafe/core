@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -14,7 +15,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/CosmWasm/wasmd/x/will/types"
-	"github.com/google/uuid"
 )
 
 func GetTxCmd() *cobra.Command {
@@ -70,7 +70,6 @@ func CreateWillCmd() *cobra.Command {
 				componentArg := componentArgs[i]
 				// component, err := parseComponent(componentName, componentArg)
 				component, err := parseComponentFromString(componentName, componentArg)
-
 				if err != nil {
 					return fmt.Errorf("failed to parse component: %w", err)
 				}
@@ -181,7 +180,7 @@ Example:
 					ClaimType: &types.MsgClaimRequest_SchnorrClaim{
 						SchnorrClaim: &types.SchnorrClaim{
 							Signature: []byte(parts[0]),
-							Message:   parts[1],
+							Message:   []byte(parts[1]),
 						},
 					},
 				}

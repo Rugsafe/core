@@ -49,6 +49,7 @@ require (
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
 	github.com/cosmos/ibc-go/v8 v8.0.0
 	github.com/distribution/reference v0.5.0
+	github.com/google/uuid v1.4.0
 	github.com/rs/zerolog v1.31.0
 	github.com/spf13/viper v1.17.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20231106174013-bbf56f31fb17
@@ -117,7 +118,6 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/orderedcode v0.0.1 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
-	github.com/google/uuid v1.4.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/gorilla/handlers v1.5.2 // indirect
@@ -205,6 +205,8 @@ require (
 	pgregory.net/rapid v1.1.0 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
+
+require github.com/btcsuite/btcd v0.0.0-20190109040709-5bda5314ca95
 
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0

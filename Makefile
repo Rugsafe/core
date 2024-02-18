@@ -85,6 +85,7 @@ ifeq ($(OS),Windows_NT)
 	exit 1
 else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/wasmd ./cmd/wasmd
+#go build $(BUILD_FLAGS) -o build/wasmd ./cmd/wasmd
 endif
 
 build-windows-client: go.sum
@@ -222,7 +223,7 @@ alice_d:
 will_test: will_cx
 	echo "Done with will tests"
 will_create:
-	./build/wasmd tx will create "test will ${i}" "beneficiary" 25 --component-name "component1" --component-args "transfer:w3ll1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,1" --component-name "component2" --component-args "transfer:w3ll1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,5" --from alice --chain-id w3ll-chain -y
+	./build/wasmd tx will create "test will ${i}" "beneficiary" 25 --component-name "component_for_transfer" --component-args "transfer:w3ll1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,1" --component-name "component_for_claim" --component-args "schnorr:public_key,unique_session_id,signature,message" --from alice --chain-id w3ll-chain -y
 	sleep 1
 will_cx:
 	@for i in {1..20}; do \
@@ -235,11 +236,22 @@ CID=3f84b8f2-0805-4e78-b55b-49debdc561c1
 will_get:
 	./build/wasmd query will get "${WID}"
 will_list:
-	./build/wasmd query will list w3ll1wwgher63skla9rt7z4t2tf59dly5hjnegx444j
+	./build/wasmd query will list w3ll19rhsh732v8v0xwn0nucm2un2f908e8h8xrrv6n
+
+# SCHNORR
+WID=<will_id>
+CID=<component_id>
+SIGNATURE=787A848E71043D280C50470E8E1532B2DD5D20EE912A45DBDD2BD1DFBF187EF67031A98831859DC34DFFEEDDA86831842CCD0079E1F92AF177F7F22CC1DCED05
+MESSAGE=0000000000000000000000000000000000000000000000000000000000000000
+PUBKEY=0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
 will_claim_schnorr:
-	./build/wasmd tx will claim "${WID}" "${CID}" "schnorr" "signature:data" --from alice --chain-id w3ll-chain -y
+	./build/wasmd tx will claim "${WID}" "${CID}" "schnorr" "${SIGNATURE}:${MESSAGE}:${PUBKEY}" --from alice --chain-id w3ll-chain -y
+
+# PEDERSEN
 will_claim_pedersen:
 	./build/wasmd tx will claim "${WID}" "${CID}" "pedersen" "commitment:blinding_factor:value" --from alice --chain-id w3ll-chain -y
+
+# GNARK
 will_claim_gnark:
 	./build/wasmd tx will claim "${WID}" "${CID}" "gnark" "proof:public_inputs" --from alice --chain-id w3ll-chain -y
 run:

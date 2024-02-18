@@ -18,6 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/CosmWasm/wasmd/x/will/schemes/schnorr"
 	"github.com/CosmWasm/wasmd/x/will/types"
 )
 
@@ -249,6 +250,27 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		// Process SchnorrClaim
 		fmt.Printf("Processing Schnorr claim with signature: %x and message: %s\n", claim.SchnorrClaim.Signature, claim.SchnorrClaim.Message)
 		// Add your validation logic here
+		// Extract the necessary fields from the SchnorrClaim
+		signature := claim.SchnorrClaim.Signature
+		message := []byte(claim.SchnorrClaim.Message) // Assuming the message in the claim is a string that needs conversion to []byte
+
+		// You might also need the public key related to the signature, depending on your implementation
+		publicKey := [33]byte(claim.SchnorrClaim.PublicKey) // Retrieve the public key associated with the signature from your system
+
+		// Convert the signature and message to the appropriate format
+		var sig [64]byte
+		copy(sig[:], signature) // Assuming the signature is already in the correct byte slice format
+
+		var msg [32]byte
+		copy(msg[:], message) // Ensure the message is correctly sized, potentially hashed to fit into 32 bytes
+
+		// Verify the Schnorr signature
+		valid, err := schnorr.Verify(publicKey, msg, sig)
+		if err != nil || !valid {
+			return errors.Wrapf(err, "Schnorr signature verification failed")
+		}
+
+		// Signature is valid; proceed with the claim processing
 
 	case *types.MsgClaimRequest_PedersenClaim:
 		// Process PedersenClaim

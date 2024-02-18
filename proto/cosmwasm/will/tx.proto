@@ -109,11 +109,15 @@ message MsgClaimRequest {
   }
 }
 
-// schnorr
+// SchnorrClaim is specifically structured for claims requiring a Schnorr
+// signature.
 message SchnorrClaim {
-  // Specific fields for Schnorr claims, e.g., signature, message, etc.
-  bytes signature = 1;
-  string message = 2; // Optional message that was signed, if applicable
+  // The public key associated with the Schnorr signature, typically 33 bytes.
+  bytes public_key = 1;
+  // The actual Schnorr signature, could be 64 bytes (r || s).
+  bytes signature = 2;
+  // The original message that was signed, needed for verification.
+  bytes message = 3;
 }
 
 // pedersen
