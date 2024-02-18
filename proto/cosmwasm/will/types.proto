@@ -20,7 +20,8 @@ message ExecutionComponent {
   // component type
   oneof component_type {
     TransferComponent transfer = 4; // Represents an asset transfer action.
-    ClaimComponent claim = 5; // Represents a claim action that a beneficiary must perform.
+    ClaimComponent claim =
+        5; // Represents a claim action that a beneficiary must perform.
     // ContractComponent contract = 3; // Future use: Represents an interaction
     // with a smart contract.
   }

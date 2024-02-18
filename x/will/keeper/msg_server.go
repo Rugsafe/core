@@ -37,19 +37,23 @@ func (m msgServer) CreateWill(
 	}, nil
 }
 
+func (m msgServer) Claim(ctx context.Context, msg *types.MsgClaimRequest) (*types.MsgClaimResponse, error) {
+	fmt.Println("INSIDE CLAIM FUNCTION")
+	err := m.keeper.Claim(ctx, msg)
+	if err != nil {
+		return nil, errors.Wrap(err, "upon claiming will component")
+	}
+	return &types.MsgClaimResponse{
+		Success: true,
+		Message: "Claim processed successfully",
+	}, nil
+}
+
 func (m msgServer) CheckIn(
 	ctx context.Context,
 	msg *types.MsgCheckInRequest,
 ) (*types.MsgCheckInResponse, error) {
 	return &types.MsgCheckInResponse{}, nil
-}
-
-func (m msgServer) Claim(ctx context.Context, msg *types.MsgClaimRequest) (*types.MsgClaimResponse, error) {
-	// m.keeper.Claim(ctx, msg)
-	return &types.MsgClaimResponse{
-		Success: true,
-		Message: "Claim processed successfully",
-	}, nil
 }
 
 // UpdateParams updates the module parameters

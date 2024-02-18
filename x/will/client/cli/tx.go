@@ -144,58 +144,16 @@ func parseComponentFromString(componentName, componentData string) (*types.Execu
 	return &component, nil
 }
 
-func CheckInCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "Checkin [will-id]",
-		Short:   "Submit a checkin to the will",
-		Aliases: []string{"cw"},
-		Args:    cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-			// msg, err := parseStoreCodeArgs(args[0], clientCtx.GetFromAddress().String(), cmd.Flags())
-			// if err != nil {
-			// 	return err
-			// }
-			fmt.Println("inside tx Checkin command 1")
-			//
-			// logger := log.Logger{}
-			// logger := log.NewTestLogger(t)
-			logger := network.NewCLILogger(cmd)
-			logger.Log("inside tx Checkin command 2")
-			logger.Log(string(args[0]))
-			// willId, err := strconv.ParseUint(args[0], 10, 64)
-			willId := args[0]
-			if err != nil {
-				return fmt.Errorf("failed to parse will ID: %w", err)
-			}
-
-			msg := types.MsgCheckInRequest{
-				Creator: clientCtx.GetFromAddress().String(),
-				Id:      willId,
-			}
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-		},
-		SilenceUsage: true,
-	}
-
-	// addInstantiatePermissionFlags(cmd)
-	flags.AddTxFlagsToCmd(cmd)
-	return cmd
-}
-
 func ClaimCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "claim [will-id] [claim-type] [claim-data]",
 		Short: "Submit a claim for a will",
 		Long: `Submit a claim for a will with specific data based on the claim type.
 Example:
-./build/wasmd tx will claim "will-id" "schnorr" "signature:data" --from alice --chain-id w3ll-chain -y
-./build/wasmd tx will claim "will-id" "pedersen" "commitment:blinding_factor:value" --from alice --chain-id w3ll-chain -y
-./build/wasmd tx will claim "will-id" "gnark" "proof:public_inputs" --from alice --chain-id w3ll-chain -y`,
-		Args: cobra.ExactArgs(3), // Ensuring exactly 3 arguments
+./build/wasmd tx will claim "will-id" "component-id" "schnorr" "signature:data" --from alice --chain-id w3ll-chain -y
+./build/wasmd tx will claim "will-id" "component-id" "pedersen" "commitment:blinding_factor:value" --from alice --chain-id w3ll-chain -y
+./build/wasmd tx will claim "will-id" "component-id" "gnark" "proof:public_inputs" --from alice --chain-id w3ll-chain -y`,
+		Args: cobra.ExactArgs(4), // Ensuring exactly 3 arguments
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -203,8 +161,9 @@ Example:
 			}
 
 			willID := args[0]
-			claimType := args[1]
-			claimData := args[2]
+			componentID := args[1]
+			claimType := args[2]
+			claimData := args[3]
 
 			// Construct the claim message based on the claim type
 			var msg *types.MsgClaimRequest
@@ -216,8 +175,9 @@ Example:
 					return fmt.Errorf("invalid data format for Schnorr claim, expected 'signature:data'")
 				}
 				msg = &types.MsgClaimRequest{
-					WillId:  willID,
-					Claimer: clientCtx.GetFromAddress().String(),
+					WillId:      willID,
+					Claimer:     clientCtx.GetFromAddress().String(),
+					ComponentId: componentID,
 					ClaimType: &types.MsgClaimRequest_SchnorrClaim{
 						SchnorrClaim: &types.SchnorrClaim{
 							Signature: []byte(parts[0]),
@@ -272,6 +232,48 @@ Example:
 		},
 	}
 
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func CheckInCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "Checkin [will-id]",
+		Short:   "Submit a checkin to the will",
+		Aliases: []string{"cw"},
+		Args:    cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			// msg, err := parseStoreCodeArgs(args[0], clientCtx.GetFromAddress().String(), cmd.Flags())
+			// if err != nil {
+			// 	return err
+			// }
+			fmt.Println("inside tx Checkin command 1")
+			//
+			// logger := log.Logger{}
+			// logger := log.NewTestLogger(t)
+			logger := network.NewCLILogger(cmd)
+			logger.Log("inside tx Checkin command 2")
+			logger.Log(string(args[0]))
+			// willId, err := strconv.ParseUint(args[0], 10, 64)
+			willId := args[0]
+			if err != nil {
+				return fmt.Errorf("failed to parse will ID: %w", err)
+			}
+
+			msg := types.MsgCheckInRequest{
+				Creator: clientCtx.GetFromAddress().String(),
+				Id:      willId,
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+		SilenceUsage: true,
+	}
+
+	// addInstantiatePermissionFlags(cmd)
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

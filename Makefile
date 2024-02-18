@@ -14,7 +14,6 @@ BUF_IMAGE=bufbuild/buf@sha256:3cb1f8a4b48bd5ad8f09168f10f607ddc318af202f5c057d52
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(BUF_IMAGE)
 HTTPS_GIT := https://github.com/CosmWasm/wasmd.git
 
-WID=77336c6c3172387267746a6b68793773373073737361796e34357a6b636c6d7a376366366d686e3064386d2d746573742077696c6c202d62656e6566696369617279
 
 export GO111MODULE = on
 
@@ -230,15 +229,18 @@ will_cx:
 		echo "Running command $$i time(s)"; \
 		i=$$i make will_c; \
 	done
+
+WID=77336c6c317777676865723633736b6c61397274377a34743274663539646c7935686a6e6567783434346a2d746573742077696c6c202d62656e65666963696172792d3235
+CID=3f84b8f2-0805-4e78-b55b-49debdc561c1
 will_get:
-	./build/wasmd query will get "77336c6c3172387267746a6b68793773373073737361796e34357a6b636c6d7a376366366d686e3064386d2d746573742077696c6c202d62656e6566696369617279"
+	./build/wasmd query will get "${WID}"
 will_list:
-	./build/wasmd query will list w3ll1ajld4yurd4ft9dqtztewrhn7u2t7pvhq82xq2m
+	./build/wasmd query will list w3ll1wwgher63skla9rt7z4t2tf59dly5hjnegx444j
 will_claim_schnorr:
-	./build/wasmd tx will claim "${WID}" "schnorr" "signature:data" --from alice --chain-id w3ll-chain -y
+	./build/wasmd tx will claim "${WID}" "${CID}" "schnorr" "signature:data" --from alice --chain-id w3ll-chain -y
 will_claim_pedersen:
-	./build/wasmd tx will claim "${WID}" "pedersen" "commitment:blinding_factor:value" --from alice --chain-id w3ll-chain -y
+	./build/wasmd tx will claim "${WID}" "${CID}" "pedersen" "commitment:blinding_factor:value" --from alice --chain-id w3ll-chain -y
 will_claim_gnark:
-	./build/wasmd tx will claim "${WID}" "gnark" "proof:public_inputs" --from alice --chain-id w3ll-chain -y
+	./build/wasmd tx will claim "${WID}" "${CID}" "gnark" "proof:public_inputs" --from alice --chain-id w3ll-chain -y
 run:
 	bash run.sh 

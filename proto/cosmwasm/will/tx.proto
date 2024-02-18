@@ -97,12 +97,15 @@ message MsgClaimRequest {
   // Claimer's address
   string claimer = 2;
 
+  // component id
+  string component_id = 3; // Add this line
+
   // OneOf claim data that contains the specific claim information based on the
   // will's execution component
   oneof claim_type {
-    SchnorrClaim schnorr_claim = 3;
-    PedersenClaim pedersen_claim = 4;
-    GnarkClaim gnark_claim = 5;
+    SchnorrClaim schnorr_claim = 4;
+    PedersenClaim pedersen_claim = 5;
+    GnarkClaim gnark_claim = 6;
   }
 }
 

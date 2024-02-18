@@ -28,6 +28,7 @@ type IKeeper interface {
 	) (*types.Will, error)
 	GetWillByID(ctx context.Context, id string) (*types.Will, error)
 	ListWillsByAddress(ctx context.Context, address string) ([]*types.Will, error)
+	Claim(ctx context.Context, msg *types.MsgClaimRequest) error
 }
 
 type Keeper struct {
@@ -80,7 +81,7 @@ func (k Keeper) GetWillByID(ctx context.Context, id string) (*types.Will, error)
 }
 
 func createWillId(creator string, name string, beneficiary string, height int64) string {
-	return fmt.Sprintf("%s-%s-%s-%s", creator, name, beneficiary, height)
+	return fmt.Sprintf("%s-%s-%s-%s", creator, name, beneficiary, strconv.Itoa(int(height)))
 }
 
 func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest) (*types.Will, error) {
@@ -209,6 +210,67 @@ func (k Keeper) ListWillsByAddress(ctx context.Context, address string) ([]*type
 	return wills, nil
 }
 
+// CLAIM
+func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
+	// Retrieve the will by ID to ensure it exists and to process the claim against it
+	fmt.Println("CLAIM FROM KEEPER: ")
+	fmt.Println(msg)
+	will, err := k.GetWillByID(ctx, msg.WillId)
+	fmt.Println("THE WILL TO CLAIM")
+	fmt.Println(will)
+	if err != nil {
+		return err
+	}
+
+	// Assuming GetWillByID returns nil for non-existent wills
+	if will == nil {
+		// Handle the case where the will doesn't exist
+		return fmt.Errorf("will with ID %s not found", msg.WillId)
+	}
+
+	// If there are specific fields that should be checked to determine if the will is "blank"
+	if will.ID == "" || will.Creator == "" {
+		// Assuming ID and Creator being empty means the will is "blank"
+		return fmt.Errorf("will with ID %s is blank", msg.WillId)
+	}
+
+	// will must be expired
+	if will.Status != "expired" {
+		fmt.Println("CANNOT CLAIM WILL, AS IT IS NOT EXPIRED")
+		return fmt.Errorf("will with ID %s is NOT EXPIRED", msg.WillId)
+	}
+
+	fmt.Printf("CLAIMING WILL %s", msg.WillId)
+	fmt.Println(msg)
+
+	// Process the claim based on its type
+	switch claim := msg.ClaimType.(type) {
+	case *types.MsgClaimRequest_SchnorrClaim:
+		// Process SchnorrClaim
+		fmt.Printf("Processing Schnorr claim with signature: %x and message: %s\n", claim.SchnorrClaim.Signature, claim.SchnorrClaim.Message)
+		// Add your validation logic here
+
+	case *types.MsgClaimRequest_PedersenClaim:
+		// Process PedersenClaim
+		fmt.Printf("Processing Pedersen claim with commitment: %x, blinding factor: %x, and value: %x\n", claim.PedersenClaim.Commitment, claim.PedersenClaim.BlindingFactor, claim.PedersenClaim.Value)
+		// Add your validation logic here
+
+	case *types.MsgClaimRequest_GnarkClaim:
+		// Process GnarkClaim
+		fmt.Printf("Processing Gnark claim with proof: %x and public inputs: %x\n", claim.GnarkClaim.Proof, claim.GnarkClaim.PublicInputs)
+		// Add your validation logic here
+
+	default:
+		// Handle unknown claim type
+		return fmt.Errorf("unknown claim type provided")
+	}
+
+	// Assuming the claim has been validated successfully, you can then update the will's status or components accordingly
+	os.Exit(1)
+	return nil
+}
+
+// expiration
 func (k Keeper) SetWillExpiryIndex(ctx sdk.Context, expiryHeight int64, willID string) {
 	store := ctx.KVStore(k.storeKey)
 	expiryKey := []byte(fmt.Sprintf("expiry:%d:%s", expiryHeight, willID))
@@ -232,10 +294,7 @@ func (k Keeper) GetWillsByExpiry(ctx sdk.Context, expiryHeight int64) ([]*types.
 	return wills, nil
 }
 
-func (k Keeper) Claim(ctx sdk.Context, msg *types.MsgClaimRequest) {
-	// claim specific component
-}
-
+// BEGIN BLOCKER
 func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
@@ -284,8 +343,16 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 			switch c := component.ComponentType.(type) {
 			case *types.ExecutionComponent_Transfer:
 				fmt.Printf("Transfer component found, to: %s, amount: %s\n", c.Transfer.To, c.Transfer.Amount.String())
+
+				// TODO: actually execute the trades
+
+				// update status to executed
+				component.Status = "executed"
+
 			case *types.ExecutionComponent_Claim:
 				fmt.Printf("Claim component found, evidence")
+				// set all claimable components to active - can now have claims submitted
+				component.Status = "active"
 				// fmt.Printf("Claim component found, evidence: %s\n", c.Claim.Evidence)
 			// case *types.ExecutionComponent_ContractCall:
 
@@ -298,12 +365,15 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 
 		// update will
 		will.Status = "expired"
-		willID := hex.EncodeToString([]byte(will.ID))
+		concatValues := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
+		idBytes := []byte(concatValues)
+		willID := hex.EncodeToString(idBytes)
+		// willID := hex.EncodeToString(idString)
 		key := types.GetWillKey(willID)
 		fmt.Println(fmt.Printf("BEGIN BLOCKER WILL EXECUTED: %s", willID))
 
 		willBz := k.cdc.MustMarshal(will)
-		storeErr := store.Set([]byte(key), willBz)
+		storeErr := store.Set(key, willBz)
 
 		if storeErr != nil {
 			return errors.Wrapf(storeErr, "inside k.beginBlocker storeErr, KV store set threw an error after updating will: %s", will.ID)
@@ -312,7 +382,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 	}
 
 	// DEBUG
-	os.Exit(10)
+	// os.Exit(10)
 
 	return nil
 }
