@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"go.dedis.ch/kyber/v3/group/edwards25519"
+
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
@@ -247,31 +249,42 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 	// Process the claim based on its type
 	switch claim := msg.ClaimType.(type) {
 	case *types.MsgClaimRequest_SchnorrClaim:
-		// Process SchnorrClaim
-		fmt.Printf("Processing Schnorr claim with signature: %x and message: %s\n", claim.SchnorrClaim.Signature, claim.SchnorrClaim.Message)
-		// Add your validation logic here
-		// Extract the necessary fields from the SchnorrClaim
-		signature := claim.SchnorrClaim.Signature
-		message := []byte(claim.SchnorrClaim.Message) // Assuming the message in the claim is a string that needs conversion to []byte
-
-		// You might also need the public key related to the signature, depending on your implementation
-		publicKey := [33]byte(claim.SchnorrClaim.PublicKey) // Retrieve the public key associated with the signature from your system
-
-		// Convert the signature and message to the appropriate format
-		var sig [64]byte
-		copy(sig[:], signature) // Assuming the signature is already in the correct byte slice format
-
-		var msg [32]byte
-		copy(msg[:], message) // Ensure the message is correctly sized, potentially hashed to fit into 32 bytes
-
-		// Verify the Schnorr signature
-		valid, err := schnorr.Verify(publicKey, msg, sig)
-		if err != nil || !valid {
-			return errors.Wrapf(err, "Schnorr signature verification failed")
+		// Assuming the public key and signature are provided as byte slices in the claim
+		publicKeyBytes := claim.SchnorrClaim.PublicKey // The public key bytes
+		signatureBytes := claim.SchnorrClaim.Signature // The signature bytes
+		message := claim.SchnorrClaim.Message          // The message as a byte slice
+		curve := edwards25519.NewBlakeSHA256Ed25519()
+		// Convert the public key bytes to a kyber.Point
+		publicKeyPoint := curve.Point()
+		if err := publicKeyPoint.UnmarshalBinary(publicKeyBytes); err != nil {
+			return fmt.Errorf("failed to unmarshal public key: %v", err)
 		}
 
-		// Signature is valid; proceed with the claim processing
+		// Assuming the signature consists of R and S components concatenated
+		// and that each component is of equal length
+		sigLen := len(signatureBytes) / 2
+		rBytes := signatureBytes[:sigLen]
+		sBytes := signatureBytes[sigLen:]
 
+		// Convert R and S bytes to kyber.Point and kyber.Scalar respectively
+		r := curve.Point()
+		if err := r.UnmarshalBinary(rBytes); err != nil {
+			return fmt.Errorf("failed to unmarshal R component: %v", err)
+		}
+		s := curve.Scalar().SetBytes(sBytes)
+
+		// Hash the message to a scalar using your Schnorr Hash function
+		messageScalar := schnorr.Hash(string(message)) // Convert the message to a string if your Hash function expects a string
+
+		// Construct the Signature struct
+		schnorrSignature := schnorr.Signature{R: r, S: s}
+
+		// Verify the Schnorr signature
+		if !schnorr.Verify(messageScalar, schnorrSignature, publicKeyPoint) {
+			return fmt.Errorf("Schnorr signature verification failed")
+		}
+
+		fmt.Println("Schnorr signature verified successfully.")
 	case *types.MsgClaimRequest_PedersenClaim:
 		// Process PedersenClaim
 		fmt.Printf("Processing Pedersen claim with commitment: %x, blinding factor: %x, and value: %x\n", claim.PedersenClaim.Commitment, claim.PedersenClaim.BlindingFactor, claim.PedersenClaim.Value)

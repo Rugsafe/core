@@ -223,7 +223,12 @@ alice_d:
 will_test: will_cx
 	echo "Done with will tests"
 will_create:
-	./build/wasmd tx will create "test will ${i}" "beneficiary" 25 --component-name "component_for_transfer" --component-args "transfer:w3ll1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,1" --component-name "component_for_claim" --component-args "schnorr:public_key,unique_session_id,signature,message" --from alice --chain-id w3ll-chain -y
+	./build/wasmd tx will create "test will ${i}" "beneficiary" 25 \
+	--component-name "component_for_transfer" --component-args "transfer:w3ll1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,1" \
+	--component-name "component_for_schnorr_claim" --component-args "schnorr:public_key_hex,signature_hex,hello" \
+	--component-name "component_for_pedersen_claim" --component-args "pedersen:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" \
+	--component-name "component_for_gnark_claim" --component-args "gnark:verification_key_hex,public_inputs_hex,proof_hex" \
+	--from alice --chain-id w3ll-chain -y
 	sleep 1
 will_cx:
 	@for i in {1..20}; do \
@@ -231,16 +236,14 @@ will_cx:
 		i=$$i make will_c; \
 	done
 
-WID=77336c6c317777676865723633736b6c61397274377a34743274663539646c7935686a6e6567783434346a2d746573742077696c6c202d62656e65666963696172792d3235
-CID=3f84b8f2-0805-4e78-b55b-49debdc561c1
+WID=77336c6c316e38336572646c353873336b716133366d6866656c38663730646a726b3067386675657379682d746573742077696c6c202d62656e65666963696172792d3235
+CID=8dc51dbb-1b75-410f-bd5c-193cbba2c260
 will_get:
 	./build/wasmd query will get "${WID}"
 will_list:
-	./build/wasmd query will list w3ll19rhsh732v8v0xwn0nucm2un2f908e8h8xrrv6n
+	./build/wasmd query will list w3ll1n83erdl58s3kqa36mhfel8f70djrk0g8fuesyh
 
 # SCHNORR
-WID=<will_id>
-CID=<component_id>
 SIGNATURE=787A848E71043D280C50470E8E1532B2DD5D20EE912A45DBDD2BD1DFBF187EF67031A98831859DC34DFFEEDDA86831842CCD0079E1F92AF177F7F22CC1DCED05
 MESSAGE=0000000000000000000000000000000000000000000000000000000000000000
 PUBKEY=0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798

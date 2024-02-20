@@ -135,7 +135,40 @@ func parseComponentFromString(componentName, componentData string) (*types.Execu
 				Amount: &amountCoin,
 			},
 		}
-	// Handle other component types as needed
+
+	case "schnorr":
+		dataParts := strings.Split(params, ",")
+		if len(dataParts) != 3 {
+			return nil, fmt.Errorf("invalid schnorr component params, expected 'public key, signature, message'")
+		}
+		public_key, signature, message := dataParts[0], dataParts[1], dataParts[2]
+		fmt.Println("INSIDE parseComponentFromString for schnorr: ", public_key, signature, message)
+		component.ComponentType = &types.ExecutionComponent_Claim{
+			Claim: &types.ClaimComponent{
+				SchemeType: &types.ClaimComponent_Schnorr{
+					Schnorr: &types.SchnorrSignature{
+						PublicKey: []byte(public_key),
+						Signature: []byte(signature),
+						Message:   message,
+					},
+				},
+			},
+		}
+	case "pedersen":
+		dataParts := strings.Split(params, ",")
+		if len(dataParts) != 4 {
+			return nil, fmt.Errorf("invalid pedersen component params, expected 'commitment,random factor, value, blinding factor'")
+		}
+		commitment, random_factor, value, blinding_factor := dataParts[0], dataParts[1], dataParts[2], dataParts[3]
+		fmt.Println("INSIDE parseComponentFromString for pedersen: ", commitment, random_factor, value, blinding_factor)
+	case "gnark":
+		dataParts := strings.Split(params, ",")
+		if len(dataParts) != 3 {
+			return nil, fmt.Errorf("invalid gnark component params, expected 'verification key, public inputs, proof'")
+		}
+		verification_key, public_inputs, proof := dataParts[0], dataParts[1], dataParts[2]
+		fmt.Println("INSIDE parseComponentFromString for pedersen: ", verification_key, public_inputs, proof)
+
 	default:
 		return nil, fmt.Errorf("unsupported component type: %s", componentType)
 	}
@@ -170,7 +203,8 @@ Example:
 			case "schnorr":
 				// Parse the claim data for SchnorrClaim
 				parts := strings.Split(claimData, ":")
-				if len(parts) != 2 {
+				fmt.Println(parts)
+				if len(parts) != 3 {
 					return fmt.Errorf("invalid data format for Schnorr claim, expected 'signature:data'")
 				}
 				msg = &types.MsgClaimRequest{
@@ -179,8 +213,9 @@ Example:
 					ComponentId: componentID,
 					ClaimType: &types.MsgClaimRequest_SchnorrClaim{
 						SchnorrClaim: &types.SchnorrClaim{
-							Signature: []byte(parts[0]),
-							Message:   []byte(parts[1]),
+							PublicKey: []byte(parts[0]),
+							Signature: []byte(parts[1]),
+							Message:   []byte(parts[2]),
 						},
 					},
 				}

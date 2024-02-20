@@ -183,6 +183,7 @@ require (
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/zondax/hid v0.9.2 // indirect
 	github.com/zondax/ledger-go v0.14.3 // indirect
+	go.dedis.ch/fixbuf v1.0.3 // indirect
 	go.etcd.io/bbolt v1.3.8 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
@@ -206,7 +207,10 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-require github.com/btcsuite/btcd v0.0.0-20190109040709-5bda5314ca95
+require (
+	github.com/btcsuite/btcd v0.0.0-20190109040709-5bda5314ca95 // indirect
+	go.dedis.ch/kyber/v3 v3.1.0
+)
 
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0

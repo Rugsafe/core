@@ -47,10 +47,8 @@ message ClaimComponent {
 // SchnorrSignature is used for claims that require a Schnorr signature.
 message SchnorrSignature {
   bytes public_key = 1; // The public key associated with the signature.
-  bytes unique_session_id =
-      2; // A unique identifier for the session, enhancing security.
-  bytes signature = 3; // The digital signature for claim verification.
-  string message = 4;  // An optional message that may accompany the signature.
+  bytes signature = 2;  // The digital signature for claim verification.
+  string message = 3;   // An optional message that may accompany the signature.
 }
 
 // PedersenCommitment enables the use of a Pedersen commitment for claims.
