@@ -33,6 +33,11 @@ func (m *MockKeeper) ListWillsByAddress(ctx context.Context, address string) ([]
 	return args.Get(0).([]*types.Will), args.Error(1)
 }
 
+func (mk *MockKeeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
+	args := mk.Called(ctx, msg)
+	return args.Error(0)
+}
+
 func TestCreateWill(t *testing.T) {
 	// Context for the tests
 	ctx := context.TODO()

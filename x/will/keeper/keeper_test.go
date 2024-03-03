@@ -2,6 +2,8 @@ package keeper_test
 
 import (
 	"context"
+	"encoding/hex"
+	"fmt"
 	"testing"
 
 	_proto "github.com/cosmos/gogoproto/proto"
@@ -12,14 +14,19 @@ import (
 
 	"cosmossdk.io/core/store"
 	corestoretypes "cosmossdk.io/core/store"
+	"cosmossdk.io/log"
+
 	// corestoretypes "cosmossdk.io/core/store"
 	storetypes "cosmossdk.io/store/types"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	// tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	"github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/will/keeper"
 	"github.com/CosmWasm/wasmd/x/will/types"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 )
 
 type MockKVStore struct {
@@ -277,19 +284,26 @@ func (m *MockKVStoreService) OpenKVStore(ctx context.Context) store.KVStore {
 }
 
 func setupMockKeeper(t *testing.T) (*keeper.Keeper, context.Context, *MockCodec, *MockKVStoreService) {
+	w3llApp := app.Setup(t)
+	mockedCodec := w3llApp.AppCodec()
 	mockCodec := new(MockCodec)
 	mockStoreService := new(MockKVStoreService)
-	ctx := context.Background()
 
-	// Assuming NewKeeper takes a logger as the third argument, you may need to adjust this based on your actual NewKeeper signature
-	kpr := keeper.NewKeeper(
-		mockCodec,
-		mockStoreService,
-		nil,
-	)
+	// ctx := context.Background()
+	// Create a mock sdk.Context
+	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
 
+	// Create a no-op logger. This logger does nothing but satisfies the interface requirement.
+	noOpLogger := log.NewNopLogger()
+	kpr := keeper.NewKeeper(mockedCodec, mockStoreService, noOpLogger)
 	return &kpr, ctx, mockCodec, mockStoreService
 }
+
+const (
+	// Example hexadecimal strings for public key and signature
+	publicKeyHex = "3059...yourPublicKeyHexHere...AOGQ=="
+	signatureHex = "0D02...yourSignatureHexHere...9C"
+)
 
 func TestKeeperCreateWill(t *testing.T) {
 	kpr, ctx, mockCodec, mockStoreService := setupMockKeeper(t)
@@ -302,6 +316,8 @@ func TestKeeperCreateWill(t *testing.T) {
 		Creator:     "creator-address",
 		Name:        "Test Will",
 		Beneficiary: "beneficiary-address",
+		Height:      1,
+		Components:  []*types.ExecutionComponent{},
 	}
 
 	// Assuming CreateWill method is correctly implemented to handle mocks
@@ -326,4 +342,142 @@ func TestKeeperCreateWill(t *testing.T) {
 	mockCodec.On("UnmarshalJSON", mock.AnythingOfType("[]byte"), mock.Anything).Return(nil)
 	mockCodec.On("UnmarshalLengthPrefixed", mock.AnythingOfType("[]byte"), mock.Anything).Return(nil)
 	mockStoreService.AssertExpectations(t)
+
+	// Assertions to verify the contents of the will
+	assert.Equal(t, msg.Creator, will.Creator, "will creator should match the request")
+	assert.Equal(t, msg.Name, will.Name, "will name should match the request")
+	assert.Equal(t, msg.Beneficiary, will.Beneficiary, "will beneficiary should match the request")
+	assert.Equal(t, msg.Height, will.Height, "will height should match the request")
+
+	// If you have specific expectations for the Components, verify those as well
+	// This example assumes you want to check the length of the components slice
+	assert.Len(t, will.Components, len(msg.Components), "number of will components should match the request")
+
+}
+
+/*
+func TestKeeperCreateAndClaimWill(t *testing.T) {
+	kpr, ctx, _, _ := setupMockKeeper(t)
+
+	// Create Will
+	msg := &types.MsgCreateWillRequest{
+		Creator:     "creator-address",
+		Name:        "Test Will",
+		Beneficiary: "beneficiary-address",
+		Height:      1,
+		Components:  []*types.ExecutionComponent{},
+	}
+
+	will, err := kpr.CreateWill(sdk.UnwrapSDKContext(ctx), msg)
+	require.NoError(t, err)
+	assert.NotNil(t, will)
+
+	// Prepare for claim
+	publicKeyHex := "3059301306072a8648ce3d020106082a8648ce3d03010703420004..." // Example public key in hex
+	signatureHex := "3045022100a34f..."                                         // Example signature in hex
+
+	publicKeyBytes, err := hex.DecodeString(publicKeyHex)
+	require.NoError(t, err)
+
+	signatureBytes, err := hex.DecodeString(signatureHex)
+	require.NoError(t, err)
+
+	claimMsg := &types.MsgClaimRequest{
+		WillId: will.ID,
+		ClaimType: &types.MsgClaimRequest_SchnorrClaim{ // Assuming this is the correct type
+			SchnorrClaim: &types.SchnorrClaim{
+				PublicKey: publicKeyBytes,
+				Signature: signatureBytes,
+				Message:   []byte("Claim message"), // The message that was signed
+			},
+		},
+	}
+
+	// Process the claim
+	// Note: Adjust the method call if your Keeper has a different method for processing claims
+	err = kpr.Claim(sdk.UnwrapSDKContext(ctx), claimMsg)
+	require.NoError(t, err)
+
+	// Additional assertions to verify the claim was processed as expected
+	// For example, verify the will's status, or that the beneficiary received the expected outcome
+}
+*/
+
+func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
+	kpr, ctx, _, _ := setupMockKeeper(t)
+
+	// Hardcoded values from your Schnorr signature example
+	publicKeyHex := "2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c"
+	signatureRHex := "7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b"
+	signatureSHex := "165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06"
+	message := "message-2b-signed"
+
+	// Convert hexadecimal strings to bytes
+	publicKeyBytes, err := hex.DecodeString(publicKeyHex)
+	require.NoError(t, err)
+	signatureRBytes, err := hex.DecodeString(signatureRHex)
+	require.NoError(t, err)
+	signatureSBytes, err := hex.DecodeString(signatureSHex)
+	require.NoError(t, err)
+	// messageBytes := []byte(message)
+
+	// Assuming the signature is the concatenation of R and S components
+	signatureBytes := append(signatureRBytes, signatureSBytes...)
+
+	msg := &types.MsgCreateWillRequest{
+		Creator:     "creator-address",
+		Name:        "Test Will",
+		Beneficiary: "beneficiary-address",
+		Height:      1,
+		Components: []*types.ExecutionComponent{
+			{
+				Name:   "SchnorrSignatureComponent",
+				Id:     "unique-component-id",
+				Status: "active",
+				ComponentType: &types.ExecutionComponent_Claim{
+					Claim: &types.ClaimComponent{
+						SchemeType: &types.ClaimComponent_Schnorr{
+							Schnorr: &types.SchnorrSignature{
+								PublicKey: publicKeyBytes,
+								Signature: signatureBytes,
+								Message:   message,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// Assuming CreateWill method is correctly implemented to handle mocks
+	will, err := kpr.CreateWill(sdk.UnwrapSDKContext(ctx), msg)
+	require.NoError(t, err)
+	assert.NotNil(t, will)
+
+	fmt.Println("====[TEST]HERE IS THE PRACTICE WILL[TEST]=====")
+	fmt.Println((will))
+
+	// Assuming a will has already been created and you have its ID
+	willID := will.ID // Replace with the actual will ID
+	componentID := will.Components[0].Id
+
+	// Construct the claim request with the Schnorr claim
+	claimMsg := &types.MsgClaimRequest{
+		WillId:      willID,
+		Claimer:     "jovi",
+		ComponentId: componentID,
+		ClaimType: &types.MsgClaimRequest_SchnorrClaim{
+			SchnorrClaim: &types.SchnorrClaim{
+				PublicKey: publicKeyBytes,
+				Signature: signatureBytes,
+				Message:   []byte(message),
+			},
+		},
+	}
+
+	// Process the claim
+	err = kpr.Claim(sdk.UnwrapSDKContext(ctx), claimMsg)
+	require.NoError(t, err, "processing Schnorr claim should not produce an error")
+
+	// Additional assertions can be made here to verify the claim was processed as expected
 }

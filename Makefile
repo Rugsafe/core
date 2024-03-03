@@ -222,6 +222,9 @@ alice_d:
 	 ./build/wasmd keys delete alice 
 will_test: will_cx
 	echo "Done with will tests"
+
+### TODO: both will_create and claim_schnorr shouldn't accept all schnor claim params..... makes no sense lol
+### start by removing sig from schnorr
 will_create:
 	./build/wasmd tx will create "test will ${i}" "beneficiary" 25 \
 	--component-name "component_for_transfer" --component-args "transfer:w3ll1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,1" \
@@ -236,26 +239,39 @@ will_cx:
 		i=$$i make will_c; \
 	done
 
-WID=77336c6c316e38336572646c353873336b716133366d6866656c38663730646a726b3067386675657379682d746573742077696c6c202d62656e65666963696172792d3235
-CID=8dc51dbb-1b75-410f-bd5c-193cbba2c260
+WID=77336c6c3130746c7a7372633261666d71377239377673796835326738747730713875367161326a36676d2d746573742077696c6c202d62656e65666963696172792d3235
+CID=79cf73c1-f149-4269-9b1d-5b951a26c6c1
+ADDRESS=w3ll10tlzsrc2afmq7r97vsyh52g8tw0q8u6qa2j6gm
 will_get:
 	./build/wasmd query will get "${WID}"
 will_list:
-	./build/wasmd query will list w3ll1n83erdl58s3kqa36mhfel8f70djrk0g8fuesyh
+	./build/wasmd query will list ${ADDRESS}
 
 # SCHNORR
-SIGNATURE=787A848E71043D280C50470E8E1532B2DD5D20EE912A45DBDD2BD1DFBF187EF67031A98831859DC34DFFEEDDA86831842CCD0079E1F92AF177F7F22CC1DCED05
-MESSAGE=0000000000000000000000000000000000000000000000000000000000000000
-PUBKEY=0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
 will_claim_schnorr:
+	SIGNATURE=bb92cc95d68a83c17f6919a2e789947b1784b89c8d3cb5b31305844c8f7a0549
+	MESSAGE="message-2b-signed"
+	PUBKEY=d214cbdf6be7646ef2a56c60bba6561dd2e19aea8e9d6f55d0923795a6edc107
 	./build/wasmd tx will claim "${WID}" "${CID}" "schnorr" "${SIGNATURE}:${MESSAGE}:${PUBKEY}" --from alice --chain-id w3ll-chain -y
-
+# will_claim_schnorr:
+# 	@echo "Claiming with Schnorr verification..."
+# 	@SIGNATURE="4aadcea21fe145eeb73a72a8eb3fac914c79c9c2efbf86e9ccc616bf94ede603"; \
+# 	MESSAGE="message-2b-signed"; \
+# 	PUBKEY="d214cbdf6be7646ef2a56c60bba6561dd2e19aea8e9d6f55d0923795a6edc107"; \
+# 	./build/wasmd tx will claim "$${WID}" "$${CID}" "schnorr" "$${SIGNATURE}:$${MESSAGE}:$${PUBKEY}" --from alice --chain-id w3ll-chain -y
 # PEDERSEN
 will_claim_pedersen:
-	./build/wasmd tx will claim "${WID}" "${CID}" "pedersen" "commitment:blinding_factor:value" --from alice --chain-id w3ll-chain -y
+	COMMITMENT=0xabc
+	BLINDING_FACTOR=0000000000000000000000000000000000000000000000000000000000000000
+	VALUE=0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
+	./build/wasmd tx will claim "${WID}" "${CID}" "pedersen" "${COMMITMENT}:$(BLINDING_FACTOR):${VALUE}" --from alice --chain-id w3ll-chain -y
 
 # GNARK
 will_claim_gnark:
-	./build/wasmd tx will claim "${WID}" "${CID}" "gnark" "proof:public_inputs" --from alice --chain-id w3ll-chain -y
+	PROOF=0xabc
+	PUBLIC_INPUTS=0000000000000000000000000000000000000000000000000000000000000000
+	./build/wasmd tx will claim "${WID}" "${CID}" "gnark" "${PROOF}:${PUBLIC_INPUTS}" --from alice --chain-id w3ll-chain -y
 run:
 	bash run.sh 
+will_test_keeper:
+	go test x/will/keeper/keeper_test.go

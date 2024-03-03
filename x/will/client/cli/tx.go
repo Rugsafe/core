@@ -161,6 +161,16 @@ func parseComponentFromString(componentName, componentData string) (*types.Execu
 		}
 		commitment, random_factor, value, blinding_factor := dataParts[0], dataParts[1], dataParts[2], dataParts[3]
 		fmt.Println("INSIDE parseComponentFromString for pedersen: ", commitment, random_factor, value, blinding_factor)
+		component.ComponentType = &types.ExecutionComponent_Claim{
+			Claim: &types.ClaimComponent{
+				SchemeType: &types.ClaimComponent_Pedersen{
+					Pedersen: &types.PedersenCommitment{
+						BlindingFactor: []byte(blinding_factor),
+						Value:          []byte(value),
+					},
+				},
+			},
+		}
 	case "gnark":
 		dataParts := strings.Split(params, ",")
 		if len(dataParts) != 3 {
@@ -168,7 +178,16 @@ func parseComponentFromString(componentName, componentData string) (*types.Execu
 		}
 		verification_key, public_inputs, proof := dataParts[0], dataParts[1], dataParts[2]
 		fmt.Println("INSIDE parseComponentFromString for pedersen: ", verification_key, public_inputs, proof)
-
+		component.ComponentType = &types.ExecutionComponent_Claim{
+			Claim: &types.ClaimComponent{
+				SchemeType: &types.ClaimComponent_Gnark{
+					Gnark: &types.GnarkZkSnark{
+						VerificationKey: []byte(verification_key),
+						PublicInputs:    []byte(public_inputs),
+					},
+				},
+			},
+		}
 	default:
 		return nil, fmt.Errorf("unsupported component type: %s", componentType)
 	}

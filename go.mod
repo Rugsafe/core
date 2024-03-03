@@ -207,10 +207,7 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-require (
-	github.com/btcsuite/btcd v0.0.0-20190109040709-5bda5314ca95 // indirect
-	go.dedis.ch/kyber/v3 v3.1.0
-)
+require go.dedis.ch/kyber/v3 v3.1.0
 
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0

@@ -97,7 +97,7 @@ func mulSig(sigA, sigB Signature, pubKeyA, pubKeyB kyber.Point) (Signature, kybe
 
 /*
 func main() {
-	message := "message-2b-signed"
+	message := "hello"
 	fmt.Println("Message: ", message)
 	fmt.Printf("\n------------- Key generation -------------\n")
 	// Generate EdDSA Keypair

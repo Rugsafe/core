@@ -1,8 +1,91 @@
-=============== Feb 20, 2024 (EST) ===============
-06:23:26.641731 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-06:23:26.696515 db@open opening
-06:23:26.696873 version@stat F·[] S·0B[] Sc·[]
-06:23:26.713741 db@janitor F·2 G·0
-06:23:26.713776 db@open done T·17.23ms
-06:27:59.460548 db@close closing
-06:27:59.460804 db@close done T·256.208µs
+=============== Feb 23, 2024 (EST) ===============
+04:55:16.461718 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+04:55:16.518825 db@open opening
+04:55:16.519398 version@stat F·[] S·0B[] Sc·[]
+04:55:16.537951 db@janitor F·2 G·0
+04:55:16.537990 db@open done T·19.139875ms
+19:32:20.897064 memdb@flush N·15345 S·3MiB
+19:32:21.040302 memdb@flush created L0@3 N·15345 S·2MiB "BH:..af1,v6321":"blo..ore,v6"
+19:32:21.040906 version@stat F·[1] S·2MiB[2MiB] Sc·[0.25]
+19:32:21.065064 memdb@flush committed F·1 T·166.546083ms
+19:32:21.089825 journal@remove removed @1
+=============== Feb 24, 2024 (EST) ===============
+00:34:16.457612 memdb@flush N·15329 S·3MiB
+00:34:16.616218 memdb@flush created L0@5 N·15329 S·2MiB "BH:..4c7,v23997":"blo..ore,v15348"
+00:34:16.617189 version@stat F·[2] S·4MiB[4MiB] Sc·[0.50]
+00:34:16.635374 memdb@flush committed F·1 T·177.103292ms
+00:34:16.653760 journal@remove removed @2
+04:25:56.831408 memdb@flush N·15329 S·3MiB
+04:25:56.969497 memdb@flush created L0@7 N·15329 S·2MiB "BH:..f19,v33225":"blo..ore,v30678"
+04:25:56.969539 version@stat F·[3] S·6MiB[6MiB] Sc·[0.75]
+04:25:56.987554 memdb@flush committed F·1 T·155.985958ms
+04:25:56.998097 journal@remove removed @4
+08:03:59.320716 memdb@flush N·15324 S·3MiB
+08:03:59.458761 memdb@flush created L0@9 N·15324 S·2MiB "BH:..62a,v59121":"blo..ore,v46008"
+08:03:59.458844 version@stat F·[4] S·9MiB[9MiB] Sc·[1.00]
+08:03:59.475776 memdb@flush committed F·1 T·154.878416ms
+08:03:59.486161 journal@remove removed @6
+08:03:59.486189 table@compaction L0·4 -> L1·0 S·9MiB Q·61332
+08:03:59.550776 table@build created L1@10 N·18196 S·2MiB "BH:..f19,v33225":"C:7977,v47866"
+08:03:59.585783 table@build created L1@11 N·9834 S·2MiB "C:7978,v47872":"H:7628,v45764"
+08:03:59.615714 table@build created L1@12 N·7422 S·2MiB "H:7629,v45770":"P:510:0,v3055"
+08:03:59.649688 table@build created L1@13 N·7817 S·2MiB "P:5110:0,v30655":"SC:2944,v17663"
+08:03:59.676747 table@build created L1@14 N·7838 S·1MiB "SC:2945,v17669":"blo..ore,v61326"
+08:03:59.676809 version@stat F·[0 5] S·9MiB[0B 9MiB] Sc·[0.00 0.09]
+08:03:59.695665 table@compaction committed F+1 S+16KiB Ke·0 D·10220 T·209.458168ms
+08:03:59.695952 table@remove removed @9
+08:03:59.697767 table@remove removed @7
+08:03:59.698894 table@remove removed @5
+08:03:59.703810 table@remove removed @3
+14:43:57.364081 memdb@flush N·15282 S·3MiB
+14:43:57.498257 memdb@flush created L0@16 N·15282 S·2MiB "BH:..24f,v61791":"blo..ore,v61332"
+14:43:57.498355 version@stat F·[1 5] S·11MiB[2MiB 9MiB] Sc·[0.25 0.09]
+14:43:57.517635 memdb@flush committed F·1 T·152.793333ms
+14:43:57.531815 journal@remove removed @8
+21:00:48.584287 memdb@flush N·15282 S·3MiB
+21:00:48.678347 memdb@flush created L0@18 N·15282 S·2MiB "BH:..899,v86919":"blo..ore,v76614"
+21:00:48.678831 version@stat F·[2 5] S·14MiB[4MiB 9MiB] Sc·[0.50 0.09]
+21:00:48.716187 memdb@flush committed F·1 T·131.883875ms
+21:00:48.777155 journal@remove removed @15
+=============== Feb 25, 2024 (EST) ===============
+16:17:23.558427 memdb@flush N·15251 S·3MiB
+16:17:23.689874 memdb@flush created L0@20 N·15251 S·2MiB "BH:..e89,v96309":"blo..ore,v91896"
+16:17:23.689935 version@stat F·[3 5] S·16MiB[7MiB 9MiB] Sc·[0.75 0.09]
+16:17:23.706903 memdb@flush committed F·1 T·148.037416ms
+16:17:23.723996 journal@remove removed @17
+20:45:30.993641 memdb@flush N·15226 S·3MiB
+20:45:31.118932 memdb@flush created L0@22 N·15226 S·2MiB "BH:..d2a,v118599":"blo..ore,v107148"
+20:45:31.119272 version@stat F·[4 5] S·18MiB[9MiB 9MiB] Sc·[1.00 0.09]
+20:45:31.135991 memdb@flush committed F·1 T·141.452249ms
+20:45:31.147885 journal@remove removed @19
+20:45:31.148206 table@compaction L0·4 -> L1·5 S·18MiB Q·122370
+20:45:31.189925 table@build created L1@23 N·23695 S·2MiB "BH:..d2a,v118599":"C:12967,v77806"
+20:45:31.222935 table@build created L1@24 N·12621 S·2MiB "C:12968,v77812":"C:5971,v35830"
+20:45:31.253965 table@build created L1@25 N·10243 S·2MiB "C:5972,v35836":"H:1519,v9110"
+20:45:31.296886 table@build created L1@26 N·9189 S·2MiB "H:15190,v91136":"H:5103,v30614"
+20:45:31.327832 table@build created L1@27 N·8166 S·2MiB "H:5104,v30620":"P:1..7:0,v74737"
+20:45:31.366909 table@build created L1@28 N·6601 S·2MiB "P:1..8:0,v74743":"P:1..9:0,v110389"
+20:45:31.399899 table@build created L1@29 N·6662 S·2MiB "P:1839:0,v11029":"P:6037:0,v36217"
+20:45:31.445026 table@build created L1@30 N·8708 S·2MiB "P:6038:0,v36223":"SC:13872,v83231"
+20:45:31.482935 table@build created L1@31 N·12579 S·2MiB "SC:13873,v83237":"SC:6839,v41033"
+20:45:31.506918 table@build created L1@32 N·3511 S·575KiB "SC:684,v4103":"blo..ore,v122364"
+20:45:31.507275 version@stat F·[0 10] S·18MiB[0B 18MiB] Sc·[0.00 0.19]
+20:45:31.544849 table@compaction committed F+1 S+57KiB Ke·0 D·10173 T·396.6325ms
+20:45:31.545731 table@remove removed @22
+20:45:31.547053 table@remove removed @20
+20:45:31.548711 table@remove removed @18
+20:45:31.553867 table@remove removed @16
+20:45:31.554989 table@remove removed @10
+20:45:31.555773 table@remove removed @11
+20:45:31.556494 table@remove removed @12
+20:45:31.557673 table@remove removed @13
+20:45:31.558302 table@remove removed @14
+=============== Feb 26, 2024 (EST) ===============
+01:35:31.983735 memdb@flush N·15227 S·3MiB
+01:35:32.128914 memdb@flush created L0@34 N·15227 S·2MiB "BH:..244,v130659":"blo..ore,v122370"
+01:35:32.128979 version@stat F·[1 10] S·21MiB[2MiB 18MiB] Sc·[0.25 0.19]
+01:35:32.146042 memdb@flush committed F·1 T·161.516917ms
+01:35:32.157274 journal@remove removed @21
+=============== Mar 1, 2024 (EST) ===============
+13:24:19.406795 db@close closing
+13:24:19.407445 db@close done T·804.792µs
