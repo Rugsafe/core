@@ -200,6 +200,6 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 
 	// Process the claim
 	err = kpr.Claim(sdk.UnwrapSDKContext(ctx_future), claimMsg)
-	// require.NoError(t, err, "processing Schnorr claim should not produce an error")
-	assert.True(t, true)
+	require.NoError(t, err, "processing Schnorr claim should not produce an error")
+	//TODO: verify will components status is not active anymore after successful claim
 }

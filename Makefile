@@ -228,7 +228,7 @@ will_test: will_cx
 will_create:
 	./build/wasmd tx will create "test will ${i}" "beneficiary" 25 \
 	--component-name "component_for_transfer" --component-args "transfer:w3ll1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,1" \
-	--component-name "component_for_schnorr_claim" --component-args "schnorr:public_key_hex,signature_hex,hello" \
+	--component-name "component_for_schnorr_claim" --component-args "schnorr:2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c,7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06,message-2b-signed" \
 	--component-name "component_for_pedersen_claim" --component-args "pedersen:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" \
 	--component-name "component_for_gnark_claim" --component-args "gnark:verification_key_hex,public_inputs_hex,proof_hex" \
 	--from alice --chain-id w3ll-chain -y
@@ -249,9 +249,9 @@ will_list:
 
 # SCHNORR
 will_claim_schnorr:
-	SIGNATURE=bb92cc95d68a83c17f6919a2e789947b1784b89c8d3cb5b31305844c8f7a0549
+	SIGNATURE=7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06
 	MESSAGE="message-2b-signed"
-	PUBKEY=d214cbdf6be7646ef2a56c60bba6561dd2e19aea8e9d6f55d0923795a6edc107
+	PUBKEY=2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c
 	./build/wasmd tx will claim "${WID}" "${CID}" "schnorr" "${SIGNATURE}:${MESSAGE}:${PUBKEY}" --from alice --chain-id w3ll-chain -y
 # will_claim_schnorr:
 # 	@echo "Claiming with Schnorr verification..."
