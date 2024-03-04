@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"os"
 	"strconv"
 	"time"
 
@@ -351,7 +350,6 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 	}
 
 	// Assuming the claim has been validated successfully, you can then update the will's status or components accordingly
-	os.Exit(1)
 	return nil
 }
 
