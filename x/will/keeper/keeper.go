@@ -163,6 +163,10 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 	updatedCreatorBz := k.cdc.MustMarshal(&willIdsAtCreator)
 	store.Set([]byte(creatorKey), updatedCreatorBz)
 
+	fmt.Println("KEEPER TEST DEBUG:")
+	fmt.Println(will.ID)
+	fmt.Println(willIdsAtHeight.Ids)
+
 	return &will, nil
 }
 
@@ -303,14 +307,14 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		s := curve.Scalar().SetBytes(sBytes)
 
 		// Hash the message to a scalar using your Schnorr Hash function
-		messageScalar := schnorr.Hash(string(message)) // Convert the message to a string if your Hash function expects a string
+		messageScalar := schnorr.Hash(string(message) + string(hex.EncodeToString(publicKeyBytes))) // Convert the message to a string if your Hash function expects a string
 
 		// Construct the Signature struct
 		schnorrSignature := schnorr.Signature{R: r, S: s}
 
 		// Verify the Schnorr signature
 		if !schnorr.Verify(messageScalar, schnorrSignature, publicKeyPoint) {
-			// return fmt.Errorf("schnorr signature verification failed")
+			return fmt.Errorf("schnorr signature verification failed")
 		}
 
 		fmt.Println("Schnorr signature verified successfully.")
