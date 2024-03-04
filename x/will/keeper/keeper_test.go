@@ -91,7 +91,7 @@ func TestKeeperCreateWill(t *testing.T) {
 	assert.Len(t, will.Components, len(msg.Components), "number of will components should match the request")
 
 	// Retrieve the will by ID
-	retrievedWill, err := kpr.GetWillByID(sdk.UnwrapSDKContext(ctx), createdWill.ID)
+	retrievedWill, err := kpr.GetWillByID(sdk.UnwrapSDKContext(ctx), will.ID)
 	require.NoError(t, err, "failed to retrieve will by ID")
 	assert.NotNil(t, retrievedWill, "retrieved will should not be nil")
 
