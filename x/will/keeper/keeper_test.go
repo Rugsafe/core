@@ -88,9 +88,21 @@ func TestKeeperCreateWill(t *testing.T) {
 	assert.Equal(t, msg.Beneficiary, will.Beneficiary, "will beneficiary should match the request")
 	assert.Equal(t, msg.Height, will.Height, "will height should match the request")
 
-	// If you have specific expectations for the Components, verify those as well
-	// This example assumes you want to check the length of the components slice
 	assert.Len(t, will.Components, len(msg.Components), "number of will components should match the request")
+
+	// Retrieve the will by ID
+	retrievedWill, err := kpr.GetWillByID(sdk.UnwrapSDKContext(ctx), createdWill.ID)
+	require.NoError(t, err, "failed to retrieve will by ID")
+	assert.NotNil(t, retrievedWill, "retrieved will should not be nil")
+
+	// Compare the retrieved will with the created will
+	assert.Equal(t, will.ID, retrievedWill.ID, "retrieved will ID should match the created will ID")
+	assert.Equal(t, will.Creator, retrievedWill.Creator, "retrieved will creator should match")
+	assert.Equal(t, will.Name, retrievedWill.Name, "retrieved will name should match")
+	assert.Equal(t, will.Beneficiary, retrievedWill.Beneficiary, "retrieved will beneficiary should match")
+	assert.Equal(t, will.Height, retrievedWill.Height, "retrieved will height should match")
+	assert.Equal(t, will.Status, retrievedWill.Status, "retrieved will status should match")
+	// Add more assertions as needed to compare other fields
 }
 
 func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
