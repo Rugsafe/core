@@ -276,6 +276,7 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		}
 
 		// At this point, you have the index of the component being claimed.
+
 		// You can now check its status before proceeding with the claim.
 		if will.Components[componentIndex].Status != "active" {
 			fmt.Printf("component with ID %s is not active and cannot be claimed\n", msg.ComponentId)

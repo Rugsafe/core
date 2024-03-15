@@ -105,41 +105,8 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 	publicKeyHex := "2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c"
 	signatureHex := "7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06"
 
-	// signatureRHex := "7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b"
-	// signatureSHex := "165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06"
-
-	// publicKeyHex := "MjMyMGEyZGEyODU2MTg3NWNlZGJiMGMyNWFlNDU4ZTBhMWQwODc4MzRhZTQ5Yjk2YTNmOTNjZWM3OWE4MTkwYw=="
-	// signatureHex := "N2FiMGVkYjliMDkyOWI1YmI0YjQ3ZGZiOTI3ZDA3MWVjYzVkZTc1OTg1NjYyMDMyYmI1MmVmM2M1YWNlNjQwYjE2NWM2ZGY1ZWE4OTExYTZjMDE5NWEzMTQwYmU1MTE5YTViODgyZTkxYjM0Y2JjZGQzMWVmM2Y1YjAwMzViMDY="
-
-	// v2
-	// publicKeyHex := "6f2de2f173efcbd7fc1fdec2d2939040575a248759d6d2373eaf775b1eef3a6e"
-	// signatureRHex := "4143f859db4b5fd2e97aea3c332eb78497d4785cdfe682d9954036ab9f63fc34"
-	// signatureSHex := "22c819840897cffc4936ce576e21c4bc6712bd8475b371c7897ea267b83d180e"
-
-	// v3
-	// publicKeyHex := "6f2de2f173efcbd7fc1fdec2d2939040575a248759d6d2373eaf775b1eef3a6e"
-	// signatureRHex := "4143f859db4b5fd2e97aea3c332eb78497d4785cdfe682d9954036ab9f63fc34"
-	// signatureSHex := "22c819840897cffc4936ce576e21c4bc6712bd8475b371c7897ea267b83d180e"
-
 	message := "message-2b-signed"
 	creator := "creator-address"
-	// Convert hexadecimal strings to bytes
-	// publicKeyBytes, err := hex.DecodeString(publicKeyHex)
-	// require.NoError(t, err)
-	// signatureBytes, err := hex.DecodeString(signatureHex)
-	// require.NoError(t, err)
-	// signatureSBytes, err := hex.DecodeString(signatureSHex)
-	// require.NoError(t, err)
-	// messageBytes := []byte(message)
-	fmt.Println("===DEBUG====")
-	// fmt.Println(publicKeyHex)
-	// fmt.Println(publicKeyBytes)
-	// fmt.Println(signatureRHex)
-	// fmt.Println(signatureRBytes)
-	// fmt.Println(signatureSHex)
-	// fmt.Println(signatureSBytes)
-	// the signature is the concatenation of R and S components
-	// signatureBytes := append(signatureRBytes, signatureSBytes...)
 
 	msg := &types.MsgCreateWillRequest{
 		Creator:     creator,
@@ -155,8 +122,6 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 					Claim: &types.ClaimComponent{
 						SchemeType: &types.ClaimComponent_Schnorr{
 							Schnorr: &types.SchnorrSignature{
-								// PublicKey: publicKeyBytes,
-								// Signature: signatureBytes,
 								PublicKey: []byte(publicKeyHex),
 								Signature: []byte(signatureHex),
 								Message:   message,
@@ -209,8 +174,6 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 		ComponentId: componentID,
 		ClaimType: &types.MsgClaimRequest_SchnorrClaim{
 			SchnorrClaim: &types.SchnorrClaim{
-				// PublicKey: publicKeyBytes,
-				// Signature: signatureBytes,
 				PublicKey: []byte(publicKeyHex),
 				Signature: []byte(signatureHex),
 				Message:   message,
