@@ -141,7 +141,7 @@ func parseComponentFromString(componentName, componentData string) (*types.Execu
 		if len(dataParts) != 3 {
 			return nil, fmt.Errorf("invalid schnorr component params, expected 'public key, signature, message'")
 		}
-		public_key, signature, message := dataParts[0], dataParts[1], dataParts[2]
+		signature, public_key, message := dataParts[0], dataParts[1], dataParts[2]
 		fmt.Println("INSIDE parseComponentFromString for schnorr: ", public_key, signature, message)
 		component.ComponentType = &types.ExecutionComponent_Claim{
 			Claim: &types.ClaimComponent{

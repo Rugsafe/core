@@ -225,10 +225,21 @@ will_test: will_cx
 
 ### TODO: both will_create and claim_schnorr shouldn't accept all schnor claim params..... makes no sense lol
 ### start by removing sig from schnorr
+
+
+# will
+ADDRESS=w3ll15wls4xkltqm4qdxxpg0xktdcprlh0yljeq5472
+WID=77336c6c3135776c7334786b6c74716d3471647878706730786b74646370726c6830796c6a6571353437322d746573742077696c6c202d62656e65666963696172792d3235
+CID=d9137edd-bbd1-44c4-af7d-a788627bbc51
+# claim
+SIGNATURE=7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06
+MESSAGE=message-2b-signed
+PUBKEY=2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c
+
 will_create:
 	./build/wasmd tx will create "test will ${i}" "beneficiary" 25 \
 	--component-name "component_for_transfer" --component-args "transfer:w3ll1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,1" \
-	--component-name "component_for_schnorr_claim" --component-args "schnorr:2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c,7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06,message-2b-signed" \
+	--component-name "component_for_schnorr_claim" --component-args "schnorr:${SIGNATURE},${PUBKEY},${MESSAGE}" \
 	--component-name "component_for_pedersen_claim" --component-args "pedersen:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" \
 	--component-name "component_for_gnark_claim" --component-args "gnark:verification_key_hex,public_inputs_hex,proof_hex" \
 	--from alice --chain-id w3ll-chain -y
@@ -238,15 +249,6 @@ will_cx:
 		echo "Running command $$i time(s)"; \
 		i=$$i make will_c; \
 	done
-
-# will
-ADDRESS=w3ll143txv7tn2gdt4udqtwtx7hlclazpnsvwyt5445
-WID=77336c6c31343374787637746e32676474347564717477747837686c636c617a706e7376777974353434352d746573742077696c6c202d62656e65666963696172792d3235
-CID=6fdcccdf-d3ba-47ed-8a80-85efae5d4596
-# claim
-SIGNATURE=7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06
-MESSAGE=message-2b-signed
-PUBKEY=2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c
 
 will_get:
 	./build/wasmd query will get "${WID}"
