@@ -103,6 +103,9 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 	idString := hex.EncodeToString(idBytes)
 	fmt.Println(fmt.Printf("NEWLY CREATED WILL: %s", idString))
 
+	// TODO: verify components, as this is already done in client/cli/tx.go
+	// verifyComponents(msg.components)
+
 	// Construct the will object
 	will := types.Will{
 		ID:          idString,
@@ -280,9 +283,23 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		}
 
 		// Assuming the public key and signature are provided as byte slices in the claim
-		publicKeyBytes := claim.SchnorrClaim.PublicKey // The public key bytes
-		signatureBytes := claim.SchnorrClaim.Signature // The signature bytes
-		message := claim.SchnorrClaim.Message          // The message as a byte slice
+		fmt.Println(claim)
+
+		// publicKeyBytes := claim.SchnorrClaim.PublicKey // The public key bytes
+		publicKeyBytes, _ := hex.DecodeString(string(claim.SchnorrClaim.PublicKey))
+		fmt.Printf("string claim.SchnorrClaim.PublicKey %s: \n", string(claim.SchnorrClaim.PublicKey))
+		fmt.Printf("claim.SchnorrClaim.PublicKey %s: \n", claim.SchnorrClaim.PublicKey)
+		fmt.Printf("publicKeyBytes %s: \n", publicKeyBytes)
+
+		// signatureBytes := claim.SchnorrClaim.Signature // The signature bytes
+		signatureBytes, _ := hex.DecodeString(string(claim.SchnorrClaim.Signature))
+		fmt.Printf("string claim.SchnorrClaim.Signature %s: \n", string(claim.SchnorrClaim.Signature))
+		fmt.Printf("claim.SchnorrClaim.Signature %s: \n", claim.SchnorrClaim.Signature)
+		fmt.Printf("Signature %s: \n", signatureBytes)
+
+		message := claim.SchnorrClaim.Message // The message as a byte slice
+		// message, _ := hex.DecodeString(string(claim.SchnorrClaim.Message))
+
 		curve := edwards25519.NewBlakeSHA256Ed25519()
 		// Convert the public key bytes to a kyber.Point
 		publicKeyPoint := curve.Point()
@@ -314,7 +331,9 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		// Verify the Schnorr signature
 		if !schnorr.Verify(messageScalar, schnorrSignature, publicKeyPoint) {
 			return fmt.Errorf("schnorr signature verification failed")
+			// panic(99)
 		}
+		// panic(99)
 
 		fmt.Println("Schnorr signature verified successfully.")
 		will.Components[componentIndex].Status = "claimed"

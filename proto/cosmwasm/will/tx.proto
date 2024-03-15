@@ -117,7 +117,7 @@ message SchnorrClaim {
   // The actual Schnorr signature, could be 64 bytes (r || s).
   bytes signature = 2;
   // The original message that was signed, needed for verification.
-  bytes message = 3;
+  string message = 3;
 }
 
 // pedersen

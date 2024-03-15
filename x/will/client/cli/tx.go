@@ -226,15 +226,24 @@ Example:
 				if len(parts) != 3 {
 					return fmt.Errorf("invalid data format for Schnorr claim, expected 'signature:data'")
 				}
+
+				// pubKeyEncoded, _ := hex.DecodeString(parts[0])
+				// signatureEncoded, _ := hex.DecodeString(parts[1])
+				// messageEncoded, _ := hex.DecodeString(parts[2])
+
 				msg = &types.MsgClaimRequest{
 					WillId:      willID,
 					Claimer:     clientCtx.GetFromAddress().String(),
 					ComponentId: componentID,
 					ClaimType: &types.MsgClaimRequest_SchnorrClaim{
 						SchnorrClaim: &types.SchnorrClaim{
-							PublicKey: []byte(parts[0]),
-							Signature: []byte(parts[1]),
-							Message:   []byte(parts[2]),
+							Signature: []byte(parts[0]),
+							PublicKey: []byte(parts[1]),
+							Message:   parts[2],
+
+							// PublicKey: pubKeyEncoded,
+							// Signature: signatureEncoded,
+							// Message:   messageEncoded,
 						},
 					},
 				}

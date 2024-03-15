@@ -239,9 +239,15 @@ will_cx:
 		i=$$i make will_c; \
 	done
 
-WID=77336c6c316e6a3034663666636532787a676d6e6a7868677637706d733575746a6178377366346a71666c2d746573742077696c6c202d62656e65666963696172792d3235
-CID=e28fe97e-91f2-4b72-9ae6-7fe642013d86
-ADDRESS=w3ll1nj04f6fce2xzgmnjxhgv7pms5utjax7sf4jqfl
+# will
+ADDRESS=w3ll143txv7tn2gdt4udqtwtx7hlclazpnsvwyt5445
+WID=77336c6c31343374787637746e32676474347564717477747837686c636c617a706e7376777974353434352d746573742077696c6c202d62656e65666963696172792d3235
+CID=6fdcccdf-d3ba-47ed-8a80-85efae5d4596
+# claim
+SIGNATURE=7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06
+MESSAGE=message-2b-signed
+PUBKEY=2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c
+
 will_get:
 	./build/wasmd query will get "${WID}"
 will_list:
@@ -249,10 +255,8 @@ will_list:
 
 # SCHNORR
 will_claim_schnorr:
-	SIGNATURE=7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06
-	MESSAGE="message-2b-signed"
-	PUBKEY=2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c
-	./build/wasmd tx will claim "${WID}" "${CID}" "schnorr" "${SIGNATURE}:${MESSAGE}:${PUBKEY}" --from alice --chain-id w3ll-chain -y
+	
+	./build/wasmd tx will claim "${WID}" "${CID}" "schnorr" "${SIGNATURE}:${PUBKEY}:${MESSAGE}" --from alice --chain-id w3ll-chain -y
 # will_claim_schnorr:
 # 	@echo "Claiming with Schnorr verification..."
 # 	@SIGNATURE="4aadcea21fe145eeb73a72a8eb3fac914c79c9c2efbf86e9ccc616bf94ede603"; \
@@ -272,6 +276,8 @@ will_claim_gnark:
 	PUBLIC_INPUTS=0000000000000000000000000000000000000000000000000000000000000000
 	./build/wasmd tx will claim "${WID}" "${CID}" "gnark" "${PROOF}:${PUBLIC_INPUTS}" --from alice --chain-id w3ll-chain -y
 run:
-	bash run.sh 
+	bash run.sh
+
+###### TESTS
 will_test_keeper:
-	go test x/will/keeper/keeper_test.go
+	go test -v x/will/keeper/keeper_test.go

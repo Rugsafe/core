@@ -1,24 +1,22 @@
 package keeper_test
 
 import (
-	// "context"
-
-	"encoding/hex"
 	"fmt"
 	"testing"
 
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	// Import the tm-db package
+	// dbm "github.com/tendermint/tm-db" // Import the tm-db package
+	dbm "github.com/cosmos/cosmos-db"
 	// _proto "github.com/cosmos/gogoproto/proto"
 	"github.com/stretchr/testify/assert"
 	// "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	// "google.golang.org/protobuf/proto"
 
 	// "cosmossdk.io/core/store"
 	// corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	corestore "cosmossdk.io/store"
-
-	// corestore "github.com/cosmos/cosmos-sdk/store"
 
 	// corestoretypes "cosmossdk.io/core/store"
 	storemetrics "cosmossdk.io/store/metrics"
@@ -28,15 +26,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	// Import the tm-db package
-	// dbm "github.com/tendermint/tm-db" // Import the tm-db package
-	dbm "github.com/cosmos/cosmos-db"
-
 	// tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/will/keeper"
 	"github.com/CosmWasm/wasmd/x/will/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 )
 
 func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
@@ -110,8 +103,13 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 
 	// Hardcoded values from your Schnorr signature example
 	publicKeyHex := "2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c"
-	signatureRHex := "7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b"
-	signatureSHex := "165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06"
+	signatureHex := "7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06"
+
+	// signatureRHex := "7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b"
+	// signatureSHex := "165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06"
+
+	// publicKeyHex := "MjMyMGEyZGEyODU2MTg3NWNlZGJiMGMyNWFlNDU4ZTBhMWQwODc4MzRhZTQ5Yjk2YTNmOTNjZWM3OWE4MTkwYw=="
+	// signatureHex := "N2FiMGVkYjliMDkyOWI1YmI0YjQ3ZGZiOTI3ZDA3MWVjYzVkZTc1OTg1NjYyMDMyYmI1MmVmM2M1YWNlNjQwYjE2NWM2ZGY1ZWE4OTExYTZjMDE5NWEzMTQwYmU1MTE5YTViODgyZTkxYjM0Y2JjZGQzMWVmM2Y1YjAwMzViMDY="
 
 	// v2
 	// publicKeyHex := "6f2de2f173efcbd7fc1fdec2d2939040575a248759d6d2373eaf775b1eef3a6e"
@@ -126,22 +124,22 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 	message := "message-2b-signed"
 	creator := "creator-address"
 	// Convert hexadecimal strings to bytes
-	publicKeyBytes, err := hex.DecodeString(publicKeyHex)
-	require.NoError(t, err)
-	signatureRBytes, err := hex.DecodeString(signatureRHex)
-	require.NoError(t, err)
-	signatureSBytes, err := hex.DecodeString(signatureSHex)
-	require.NoError(t, err)
+	// publicKeyBytes, err := hex.DecodeString(publicKeyHex)
+	// require.NoError(t, err)
+	// signatureBytes, err := hex.DecodeString(signatureHex)
+	// require.NoError(t, err)
+	// signatureSBytes, err := hex.DecodeString(signatureSHex)
+	// require.NoError(t, err)
 	// messageBytes := []byte(message)
 	fmt.Println("===DEBUG====")
-	fmt.Println(publicKeyHex)
-	fmt.Println(publicKeyBytes)
-	fmt.Println(signatureRHex)
-	fmt.Println(signatureRBytes)
-	fmt.Println(signatureSHex)
-	fmt.Println(signatureSBytes)
-	// Assuming the signature is the concatenation of R and S components
-	signatureBytes := append(signatureRBytes, signatureSBytes...)
+	// fmt.Println(publicKeyHex)
+	// fmt.Println(publicKeyBytes)
+	// fmt.Println(signatureRHex)
+	// fmt.Println(signatureRBytes)
+	// fmt.Println(signatureSHex)
+	// fmt.Println(signatureSBytes)
+	// the signature is the concatenation of R and S components
+	// signatureBytes := append(signatureRBytes, signatureSBytes...)
 
 	msg := &types.MsgCreateWillRequest{
 		Creator:     creator,
@@ -150,13 +148,17 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 		Height:      2,
 		Components: []*types.ExecutionComponent{
 			{
-				Name: "SchnorrSignatureComponent",
+				Name:   "SchnorrSignatureComponent",
+				Id:     "abc",
+				Status: "inactive", // TODO: should be set by keeper upon createWill
 				ComponentType: &types.ExecutionComponent_Claim{
 					Claim: &types.ClaimComponent{
 						SchemeType: &types.ClaimComponent_Schnorr{
 							Schnorr: &types.SchnorrSignature{
-								PublicKey: publicKeyBytes,
-								Signature: signatureBytes,
+								// PublicKey: publicKeyBytes,
+								// Signature: signatureBytes,
+								PublicKey: []byte(publicKeyHex),
+								Signature: []byte(signatureHex),
 								Message:   message,
 							},
 						},
@@ -166,7 +168,7 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 		},
 	}
 
-	// Assuming CreateWill method is correctly implemented to handle mocks
+	// CreateWill method is correctly implemented to handle mocks
 	will, err := kpr.CreateWill(sdk.UnwrapSDKContext(ctx), msg)
 	require.NoError(t, err)
 	assert.NotNil(t, will)
@@ -174,15 +176,31 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 	fmt.Println("====[TEST]HERE IS THE PRACTICE WILL[TEST]=====")
 	fmt.Println((will))
 
-	// Assuming a will has already been created and you have its ID
+	// a will has already been created and you have its ID
 	willID := will.ID // Replace with the actual will ID
 	componentID := will.Components[0].Id
+
+	// verify will upon creation time status is live
+	require.Equal(t, will.Status, "live")
+
+	// verify the will claimable component is inactive
+	require.Equal(t, will.Components[0].Status, "inactive")
 
 	// roll height forward
 	ctx_future := sdk.UnwrapSDKContext(ctx).WithBlockHeight(2)
 
 	// run the begin blocker with the updated block height for the will to execute.
 	kpr.BeginBlocker(ctx_future)
+
+	// verify will is expired now, and claimable
+	will_for_claimable_check, err_claimable_check := kpr.GetWillByID(ctx, will.ID)
+	require.NoError(t, err_claimable_check)
+
+	// verify will is now expired, since after expiry
+	require.Equal(t, will_for_claimable_check.Status, "expired")
+
+	// verify the will's claimable component is now active
+	require.Equal(t, will_for_claimable_check.Components[0].Status, "active")
 
 	// Construct the claim request with the Schnorr claim
 	claimMsg := &types.MsgClaimRequest{
@@ -191,9 +209,11 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 		ComponentId: componentID,
 		ClaimType: &types.MsgClaimRequest_SchnorrClaim{
 			SchnorrClaim: &types.SchnorrClaim{
-				PublicKey: publicKeyBytes,
-				Signature: signatureBytes,
-				Message:   []byte(message),
+				// PublicKey: publicKeyBytes,
+				// Signature: signatureBytes,
+				PublicKey: []byte(publicKeyHex),
+				Signature: []byte(signatureHex),
+				Message:   message,
 			},
 		},
 	}
@@ -201,5 +221,11 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 	// Process the claim
 	err = kpr.Claim(sdk.UnwrapSDKContext(ctx_future), claimMsg)
 	require.NoError(t, err, "processing Schnorr claim should not produce an error")
-	//TODO: verify will components status is not active anymore after successful claim
+	// TODO: verify will components status is not active anymore after successful claim
+
+	will_for_status_check, err_status_check := kpr.GetWillByID(ctx, will.ID)
+	require.NoError(t, err_status_check)
+
+	// verify the will's claimable component's status is now claimed
+	require.Equal(t, will_for_status_check.Components[0].Status, "claimed")
 }
