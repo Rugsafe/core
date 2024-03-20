@@ -4,3 +4,8 @@
 16:01:52.810015 version@stat F·[] S·0B[] Sc·[]
 16:01:52.827920 db@janitor F·2 G·0
 16:01:52.827968 db@open done T·18.188875ms
+18:06:37.534395 memdb@flush N·60756 S·3MiB
+18:06:37.614891 memdb@flush created L0@3 N·60756 S·823KiB "blo..\x00\x01\x81,v1":"blo..\xe0Im,v60729"
+18:06:37.614939 version@stat F·[1] S·823KiB[823KiB] Sc·[0.25]
+18:06:37.631868 memdb@flush committed F·1 T·96.797167ms
+18:06:37.690446 journal@remove removed @1

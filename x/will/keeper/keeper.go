@@ -363,12 +363,12 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 	case *types.MsgClaimRequest_PedersenClaim:
 		// Process PedersenClaim
 		fmt.Printf("Processing Pedersen claim with commitment: %x, blinding factor: %x, and value: %x\n", claim.PedersenClaim.Commitment, claim.PedersenClaim.BlindingFactor, claim.PedersenClaim.Value)
-		// Add your validation logic here
+		// TODO
 
 	case *types.MsgClaimRequest_GnarkClaim:
 		// Process GnarkClaim
 		fmt.Printf("Processing Gnark claim with proof: %x and public inputs: %x\n", claim.GnarkClaim.Proof, claim.GnarkClaim.PublicInputs)
-		// Add your validation logic here
+		// TODO
 
 	default:
 		// Handle unknown claim type
