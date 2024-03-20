@@ -148,6 +148,13 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 	if existingWillsBz != nil {
 		k.cdc.MustUnmarshal(existingWillsBz, &willIdsAtHeight)
 	}
+
+	// TODO: make this a chain param to be changed via governance
+	if len(willIdsAtHeight.Ids) > 10 {
+		var errBlockHeightLength error
+		return nil, errors.Wrapf(errBlockHeightLength, "error: cannot add will during create will, too many wills at block height: %s", willIdsAtHeight.Ids)
+	}
+
 	willIdsAtHeight.Ids = append(willIdsAtHeight.Ids, will.ID)
 	updatedHeightBz := k.cdc.MustMarshal(&willIdsAtHeight)
 	store.Set([]byte(heightKey), updatedHeightBz)
