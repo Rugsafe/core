@@ -3,6 +3,7 @@ package will
 import (
 	// willKeeper "github.com/CosmWasm/wasmd/x/will/keeper"
 	// willtypes "github.com/CosmWasm/wasmd/x/will/types"
+	"fmt"
 	"math"
 
 	// wasmvmtypes "github.com/CosmWasm/wasmvm/types"
@@ -48,6 +49,7 @@ type IBCModule struct {
 
 // NewIBCModule creates a new IBCModule given the associated keeper
 func NewIBCModule(k willkeeper.Keeper, ck willkeeper.ChannelKeeper, vg appVersionGetter) IBCModule {
+	fmt.Println("IBC DEBUG: NewIBCModule")
 	return IBCModule{
 		keeper:           k,
 		channelKeeper:    ck,
@@ -62,6 +64,7 @@ func (i IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
+	fmt.Println("IBC DEBUG: NewIBCModule")
 	// contractAddr, err := keeper.ContractFromPortID(packet.SourcePort)
 	// if err != nil {
 	// 	return errorsmod.Wrapf(err, "contract port id")
@@ -79,6 +82,7 @@ func (i IBCModule) OnAcknowledgementPacket(
 }
 
 func newIBCPacket(packet channeltypes.Packet) types.IBCPacket {
+	fmt.Println("IBC DEBUG: newIBCPacket")
 	timeout := types.IBCTimeout{
 		Timestamp: packet.TimeoutTimestamp,
 	}
@@ -100,6 +104,7 @@ func newIBCPacket(packet channeltypes.Packet) types.IBCPacket {
 
 // OnChanCloseConfirm implements the IBCModule interface
 func (i IBCModule) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string) error {
+	fmt.Println("IBC DEBUG: OnChanCloseConfirm")
 	// // counterparty has closed the channel
 	// contractAddr, err := keeper.ContractFromPortID(portID)
 	// if err != nil {
@@ -129,6 +134,7 @@ func (i IBCModule) OnChanCloseConfirm(ctx sdk.Context, portID, channelID string)
 
 // OnChanCloseInit implements the IBCModule interface
 func (i IBCModule) OnChanCloseInit(ctx sdk.Context, portID, channelID string) error {
+	fmt.Println("IBC DEBUG: OnChanCloseInit")
 	// contractAddr, err := keeper.ContractFromPortID(portID)
 	// if err != nil {
 	// 	return errorsmod.Wrapf(err, "contract port id")
@@ -162,6 +168,7 @@ func (i IBCModule) OnChanOpenAck(
 	counterpartyChannelID string,
 	counterpartyVersion string,
 ) error {
+	fmt.Println("IBC DEBUG: OnChanOpenAck")
 	contractAddr, err := sdk.AccAddressFromBech32("abc") // keeper.ContractFromPortID(portID)
 	if err != nil {
 		return errorsmod.Wrapf(err, "address errored out")
@@ -188,6 +195,7 @@ func (i IBCModule) OnChanOpenAck(
 
 // OnChanOpenConfirm implements the IBCModule interface
 func (i IBCModule) OnChanOpenConfirm(ctx sdk.Context, portID, channelID string) error {
+	fmt.Println("IBC DEBUG: OnChanOpenConfirm")
 	contractAddr, err := sdk.AccAddressFromBech32(portID)
 	if err != nil {
 		return errorsmod.Wrapf(err, "contract port id")
@@ -219,6 +227,7 @@ func (i IBCModule) OnChanOpenInit(
 	counterParty channeltypes.Counterparty,
 	version string,
 ) (string, error) {
+	fmt.Println("IBC DEBUG: OnChanOpenInit")
 	// ensure port, version, capability
 	if err := ValidateChannelParams(channelID); err != nil {
 		return "", err
@@ -270,6 +279,7 @@ func (i IBCModule) OnChanOpenTry(
 	counterParty channeltypes.Counterparty,
 	counterpartyVersion string,
 ) (string, error) {
+	fmt.Println("IBC DEBUG: OnChanOpenTry")
 	// ensure port, version, capability
 	if err := ValidateChannelParams(channelID); err != nil {
 		return "", err
@@ -322,6 +332,7 @@ func (i IBCModule) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
+	fmt.Println("IBC DEBUG: OnRecvPacket")
 	contractAddr, err := sdk.AccAddressFromBech32(packet.DestinationPort)
 	if err != nil {
 		// this must not happen as ports were registered before
@@ -346,6 +357,7 @@ func (i IBCModule) OnRecvPacket(
 
 // OnTimeoutPacket implements the IBCModule interface
 func (i IBCModule) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error {
+	fmt.Println("IBC DEBUG: OnTimeoutPacket")
 	contractAddr, err := sdk.AccAddressFromBech32(packet.SourcePort)
 	if err != nil {
 		return errorsmod.Wrapf(err, "contract port id")
@@ -360,6 +372,7 @@ func (i IBCModule) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Packet, 
 
 // helpers
 func toWillChannel(portID, channelID string, channelInfo channeltypes.Channel, appVersion string) types.IBCChannel {
+	fmt.Println("IBC DEBUG: toWillChannel")
 	return types.IBCChannel{
 		Endpoint:             types.IBCEndpoint{PortID: portID, ChannelID: channelID},
 		CounterpartyEndpoint: types.IBCEndpoint{PortID: channelInfo.Counterparty.PortId, ChannelID: channelInfo.Counterparty.ChannelId},
@@ -370,6 +383,7 @@ func toWillChannel(portID, channelID string, channelInfo channeltypes.Channel, a
 }
 
 func ValidateChannelParams(channelID string) error {
+	fmt.Println("IBC DEBUG: ValidateChannelParams")
 	// NOTE: for escrow address security only 2^32 channels are allowed to be created
 	// Issue: https://github.com/cosmos/cosmos-sdk/issues/7737
 	channelSequence, err := channeltypes.ParseChannelSequence(channelID)
