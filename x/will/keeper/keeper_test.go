@@ -8,6 +8,9 @@ import (
 	// Import the tm-db package
 	// dbm "github.com/tendermint/tm-db" // Import the tm-db package
 	dbm "github.com/cosmos/cosmos-db"
+	// tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	// _proto "github.com/cosmos/gogoproto/proto"
 	"github.com/stretchr/testify/assert"
 	// "github.com/stretchr/testify/mock"
@@ -17,7 +20,6 @@ import (
 	// corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	corestore "cosmossdk.io/store"
-
 	// corestoretypes "cosmossdk.io/core/store"
 	storemetrics "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
@@ -25,17 +27,6 @@ import (
 	// codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	//IBC
-
-	// clientkeeper "github.com/cosmos/ibc-go/v8/modules/core/02-client/keeper"
-	// connectionkeeper "github.com/cosmos/ibc-go/v8/modules/core/03-connection/keeper"
-	// channelkeeper "github.com/cosmos/ibc-go/v8/modules/core/04-channel/keeper"
-	// portkeeper "github.com/cosmos/ibc-go/v8/modules/core/05-port/keeper"
-
-	// tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
 	"github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/will/keeper"
@@ -241,5 +232,4 @@ func TestSendIBCMessage(t *testing.T) {
 	require.Equal(t, event.Attributes[0].Value, channelID, "Expected channel ID matches")
 	require.Equal(t, event.Attributes[1].Key, "port_id", "Expected attribute 'port_id'")
 	require.Equal(t, event.Attributes[1].Value, portID, "Expected port ID matches")
-
 }

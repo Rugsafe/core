@@ -16,10 +16,9 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/CosmWasm/wasmd/x/wasm/types"
-
 	willkeeper "github.com/CosmWasm/wasmd/x/will/keeper"
-	willtypes "github.com/CosmWasm/wasmd/x/will/types"
+	// "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/CosmWasm/wasmd/x/will/types"
 )
 
 var _ porttypes.IBCModule = IBCModule{}
@@ -42,13 +41,13 @@ type appVersionGetter interface {
 
 // IBCModule implements the ICS26 interface for interchain accounts host chains
 type IBCModule struct {
-	keeper           willkeeper.Keeper //keeper.Keeper
-	channelKeeper    types.ChannelKeeper
+	keeper           willkeeper.Keeper // keeper.Keeper
+	channelKeeper    willkeeper.ChannelKeeper
 	appVersionGetter appVersionGetter
 }
 
 // NewIBCModule creates a new IBCModule given the associated keeper
-func NewIBCModule(k willkeeper.Keeper, ck types.ChannelKeeper, vg appVersionGetter) IBCModule {
+func NewIBCModule(k willkeeper.Keeper, ck willkeeper.ChannelKeeper, vg appVersionGetter) IBCModule {
 	return IBCModule{
 		keeper:           k,
 		channelKeeper:    ck,
@@ -79,21 +78,21 @@ func (i IBCModule) OnAcknowledgementPacket(
 	return nil
 }
 
-func newIBCPacket(packet channeltypes.Packet) willtypes.IBCPacket {
-	timeout := willtypes.IBCTimeout{
+func newIBCPacket(packet channeltypes.Packet) types.IBCPacket {
+	timeout := types.IBCTimeout{
 		Timestamp: packet.TimeoutTimestamp,
 	}
 	if !packet.TimeoutHeight.IsZero() {
-		timeout.Block = &willtypes.IBCTimeoutBlock{
+		timeout.Block = &types.IBCTimeoutBlock{
 			Height:   packet.TimeoutHeight.RevisionHeight,
 			Revision: packet.TimeoutHeight.RevisionNumber,
 		}
 	}
 
-	return willtypes.IBCPacket{
+	return types.IBCPacket{
 		Data:     packet.Data,
-		Src:      willtypes.IBCEndpoint{ChannelID: packet.SourceChannel, PortID: packet.SourcePort},
-		Dest:     willtypes.IBCEndpoint{ChannelID: packet.DestinationChannel, PortID: packet.DestinationPort},
+		Src:      types.IBCEndpoint{ChannelID: packet.SourceChannel, PortID: packet.SourcePort},
+		Dest:     types.IBCEndpoint{ChannelID: packet.DestinationChannel, PortID: packet.DestinationPort},
 		Sequence: packet.Sequence,
 		Timeout:  timeout,
 	}
@@ -163,7 +162,7 @@ func (i IBCModule) OnChanOpenAck(
 	counterpartyChannelID string,
 	counterpartyVersion string,
 ) error {
-	contractAddr, err := sdk.AccAddressFromBech32("abc") //keeper.ContractFromPortID(portID)
+	contractAddr, err := sdk.AccAddressFromBech32("abc") // keeper.ContractFromPortID(portID)
 	if err != nil {
 		return errorsmod.Wrapf(err, "address errored out")
 	}
@@ -178,9 +177,9 @@ func (i IBCModule) OnChanOpenAck(
 		return errorsmod.Wrapf(channeltypes.ErrInvalidChannelVersion, "port ID (%s) channel ID (%s)", portID, channelID)
 	}
 
-	msg := willtypes.IBCChannelConnectMsg{
-		OpenAck: &willtypes.IBCOpenAck{
-			Channel:             toWasmVMChannel(portID, channelID, channelInfo, appVersion),
+	msg := types.IBCChannelConnectMsg{
+		OpenAck: &types.IBCOpenAck{
+			Channel:             toWillChannel(portID, channelID, channelInfo, appVersion),
 			CounterpartyVersion: counterpartyVersion,
 		},
 	}
@@ -190,7 +189,6 @@ func (i IBCModule) OnChanOpenAck(
 // OnChanOpenConfirm implements the IBCModule interface
 func (i IBCModule) OnChanOpenConfirm(ctx sdk.Context, portID, channelID string) error {
 	contractAddr, err := sdk.AccAddressFromBech32(portID)
-
 	if err != nil {
 		return errorsmod.Wrapf(err, "contract port id")
 	}
@@ -202,9 +200,9 @@ func (i IBCModule) OnChanOpenConfirm(ctx sdk.Context, portID, channelID string) 
 	if !ok {
 		return errorsmod.Wrapf(channeltypes.ErrInvalidChannelVersion, "port ID (%s) channel ID (%s)", portID, channelID)
 	}
-	msg := willtypes.IBCChannelConnectMsg{
-		OpenConfirm: &willtypes.IBCOpenConfirm{
-			Channel: toWasmVMChannel(portID, channelID, channelInfo, appVersion),
+	msg := types.IBCChannelConnectMsg{
+		OpenConfirm: &types.IBCOpenConfirm{
+			Channel: toWillChannel(portID, channelID, channelInfo, appVersion),
 		},
 	}
 	return i.keeper.OnConnectChannel(ctx, contractAddr, msg)
@@ -230,11 +228,11 @@ func (i IBCModule) OnChanOpenInit(
 		return "", errorsmod.Wrapf(err, "contract port id")
 	}
 
-	msg := willtypes.IBCChannelOpenMsg{
-		OpenInit: &willtypes.IBCOpenInit{
-			Channel: willtypes.IBCChannel{
-				Endpoint:             willtypes.IBCEndpoint{PortID: portID, ChannelID: channelID},
-				CounterpartyEndpoint: willtypes.IBCEndpoint{PortID: counterParty.PortId, ChannelID: counterParty.ChannelId},
+	msg := types.IBCChannelOpenMsg{
+		OpenInit: &types.IBCOpenInit{
+			Channel: types.IBCChannel{
+				Endpoint:             types.IBCEndpoint{PortID: portID, ChannelID: channelID},
+				CounterpartyEndpoint: types.IBCEndpoint{PortID: counterParty.PortId, ChannelID: counterParty.ChannelId},
 				Order:                order.String(),
 				// DESIGN V3: this may be "" ??
 				Version:      version,
@@ -282,11 +280,11 @@ func (i IBCModule) OnChanOpenTry(
 		return "", errorsmod.Wrapf(err, "contract port id")
 	}
 
-	msg := willtypes.IBCChannelOpenMsg{
-		OpenTry: &willtypes.IBCOpenTry{
-			Channel: willtypes.IBCChannel{
-				Endpoint:             willtypes.IBCEndpoint{PortID: portID, ChannelID: channelID},
-				CounterpartyEndpoint: willtypes.IBCEndpoint{PortID: counterParty.PortId, ChannelID: counterParty.ChannelId},
+	msg := types.IBCChannelOpenMsg{
+		OpenTry: &types.IBCOpenTry{
+			Channel: types.IBCChannel{
+				Endpoint:             types.IBCEndpoint{PortID: portID, ChannelID: channelID},
+				CounterpartyEndpoint: types.IBCEndpoint{PortID: counterParty.PortId, ChannelID: counterParty.ChannelId},
 				Order:                order.String(),
 				Version:              counterpartyVersion,
 				ConnectionID:         connectionHops[0], // At the moment this list must be of length 1. In the future multi-hop channels may be supported.
@@ -331,7 +329,7 @@ func (i IBCModule) OnRecvPacket(
 	}
 
 	em := sdk.NewEventManager()
-	msg := willtypes.IBCPacketReceiveMsg{Packet: newIBCPacket(packet), Relayer: relayer.String()}
+	msg := types.IBCPacketReceiveMsg{Packet: newIBCPacket(packet), Relayer: relayer.String()}
 	ack, err := i.keeper.OnRecvPacket(ctx.WithEventManager(em), contractAddr, msg)
 	if err != nil {
 		ack = channeltypes.NewErrorAcknowledgement(err)
@@ -341,7 +339,8 @@ func (i IBCModule) OnRecvPacket(
 		// nil ack is a success case, see: https://github.com/cosmos/ibc-go/blob/v7.0.0/modules/core/keeper/msg_server.go#L453
 		ctx.EventManager().EmitEvents(em.Events())
 	}
-	types.EmitAcknowledgementEvent(ctx, contractAddr, ack, err)
+	// TODO: emit ack event?
+	// types.EmitAcknowledgementEvent(ctx, contractAddr, ack, err)
 	return ack
 }
 
@@ -351,7 +350,7 @@ func (i IBCModule) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Packet, 
 	if err != nil {
 		return errorsmod.Wrapf(err, "contract port id")
 	}
-	msg := willtypes.IBCPacketTimeoutMsg{Packet: newIBCPacket(packet), Relayer: relayer.String()}
+	msg := types.IBCPacketTimeoutMsg{Packet: newIBCPacket(packet), Relayer: relayer.String()}
 	err = i.keeper.OnTimeoutPacket(ctx, contractAddr, msg)
 	if err != nil {
 		return errorsmod.Wrap(err, "on timeout")
@@ -360,10 +359,10 @@ func (i IBCModule) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Packet, 
 }
 
 // helpers
-func toWasmVMChannel(portID, channelID string, channelInfo channeltypes.Channel, appVersion string) willtypes.IBCChannel {
-	return willtypes.IBCChannel{
-		Endpoint:             willtypes.IBCEndpoint{PortID: portID, ChannelID: channelID},
-		CounterpartyEndpoint: willtypes.IBCEndpoint{PortID: channelInfo.Counterparty.PortId, ChannelID: channelInfo.Counterparty.ChannelId},
+func toWillChannel(portID, channelID string, channelInfo channeltypes.Channel, appVersion string) types.IBCChannel {
+	return types.IBCChannel{
+		Endpoint:             types.IBCEndpoint{PortID: portID, ChannelID: channelID},
+		CounterpartyEndpoint: types.IBCEndpoint{PortID: channelInfo.Counterparty.PortId, ChannelID: channelInfo.Counterparty.ChannelId},
 		Order:                channelInfo.Ordering.String(),
 		Version:              appVersion,
 		ConnectionID:         channelInfo.ConnectionHops[0], // At the moment this list must be of length 1. In the future multi-hop channels may be supported.

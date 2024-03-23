@@ -90,6 +90,7 @@ GenesisState defines the will module's genesis state.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `params` | [Params](#cosmwasm.will.Params) |  | params defines all the parameters of the module. |
+| `port_id` | [string](#string) |  | holds the ibc port for the module |
 
 
 

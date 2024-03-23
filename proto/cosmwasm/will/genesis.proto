@@ -14,4 +14,6 @@ message GenesisState {
   // params defines all the parameters of the module.
   Params params = 1
       [ (gogoproto.nullable) = false, (amino.dont_omitempty) = true ];
+  // holds the ibc port for the module
+  string port_id = 2;
 }

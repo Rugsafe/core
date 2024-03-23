@@ -1,6 +1,10 @@
 package types
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	errorsmod "cosmossdk.io/errors"
+)
 
 // Events must encode empty array as []
 type Events []Event
@@ -312,3 +316,12 @@ type IBCReceiveResponse struct {
 	// above)
 	Events []Event `json:"events"`
 }
+
+var (
+	// ErrEmpty error for empty content
+	DefaultCodespace = ModuleName
+	// ErrEmpty error for empty content
+	ErrEmpty = errorsmod.Register(DefaultCodespace, 12, "empty")
+	// ErrMaxIBCChannels error for maximum number of ibc channels reached
+	ErrMaxIBCChannels = errorsmod.Register(DefaultCodespace, 16, "max transfer channels")
+)

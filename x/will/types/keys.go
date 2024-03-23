@@ -15,7 +15,11 @@ const (
 	ParamsKey = "params"
 )
 
-var WillPrefix = []byte{0x01}
+var (
+	WillPrefix = []byte{0x01}
+	// PortKey defines the key to store the port ID in store
+	PortKey = []byte{0x02}
+)
 
 func GetWillKey(willID string) []byte {
 	// willID8z := sdk.Uint64ToBigEndian(willID)

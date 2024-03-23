@@ -8,8 +8,13 @@ import (
 	"strconv"
 	"time"
 
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 	"go.dedis.ch/kyber/v3/group/edwards25519"
 
+	"cosmossdk.io/collections"
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
@@ -21,11 +26,6 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/will/schemes/schnorr"
 	"github.com/CosmWasm/wasmd/x/will/types"
-
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 )
 
 type IKeeper interface {
@@ -46,12 +46,14 @@ type IKeeper interface {
 type Keeper struct {
 	storeService corestoretypes.KVStoreService
 	// storeService storetypes.KVStoreKey
-	cdc           codec.Codec
-	storeKey      storetypes.StoreKey // Add this line
-	ChannelKeeper ChannelKeeper
-	ScopedKeeper  capabilitykeeper.ScopedKeeper
-	// portKeeper    types.PortKeeper
+	cdc              codec.Codec
+	storeKey         storetypes.StoreKey // Add this line
+	ChannelKeeper    ChannelKeeper
+	scopedKeeper     capabilitykeeper.ScopedKeeper
+	portKeeper       PortKeeper
 	capabilityKeeper CapabilityKeeper
+	params           collections.Item[types.Params]
+	authority        string
 }
 
 func NewKeeper(
@@ -67,10 +69,29 @@ func NewKeeper(
 		storeService:  storeService,
 		cdc:           cdc,
 		ChannelKeeper: channelKeeper,
-		ScopedKeeper:  scopedKeeper,
+		scopedKeeper:  scopedKeeper,
 	}
 
 	return *keeper
+}
+
+// GetParams returns the total set of wasm parameters.
+func (k Keeper) GetParams(ctx context.Context) types.Params {
+	p, err := k.params.Get(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return p
+}
+
+// SetParams sets all wasm parameters.
+func (k Keeper) SetParams(ctx context.Context, ps types.Params) error {
+	return k.params.Set(ctx, ps)
+}
+
+// GetAuthority returns the x/will module's authority.
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 // TruncateHash creates a shorter hash by taking the first n bytes of the SHA256 hash.
@@ -527,7 +548,7 @@ func (k *Keeper) EndBlocker(ctx sdk.Context) error {
 	return nil
 }
 
-// IBC
+//////////////////////////////////////////////// IBC
 
 // SendIBCMessage sends an IBC message from the specified port and channel with the given data
 func (k *Keeper) SendIBCMessage(ctx sdk.Context, channelID, portID string, data []byte) error {
@@ -549,7 +570,7 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, channelID, portID string, data 
 
 	fmt.Println("SendIBCMessage 4")
 	// Retrieve the capability for the port and channel
-	channelCap, ok := k.ScopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(portID, channelID))
+	channelCap, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(portID, channelID))
 	if !ok {
 		fmt.Println("SendIBCMessage 5")
 		return errors.New("channel capability not found: ", 1, "k.scopedKeeper.GetCapability ran out")
@@ -559,4 +580,29 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, channelID, portID string, data 
 	_, err := k.ChannelKeeper.SendPacket(ctx, channelCap, portID, channelID, timeoutHeight, timeoutTimestamp, packet.GetData())
 	fmt.Println("SendIBCMessage 6")
 	return err
+}
+
+// hasCapability checks if the transfer module owns the port capability for the desired port
+func (k *Keeper) hasCapability(ctx sdk.Context, portID string) bool {
+	_, ok := k.scopedKeeper.GetCapability(ctx, host.PortPath(portID))
+	return ok
+}
+
+// BindPort defines a wrapper function for the ort Keeper's function in
+// order to expose it to module's InitGenesis function
+func (k *Keeper) BindPort(ctx sdk.Context, portID string) error {
+	capability := k.portKeeper.BindPort(ctx, portID)
+	return k.ClaimCapability(ctx, capability, host.PortPath(portID))
+}
+
+// GetPort returns the portID for the transfer module. Used in ExportGenesis
+func (k *Keeper) GetPort(ctx sdk.Context) string {
+	store := ctx.KVStore(k.storeKey)
+	return string(store.Get(types.PortKey))
+}
+
+// SetPort sets the portID for the transfer module. Used in InitGenesis
+func (k *Keeper) SetPort(ctx sdk.Context, portID string) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.PortKey, []byte(portID))
 }
