@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# Default chain name
+CHAIN_NAME=${CHAINNAME:-"default-chain-name"}
+
 # Define paths
-HOME_DIR="./private/.wasmapp"
+HOME_DIR="./private/.${CHAIN_NAME}"
 MNEMONIC_FILE="seed.txt"
 
 make build
@@ -11,10 +14,10 @@ echo "step 1"
 
 # Clean up previous runs
 rm -rf ${HOME_DIR}
-rm -rf ~/.wasmapp/
+rm -rf ~/.${CHAIN_NAME}/
 
-# Initialize
-./build/wasmd init w3ll-chain --home ${HOME_DIR} --chain-id w3ll-chain
+# Initialize with dynamic chain name
+./build/wasmd init ${CHAIN_NAME} --home ${HOME_DIR} --chain-id ${CHAIN_NAME}
 
 echo "step 3"
 ./build/wasmd keys list --home ${HOME_DIR}
@@ -29,9 +32,6 @@ else
     ./build/wasmd keys add alice --home ${HOME_DIR} --keyring-backend test
 fi
 
-# You can also save the newly generated mnemonic to a file if needed
-# Note: This is not recommended for production use due to security implications
-
 echo "step 4.5"
 grep bond_denom ${HOME_DIR}/config/genesis.json
 
@@ -42,10 +42,10 @@ echo "step 5"
 
 # Generate a genesis tx carrying a self delegation
 echo "step 6"
-./build/wasmd genesis gentx alice 222222222stake --home ${HOME_DIR} --keyring-backend test --chain-id w3ll-chain
+./build/wasmd genesis gentx alice 222222222stake --home ${HOME_DIR} --keyring-backend test --chain-id ${CHAIN_NAME}
 echo "step 7"
-./build/wasmd genesis gentx alice 700000000w3ll --home ${HOME_DIR} --keyring-backend test --chain-id w3ll-chain
+./build/wasmd genesis gentx alice 700000000w3ll --home ${HOME_DIR} --keyring-backend test --chain-id ${CHAIN_NAME}
 ./build/wasmd genesis collect-gentxs --home ${HOME_DIR}
 
 echo "step 8"
-./build/wasmd start --home ${HOME_DIR} --rpc.laddr=tcp://0.0.0.0:26657
+./build/wasmd start --home ${HOME_DIR} --rpc.laddr=tcp://0.0.0.0:26657 --grpc.address=0.0.0.0:9090
