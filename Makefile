@@ -208,6 +208,8 @@ proto-check-breaking:
 	test-system
 
 ################################
+start:
+	./build/wasmd start --home ./private/.wasmapp
 _env_:
 	export PATH=$PATH:$(go env GOPATH)/bin
 _clean_:
@@ -220,6 +222,8 @@ alice_c:
 	./build/wasmd keys add alice --recover
 alice_d:
 	 ./build/wasmd keys delete alice 
+alice_balance:
+	./build/wasmd q bank balances w3ll1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz
 will_test: will_cx
 	echo "Done with will tests"
 
