@@ -637,6 +637,8 @@ func NewWasmApp(
 		// keys[willtypes.StoreKey],
 		runtime.NewKVStoreService(keys[willtypes.StoreKey]),
 		logger,
+		app.IBCKeeper.ChannelKeeper,
+		app.ScopedIBCKeeper,
 	)
 
 	// wasmDir := filepath.Join(homePath, "wasm")
@@ -696,12 +698,18 @@ func NewWasmApp(
 	wasmStack = wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCFeeKeeper)
 	wasmStack = ibcfee.NewIBCMiddleware(wasmStack, app.IBCFeeKeeper)
 
+	// var willStack porttypes.IBCModule
+	var willStack porttypes.IBCModule
+	willStack = will.NewIBCModule(app.WillKeeper, app.IBCKeeper.ChannelKeeper, app.IBCFeeKeeper)
+	willStack = ibcfee.NewIBCMiddleware(willStack, app.IBCFeeKeeper)
+
 	// Create static IBC router, add app routes, then set and seal it
 	ibcRouter := porttypes.NewRouter().
 		AddRoute(ibctransfertypes.ModuleName, transferStack).
 		AddRoute(wasmtypes.ModuleName, wasmStack).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
-		AddRoute(icahosttypes.SubModuleName, icaHostStack)
+		AddRoute(icahosttypes.SubModuleName, icaHostStack).
+		AddRoute(willtypes.SubModuleName, willStack)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	/****  Module Options ****/

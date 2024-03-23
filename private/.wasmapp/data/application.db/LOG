@@ -1,37 +1,8 @@
-=============== Mar 20, 2024 (EDT) ===============
-16:01:52.429707 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-16:01:52.484770 db@open opening
-16:01:52.485030 version@stat F·[] S·0B[] Sc·[]
-16:01:52.502838 db@janitor F·2 G·0
-16:01:52.502876 db@open done T·18.0835ms
-16:43:50.303057 memdb@flush N·50057 S·3MiB
-16:43:50.397833 memdb@flush created L0@3 N·50057 S·1MiB "s/1,v348":"s/latest,v349"
-16:43:50.397895 version@stat F·[1] S·1MiB[1MiB] Sc·[0.25]
-16:43:50.415845 memdb@flush committed F·1 T·112.5945ms
-16:43:50.454675 journal@remove removed @1
-17:23:45.593473 memdb@flush N·49804 S·3MiB
-17:23:45.693250 memdb@flush created L0@5 N·49804 S·1MiB "s/477,v50097":"s/latest,v50098"
-17:23:45.693300 version@stat F·[2] S·3MiB[3MiB] Sc·[0.50]
-17:23:45.730183 memdb@flush committed F·1 T·135.388708ms
-17:23:45.748072 journal@remove removed @2
-17:28:11.224752 table@compaction L0·2 -> L1·0 S·3MiB Q·105347
-17:28:11.350112 table@build created L1@6 N·48269 S·2MiB "s/1,v348":"s/k..\x00\x00\f,v15682"
-17:28:11.387488 table@build created L1@7 N·15700 S·749KiB "s/k..\x00\x00\r,v15681":"s/latest,v99783"
-17:28:11.387846 version@stat F·[0 2] S·2MiB[0B 2MiB] Sc·[0.00 0.03]
-17:28:11.405757 table@compaction committed F~ S-454KiB Ke·0 D·35892 T·180.500667ms
-17:28:11.413415 table@remove removed @5
-17:28:11.415362 table@remove removed @3
-18:03:18.078146 memdb@flush N·49675 S·3MiB
-18:03:18.220315 memdb@flush created L0@9 N·49675 S·1MiB "s/1000,v105774":"s/latest,v99890"
-18:03:18.220710 version@stat F·[1 2] S·4MiB[1MiB 2MiB] Sc·[0.25 0.03]
-18:03:18.227285 memdb@flush committed F·1 T·148.945625ms
-18:03:18.279043 journal@remove removed @4
-18:07:49.045824 table@compaction L0·1 -> L1·2 S·4MiB Q·155102
-18:07:49.164964 table@build created L1@10 N·41026 S·2MiB "s/1,v348":"s/k..\x00\x00\x06,v137592"
-18:07:49.216087 table@build created L1@11 N·48961 S·2MiB "s/k..\x00\x00\a,v137591":"s/k..\x00\x00\r,v147588"
-18:07:49.237033 table@build created L1@12 N·6019 S·83KiB "s/k..\x00\x00\x0e,v147594":"s/latest,v149431"
-18:07:49.237097 version@stat F·[0 3] S·4MiB[0B 4MiB] Sc·[0.00 0.04]
-18:07:49.255297 table@compaction committed F~ S-224KiB Ke·0 D·17638 T·208.938958ms
-18:07:49.260835 table@remove removed @9
-18:07:49.263979 table@remove removed @6
-18:07:49.265054 table@remove removed @7
+=============== Mar 22, 2024 (EDT) ===============
+03:05:21.490607 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+03:05:21.573276 db@open opening
+03:05:21.573660 version@stat F·[] S·0B[] Sc·[]
+03:05:21.592358 db@janitor F·2 G·0
+03:05:21.592411 db@open done T·19.098125ms
+12:04:26.396061 db@close closing
+12:04:26.396180 db@close done T·118.083µs

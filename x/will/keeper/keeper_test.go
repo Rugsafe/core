@@ -26,7 +26,17 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	//IBC
+
+	// clientkeeper "github.com/cosmos/ibc-go/v8/modules/core/02-client/keeper"
+	// connectionkeeper "github.com/cosmos/ibc-go/v8/modules/core/03-connection/keeper"
+	// channelkeeper "github.com/cosmos/ibc-go/v8/modules/core/04-channel/keeper"
+	// portkeeper "github.com/cosmos/ibc-go/v8/modules/core/05-port/keeper"
+
 	// tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+
 	"github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/will/keeper"
 	"github.com/CosmWasm/wasmd/x/will/types"
@@ -36,25 +46,40 @@ func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	w3llApp := app.Setup(t)
 	mockedCodec := w3llApp.AppCodec()
 
+	// channelKeeper := w3llApp.IBCKeeper.ChannelKeeper
+	// channelKeeper := w3llApp.WillKeeper.ChannelKeeper
+	channelKeeper := w3llApp.GetIBCKeeper().ChannelKeeper
+	// scopedKeeper := w3llApp.ScopedIBCKeeper
+	// scopedKeeper := w3llApp.WillKeeper.ScopedKeeper
+	scopedKeeper := w3llApp.ScopedIBCKeeper
+	fmt.Println(channelKeeper)
+	fmt.Println(scopedKeeper)
 	// Initialize DB and store
 	memDB := dbm.NewMemDB()
 	// ms := corestore.NewCommitMultiStore(memDB) // Initialize the MultiStore with the in-memory DB
 	ms := corestore.NewCommitMultiStore(memDB, log.NewTestLogger(t), storemetrics.NewNoOpMetrics())
 	// keyWill := storetypes.NewKVStoreKey(types.StoreKey)
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
+	ibcStoreKey := storetypes.NewKVStoreKey(ibctransfertypes.StoreKey)    // IBC store key
+	ibcExportedStoreKey := storetypes.NewKVStoreKey(ibcexported.StoreKey) // IBC store key
 	storeservice := runtime.NewKVStoreService(storeKey)
-
 	// Create and mount store keys
 	// ms.MountStoreWithDB(keyWill, storetypes.StoreTypeIAVL, memDB)
 	ms.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, memDB)
+	ms.MountStoreWithDB(ibcStoreKey, storetypes.StoreTypeIAVL, memDB)         // Mount the IBC store
+	ms.MountStoreWithDB(ibcExportedStoreKey, storetypes.StoreTypeIAVL, memDB) // Mount the IBC store
 	require.NoError(t, ms.LoadLatestVersion())
 
 	// Create context
 	ctx := sdk.NewContext(ms, tmproto.Header{}, false, log.NewNopLogger())
 
+	// clientKeeper := clientkeeper.NewKeeper(cdc, key, paramSpace, stakingKeeper, upgradeKeeper)
+	// connectionKeeper := connectionkeeper.NewKeeper(cdc, key, paramSpace, clientKeeper)
+	// portKeeper := portkeeper.NewKeeper(scopedKeeper)
+	// channelKeeper := channelkeeper.NewKeeper(cdc, key, clientKeeper, connectionKeeper, &portKeeper, scopedKeeper)
+
 	// Initialize keeper with the store key
-	// k := keeper.NewKeeper(mockedCodec, storeKey, nil)
-	k := keeper.NewKeeper(mockedCodec, storeservice, nil)
+	k := keeper.NewKeeper(mockedCodec, storeservice, nil, channelKeeper, scopedKeeper)
 
 	return &k, ctx
 }
@@ -97,6 +122,8 @@ func TestKeeperCreateWill(t *testing.T) {
 	assert.Equal(t, will.Status, retrievedWill.Status, "retrieved will status should match")
 	// Add more assertions as needed to compare other fields
 }
+
+// TODO: write test for will execution transfer component
 
 func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 	kpr, ctx := setupKeeper(t)
@@ -191,4 +218,28 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 
 	// verify the will's claimable component's status is now claimed
 	require.Equal(t, will_for_status_check.Components[0].Status, "claimed")
+}
+
+func TestSendIBCMessage(t *testing.T) {
+	kpr, ctx := setupKeeper(t)
+
+	// Define test data
+	channelID := "testChannelID"
+	portID := "testPortID"
+	data := []byte("testData")
+	fmt.Println(ctx)
+	fmt.Println(sdk.UnwrapSDKContext(ctx))
+	// Assume we have a method in our keeper to abstract the sending and sequence management
+	err := kpr.SendIBCMessage(sdk.UnwrapSDKContext(ctx), channelID, portID, data)
+	require.NoError(t, err, "Sending IBC message should not result in an error")
+
+	events := ctx.EventManager().ABCIEvents()
+	require.Len(t, events, 1, "Expected one event to be emitted")
+	event := events[0]
+	require.Equal(t, event.Type, "ibc_message_sent", "Expected event type 'ibc_message_sent'")
+	require.Equal(t, event.Attributes[0].Key, "channel_id", "Expected attribute 'channel_id'")
+	require.Equal(t, event.Attributes[0].Value, channelID, "Expected channel ID matches")
+	require.Equal(t, event.Attributes[1].Key, "port_id", "Expected attribute 'port_id'")
+	require.Equal(t, event.Attributes[1].Value, portID, "Expected port ID matches")
+
 }

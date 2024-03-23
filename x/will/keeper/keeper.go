@@ -21,6 +21,11 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/will/schemes/schnorr"
 	"github.com/CosmWasm/wasmd/x/will/types"
+
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 )
 
 type IKeeper interface {
@@ -33,11 +38,20 @@ type IKeeper interface {
 	Claim(ctx context.Context, msg *types.MsgClaimRequest) error
 }
 
+// var (
+// 	_ ibctypes.ChannelKeeper = (*Keeper)(nil)
+// 	_ ibctypes.PortKeeper    = (*Keeper)(nil)
+// )
+
 type Keeper struct {
 	storeService corestoretypes.KVStoreService
 	// storeService storetypes.KVStoreKey
-	cdc      codec.Codec
-	storeKey storetypes.StoreKey // Add this line
+	cdc           codec.Codec
+	storeKey      storetypes.StoreKey // Add this line
+	ChannelKeeper ChannelKeeper
+	ScopedKeeper  capabilitykeeper.ScopedKeeper
+	// portKeeper    types.PortKeeper
+	capabilityKeeper CapabilityKeeper
 }
 
 func NewKeeper(
@@ -45,11 +59,15 @@ func NewKeeper(
 	storeService corestoretypes.KVStoreService,
 	// storeService storetypes.KVStoreKey,
 	logger log.Logger,
+	channelKeeper ChannelKeeper,
+	scopedKeeper capabilitykeeper.ScopedKeeper,
 ) Keeper {
 	// sb := collections.NewSchemaBuilder(storeService)
 	keeper := &Keeper{
-		storeService: storeService,
-		cdc:          cdc,
+		storeService:  storeService,
+		cdc:           cdc,
+		ChannelKeeper: channelKeeper,
+		ScopedKeeper:  scopedKeeper,
 	}
 
 	return *keeper
@@ -459,6 +477,12 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				// update status to executed
 				component.Status = "executed"
 
+				// TODO: DEV TESTING FOR SENDIBCMESSAGE
+				channelID := "testChannelID"
+				portID := "testPortID"
+				data := []byte("testData")
+				k.SendIBCMessage(sdk.UnwrapSDKContext(ctx), channelID, portID, data)
+
 			case *types.ExecutionComponent_Claim:
 				fmt.Printf("Claim component found, evidence")
 				// set all claimable components to active - can now have claims submitted
@@ -501,4 +525,38 @@ func (k *Keeper) EndBlocker(ctx sdk.Context) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
 	fmt.Println("INSIDE END BLOCKER FOR WILL MODULE")
 	return nil
+}
+
+// IBC
+
+// SendIBCMessage sends an IBC message from the specified port and channel with the given data
+func (k *Keeper) SendIBCMessage(ctx sdk.Context, channelID, portID string, data []byte) error {
+	// Retrieve the next sequence send for the channel
+	fmt.Println("SendIBCMessage 1")
+	sequence, found := k.ChannelKeeper.GetNextSequenceSend(ctx, portID, channelID)
+	if !found {
+		fmt.Println("SendIBCMessage 2")
+		return errors.New("sequence not found for channel", 1, "k.channelKeeper.GetNextSequenceSend ran out")
+	}
+
+	// Define packet timeout (adjust as needed)
+	fmt.Println("SendIBCMessage 3")
+	timeoutHeight := clienttypes.NewHeight(0, 10000)                      // Use appropriate timeout height
+	timeoutTimestamp := uint64(ctx.BlockTime().UnixNano()) + 100000000000 // 100 seconds; adjust as needed
+
+	// Construct the packet
+	packet := channeltypes.NewPacket(data, sequence, portID, channelID, "destPort", "destChannel", timeoutHeight, timeoutTimestamp)
+
+	fmt.Println("SendIBCMessage 4")
+	// Retrieve the capability for the port and channel
+	channelCap, ok := k.ScopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(portID, channelID))
+	if !ok {
+		fmt.Println("SendIBCMessage 5")
+		return errors.New("channel capability not found: ", 1, "k.scopedKeeper.GetCapability ran out")
+	}
+
+	// Send the packet
+	_, err := k.ChannelKeeper.SendPacket(ctx, channelCap, portID, channelID, timeoutHeight, timeoutTimestamp, packet.GetData())
+	fmt.Println("SendIBCMessage 6")
+	return err
 }
