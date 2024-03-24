@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default chain name
-CHAIN_NAME=${CHAINNAME:-"default-chain-name"}
+CHAIN_NAME=${CHAINNAME:-"w3ll-mainnet"}
 
 # Define paths
 HOME_DIR="./private/.${CHAIN_NAME}"

@@ -846,7 +846,7 @@ func NewWasmApp(
 		// wasm after ibc transfer
 		wasmtypes.ModuleName,
 		// TODO: add will fir genesis?
-		// willtypes.ModuleName
+		willtypes.ModuleName,
 	}
 
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
