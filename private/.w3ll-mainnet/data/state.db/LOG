@@ -1,35 +1,6 @@
-=============== Mar 23, 2024 (EDT) ===============
-06:17:01.000065 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-06:17:01.055426 db@open opening
-06:17:01.055684 version@stat F·[] S·0B[] Sc·[]
-06:17:01.072612 db@janitor F·2 G·0
-06:17:01.072637 db@open done T·17.189041ms
-12:32:23.856268 memdb@flush N·4740 S·3MiB
-12:32:24.009837 memdb@flush created L0@3 N·4740 S·918KiB "abc..y:1,v7":"val..:99,v489"
-12:32:24.009884 version@stat F·[1] S·918KiB[918KiB] Sc·[0.25]
-12:32:24.027055 memdb@flush committed F·1 T·153.112417ms
-12:32:24.083587 journal@remove removed @1
-13:57:07.708428 memdb@flush N·4756 S·3MiB
-13:57:07.838728 memdb@flush created L0@5 N·4756 S·908KiB "abc..000,v5002":"val..999,v4989"
-13:57:07.839155 version@stat F·[2] S·1MiB[1MiB] Sc·[0.50]
-13:57:07.871774 memdb@flush committed F·1 T·163.056876ms
-13:57:07.942080 journal@remove removed @2
-14:04:22.377250 table@compaction L0·2 -> L1·0 S·1MiB Q·9656
-14:04:22.717589 table@build created L1@6 N·5701 S·769KiB "abc..y:1,v7":"val..999,v4989"
-14:04:22.723904 version@stat F·[0 1] S·769KiB[0B 769KiB] Sc·[0.00 0.01]
-14:04:22.804873 table@compaction committed F-1 S-1MiB Ke·0 D·3795 T·426.222458ms
-14:04:22.810044 table@remove removed @5
-14:04:22.816298 table@remove removed @3
-15:23:10.558006 memdb@flush N·4755 S·3MiB
-15:23:11.147936 memdb@flush created L0@8 N·4755 S·909KiB "abc..899,v9497":"val..851,v14249"
-15:23:11.147994 version@stat F·[1 1] S·1MiB[909KiB 769KiB] Sc·[0.25 0.01]
-15:23:11.186601 memdb@flush committed F·1 T·608.1295ms
-15:23:11.402849 journal@remove removed @4
-15:26:04.740280 table@compaction L0·1 -> L1·1 S·1MiB Q·14421
-15:26:05.010182 table@build created L1@9 N·8554 S·1MiB "abc..y:1,v7":"val..999,v4989"
-15:26:05.010777 version@stat F·[0 1] S·1MiB[0B 1MiB] Sc·[0.00 0.01]
-15:26:05.062282 table@compaction committed F-1 S-523KiB Ke·0 D·1902 T·321.334126ms
-15:26:05.064942 table@remove removed @8
-15:26:05.070409 table@remove removed @6
-16:29:18.909742 db@close closing
-16:29:18.910231 db@close done T·488.084µs
+=============== Mar 24, 2024 (EDT) ===============
+13:41:52.277192 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+13:41:52.328838 db@open opening
+13:41:52.329249 version@stat F·[] S·0B[] Sc·[]
+13:41:52.354414 db@janitor F·2 G·0
+13:41:52.354502 db@open done T·25.62075ms
