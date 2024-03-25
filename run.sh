@@ -44,8 +44,9 @@ echo "step 5"
 echo "step 6"
 ./build/wasmd genesis gentx alice 222222222stake --home ${HOME_DIR} --keyring-backend test --chain-id ${CHAIN_NAME}
 echo "step 7"
-./build/wasmd genesis gentx alice 700000000w3ll --home ${HOME_DIR} --keyring-backend test --chain-id ${CHAIN_NAME}
+# ./build/wasmd genesis gentx alice 700000000w3ll --home ${HOME_DIR} --keyring-backend test --chain-id ${CHAIN_NAME}
+echo "step 8"
 ./build/wasmd genesis collect-gentxs --home ${HOME_DIR}
 
-echo "step 8"
+echo "step 9"
 ./build/wasmd start --home ${HOME_DIR} --rpc.laddr=tcp://0.0.0.0:26657 --grpc.address=0.0.0.0:9090

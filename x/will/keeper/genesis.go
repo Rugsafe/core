@@ -7,12 +7,15 @@ import (
 
 	// "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"github.com/CosmWasm/wasmd/x/will/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 )
 
 // InitGenesis initializes the ibc-transfer state and binds to PortID.
-func (k *Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) {
-	k.SetPort(ctx, state.PortId)
+// func (k *Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) ([]abci.ValidatorUpdate, error) {
+func InitGenesis(ctx sdk.Context, k *Keeper, state types.GenesisState) ([]abci.ValidatorUpdate, error) {
 	fmt.Println("ABOUT TO BIND PORT IN INITGENESIS")
+
+	k.SetPort(ctx, state.PortId)
 	// Only try to bind to port if it is not already bound, since we may already own
 	// port capability from capability InitGenesis
 	if !k.hasCapability(ctx, state.PortId) {
@@ -23,14 +26,13 @@ func (k *Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) {
 			panic(fmt.Errorf("could not claim port capability: %v", err))
 		}
 	}
-
+	panic(2)
 	k.SetParams(ctx, state.Params)
+	return nil, nil
 }
 
-// ExportGenesis exports ibc-transfer module's portID and denom trace info into its genesis state.
-func (k *Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
-	return &types.GenesisState{
-		PortId: k.GetPort(ctx),
-		Params: k.GetParams(ctx),
-	}
+// ExportGenesis returns a GenesisState for a given context and keeper.
+func ExportGenesis(ctx sdk.Context, keeper *Keeper) *types.GenesisState {
+	var genState types.GenesisState
+	return &genState
 }

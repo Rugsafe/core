@@ -588,6 +588,12 @@ func (k *Keeper) hasCapability(ctx sdk.Context, portID string) bool {
 	return ok
 }
 
+// dev for visibility
+func (k *Keeper) HasCapability(ctx sdk.Context, portID string) bool {
+	_, ok := k.scopedKeeper.GetCapability(ctx, host.PortPath(portID))
+	return ok
+}
+
 // BindPort defines a wrapper function for the ort Keeper's function in
 // order to expose it to module's InitGenesis function
 func (k *Keeper) BindPort(ctx sdk.Context, portID string) error {
