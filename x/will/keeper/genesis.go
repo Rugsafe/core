@@ -24,11 +24,14 @@ func InitGenesis(ctx sdk.Context, k *Keeper, state types.GenesisState) ([]abci.V
 		err := k.BindPort(ctx, state.PortId)
 		if err != nil {
 			panic(fmt.Errorf("could not claim port capability: %v", err))
+		} else {
+			fmt.Println("INITGENESIS PORT BIND WILL SUCCESSFULL")
 		}
 	}
 	// panic(2)
 	//set params
 	k.SetParams(ctx, state.Params)
+	fmt.Println("AFTER SET PARAMS")
 	return nil, nil
 }
 
