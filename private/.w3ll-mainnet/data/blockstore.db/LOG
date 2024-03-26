@@ -1,8 +1,8 @@
 =============== Mar 25, 2024 (EDT) ===============
-21:20:16.850131 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-21:20:16.904729 db@open opening
-21:20:16.905487 version@stat F·[] S·0B[] Sc·[]
-21:20:16.939874 db@janitor F·2 G·0
-21:20:16.939915 db@open done T·35.115958ms
-21:20:23.484162 db@close closing
-21:20:23.484329 db@close done T·166.375µs
+22:29:04.860485 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+22:29:04.939544 db@open opening
+22:29:04.939925 version@stat F·[] S·0B[] Sc·[]
+22:29:04.975706 db@janitor F·2 G·0
+22:29:04.975784 db@open done T·36.206625ms
+22:59:01.635910 db@close closing
+22:59:01.636145 db@close done T·234.75µs
