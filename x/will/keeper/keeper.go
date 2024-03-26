@@ -120,8 +120,15 @@ func (k Keeper) GetParams(ctx context.Context) types.Params {
 }
 
 // SetParams sets all will parameters.
-func (k Keeper) SetParams(ctx context.Context, ps types.Params) error {
-	return k.params.Set(ctx, ps)
+// func (k Keeper) SetParams(ctx context.Context, ps types.Params) error {
+// 	return k.params.Set(ctx, ps)
+// }
+
+// SetParams sets the transfer module parameters.
+func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&params)
+	store.Set([]byte(types.ParamsKey), bz)
 }
 
 // GetAuthority returns the x/will module's authority.
