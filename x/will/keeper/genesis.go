@@ -26,7 +26,7 @@ func InitGenesis(ctx sdk.Context, k *Keeper, state types.GenesisState) ([]abci.V
 			panic(fmt.Errorf("could not claim port capability: %v", err))
 		}
 	}
-	panic(2)
+	// panic(2)
 	k.SetParams(ctx, state.Params)
 	return nil, nil
 }

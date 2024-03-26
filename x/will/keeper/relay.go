@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	// capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
@@ -20,7 +21,7 @@ func (k Keeper) OnAckPacket(
 ) error {
 	defer telemetry.MeasureSince(time.Now(), "will", "contract", "ibc-ack-packet")
 	fmt.Println("INSIDE OnAckPacket")
-	panic(1)
+	// panic(1)
 	return nil
 }
 
@@ -31,7 +32,7 @@ func (k Keeper) OnCloseChannel(
 ) error {
 	defer telemetry.MeasureSince(time.Now(), "will", "contract", "ibc-close-channel")
 	fmt.Println("INSIDE OnCloseChannel")
-	panic(1)
+	// panic(1)
 	return nil
 }
 
@@ -42,7 +43,7 @@ func (k Keeper) OnConnectChannel(
 ) error {
 	defer telemetry.MeasureSince(time.Now(), "will", "contract", "ibc-connect-channel")
 	fmt.Println("INSIDE OnConnectChannel")
-	panic(1)
+	// panic(1)
 	return nil
 }
 
@@ -53,22 +54,24 @@ func (k Keeper) OnOpenChannel(
 ) (string, error) {
 	defer telemetry.MeasureSince(time.Now(), "wasm", "contract", "ibc-open-channel")
 	fmt.Println("INSIDE OnOpenChannel")
-	panic(1)
+	// panic(1)
 	return "", nil
 }
 
 func (k Keeper) AuthenticateCapability(ctx sdk.Context, cap *capabilitytypes.Capability, name string) bool {
 	fmt.Println("INSIDE AuthenticateCapability")
-	panic(1)
-	return k.capabilityKeeper.AuthenticateCapability(ctx, cap, name)
+	// panic(1)
+	return k.scopedKeeper.AuthenticateCapability(ctx, cap, name)
 }
 
 // ClaimCapability allows the transfer module to claim a capability
 // that IBC module passes to it
 func (k Keeper) ClaimCapability(ctx sdk.Context, cap *capabilitytypes.Capability, name string) error {
 	fmt.Println("INSIDE ClaimCapability")
-	panic(1)
-	return k.capabilityKeeper.ClaimCapability(ctx, cap, name)
+	fmt.Println(k.capabilityKeeper)
+	fmt.Println(cap)
+	// panic(1)
+	return k.scopedKeeper.ClaimCapability(ctx, cap, name)
 }
 
 // OnRecvPacket calls the contract to process the incoming IBC packet. The contract fully owns the data processing and
@@ -84,7 +87,7 @@ func (k Keeper) OnRecvPacket(
 ) (ibcexported.Acknowledgement, error) {
 	defer telemetry.MeasureSince(time.Now(), "wasm", "contract", "ibc-recv-packet")
 	fmt.Println("INSIDE OnRecvPacket")
-	panic(1)
+	// panic(1)
 	return nil, nil
 }
 
@@ -98,6 +101,6 @@ func (k Keeper) OnTimeoutPacket(
 ) error {
 	defer telemetry.MeasureSince(time.Now(), "wasm", "contract", "ibc-timeout-packet")
 	fmt.Println("INSIDE OnTimeoutPacket")
-	panic(1)
+	// panic(1)
 	return nil
 }

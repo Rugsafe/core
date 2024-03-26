@@ -19,6 +19,7 @@ import (
 	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -43,18 +44,31 @@ type IKeeper interface {
 // 	_ ibctypes.PortKeeper    = (*Keeper)(nil)
 // )
 
-type Keeper struct {
-	storeService corestoretypes.KVStoreService
-	// storeService storetypes.KVStoreKey
-	cdc              codec.Codec
-	storeKey         storetypes.StoreKey // Add this line
-	ChannelKeeper    ChannelKeeper
-	scopedKeeper     capabilitykeeper.ScopedKeeper
-	portKeeper       PortKeeper
-	capabilityKeeper CapabilityKeeper
-	params           collections.Item[types.Params]
-	authority        string
-}
+type (
+	Keeper struct {
+		storeService corestoretypes.KVStoreService
+		// storeService storetypes.KVStoreKey
+		cdc           codec.Codec
+		storeKey      storetypes.StoreKey // Add this line
+		ChannelKeeper ChannelKeeper
+		scopedKeeper  capabilitykeeper.ScopedKeeper
+		portKeeper    PortKeeper
+
+		// capabilityKeeper CapabilityKeeper
+		capabilityKeeper capabilitykeeper.Keeper
+
+		params    collections.Item[types.Params]
+		authority string
+	}
+
+	// ScopedKeeper struct {
+	// 	cdc      codec.BinaryCodec
+	// 	storeKey storetypes.StoreKey
+	// 	memKey   storetypes.StoreKey
+	// 	capMap   map[uint64]*captypes.Capability
+	// 	module   string
+	// }
+)
 
 func NewKeeper(
 	cdc codec.Codec,
@@ -62,14 +76,35 @@ func NewKeeper(
 	// storeService storetypes.KVStoreKey,
 	logger log.Logger,
 	channelKeeper ChannelKeeper,
+	portKeeper icatypes.PortKeeper,
 	scopedKeeper capabilitykeeper.ScopedKeeper,
+	scopedIBCKeeper capabilitykeeper.ScopedKeeper,
+
+	// capabilityKeeper CapabilityKeeper,
+	capabilityKeeper capabilitykeeper.Keeper,
 ) Keeper {
+	fmt.Println("NewKeeper:")
 	// sb := collections.NewSchemaBuilder(storeService)
+
+	// sk := ScopedKeeper {
+	// 		cdc      codec.BinaryCodec
+	// 		storeKey storetypes.StoreKey
+	// 		memKey   storetypes.StoreKey
+	// 		capMap   map[uint64]*captypes.Capability
+	// 		module   string
+	// }
+
+	fmt.Println("scopedKeeper:")
+	fmt.Println(scopedKeeper)
+	fmt.Println(scopedIBCKeeper)
+	fmt.Println(capabilityKeeper)
 	keeper := &Keeper{
-		storeService:  storeService,
-		cdc:           cdc,
-		ChannelKeeper: channelKeeper,
-		scopedKeeper:  scopedKeeper,
+		storeService:     storeService,
+		cdc:              cdc,
+		ChannelKeeper:    channelKeeper,
+		portKeeper:       portKeeper,
+		scopedKeeper:     scopedKeeper,
+		capabilityKeeper: capabilityKeeper,
 	}
 
 	return *keeper
@@ -84,7 +119,7 @@ func (k Keeper) GetParams(ctx context.Context) types.Params {
 	return p
 }
 
-// SetParams sets all wasm parameters.
+// SetParams sets all will parameters.
 func (k Keeper) SetParams(ctx context.Context, ps types.Params) error {
 	return k.params.Set(ctx, ps)
 }
@@ -584,12 +619,17 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, channelID, portID string, data 
 
 // hasCapability checks if the transfer module owns the port capability for the desired port
 func (k *Keeper) hasCapability(ctx sdk.Context, portID string) bool {
-	_, ok := k.scopedKeeper.GetCapability(ctx, host.PortPath(portID))
+	var portPath string = host.PortPath(portID)
+	fmt.Println("portpath: %s", portPath)
+	_, ok := k.scopedKeeper.GetCapability(ctx, portPath)
 	return ok
 }
 
 // dev for visibility
 func (k *Keeper) HasCapability(ctx sdk.Context, portID string) bool {
+	var portPath string = host.PortPath(portID)
+	fmt.Println("portpath 2: %s", portPath)
+
 	_, ok := k.scopedKeeper.GetCapability(ctx, host.PortPath(portID))
 	return ok
 }
@@ -598,7 +638,10 @@ func (k *Keeper) HasCapability(ctx sdk.Context, portID string) bool {
 // order to expose it to module's InitGenesis function
 func (k *Keeper) BindPort(ctx sdk.Context, portID string) error {
 	capability := k.portKeeper.BindPort(ctx, portID)
-	return k.ClaimCapability(ctx, capability, host.PortPath(portID))
+	fmt.Println("capability")
+	fmt.Println(capability)
+	// return k.ClaimCapability(ctx, capability, host.PortPath(portID))
+	return k.scopedKeeper.ClaimCapability(ctx, capability, host.PortPath(portID))
 }
 
 // GetPort returns the portID for the transfer module. Used in ExportGenesis
@@ -608,7 +651,22 @@ func (k *Keeper) GetPort(ctx sdk.Context) string {
 }
 
 // SetPort sets the portID for the transfer module. Used in InitGenesis
-func (k *Keeper) SetPort(ctx sdk.Context, portID string) {
-	store := ctx.KVStore(k.storeKey)
+func (k Keeper) SetPort(ctx sdk.Context, portID string) {
+	// fmt.Println("SETTING PORT HERE: %s", portID)
+	// fmt.Println("SETTING PORT HERE storekey: %s", k.storeKey)
+	// store := ctx.KVStore(k.storeKey)
+	store := k.storeService.OpenKVStore(ctx)
 	store.Set(types.PortKey, []byte(portID))
 }
+
+// SetPort sets the portID for the transfer module. Used in InitGenesis
+// func (k *Keeper) SetPort(ctx sdk.Context, portID string) {
+// 	// fmt.Println("SETTING PORT HERE: %s", portID)
+// 	// fmt.Println("SETTING PORT HERE storekey: %s", k.storeKey)
+// 	// store := ctx.KVStore(k.storeKey)
+
+// 	store.Set(types.PortKey, []byte(portID))
+// 	store := k.storeService.OpenKVStore(ctx)
+// 	store.Set(expiryKey, []byte(willID))
+
+// }
