@@ -228,6 +228,10 @@ replace (
 
 replace github.com/CosmWasm/wasmd/x/will => ./x/will
 
+// # TODO: HERES MY CHANGE, IS THIS RIGHT?
+// replace github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.44.5
+// replace cosmossdk.io/simapp => github.com/cosmos/cosmos-sdk v0.50.1
+
 // replace will => ./x/will
 
 retract (

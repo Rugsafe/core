@@ -11,6 +11,7 @@ import (
 	// tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+
 	// _proto "github.com/cosmos/gogoproto/proto"
 	"github.com/stretchr/testify/assert"
 	// "github.com/stretchr/testify/mock"
@@ -20,6 +21,7 @@ import (
 	// corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	corestore "cosmossdk.io/store"
+
 	// corestoretypes "cosmossdk.io/core/store"
 	storemetrics "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
@@ -70,6 +72,7 @@ func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	// channelKeeper := channelkeeper.NewKeeper(cdc, key, clientKeeper, connectionKeeper, &portKeeper, scopedKeeper)
 
 	// Initialize keeper with the store key
+	//TODO: FIX
 	k := keeper.NewKeeper(mockedCodec, storeservice, nil, channelKeeper, scopedKeeper)
 
 	return &k, ctx

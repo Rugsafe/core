@@ -287,3 +287,5 @@ run:
 ###### TESTS
 will_test_keeper:
 	go test -v x/will/keeper/keeper_test.go
+will_test_ibc:
+	go test -v x/will/ibc_test.go
