@@ -12,6 +12,7 @@ require (
 	github.com/cosmos/ics23/go v0.10.0 // indirect
 	github.com/dvsekhvalnov/jose2go v1.5.0 // indirect
 	github.com/golang/protobuf v1.5.3
+	// google.golang.org/protobuf v1.33.0
 	github.com/google/gofuzz v1.2.0
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
@@ -228,11 +229,18 @@ replace (
 
 replace github.com/CosmWasm/wasmd/x/will => ./x/will
 
-// # TODO: HERES MY CHANGE, IS THIS RIGHT?
-// replace github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.44.5
-// replace cosmossdk.io/simapp => github.com/cosmos/cosmos-sdk v0.50.1
+replace github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 
-// replace will => ./x/will
+// replace github.com/cosmos/cosmos-sdk/simapp => cosmossdk.io/simapp v0.50.1 //v1.22.0 //v0.0.0-20240321112119-9933a444c4d9
+replace github.com/cosmos/cosmos-sdk/simapp => cosmossdk.io/simapp v0.50.1 //v1.22.0 //v0.0.0-20240321112119-9933a444c4d9
+
+// replace github.com/cosmos/cosmos-sdk/store => cosmossdk.io/store v1.1.0
+
+// replace github.com/cosmos/cosmos-sdk/x/evidence => cosmossdk.io/x/evidence v0.1.0
+
+// replace github.com/cosmos/cosmos-sdk/x/feegrant => cosmossdk.io/x/feegrant v0.1.0
+
+// replace github.com/cosmos/cosmos-sdk/x/upgrade => cosmossdk.io/x/upgrade v0.1.1
 
 retract (
 	// see https://github.com/CosmWasm/wasmd/issues/1713

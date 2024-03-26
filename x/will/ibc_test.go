@@ -6,14 +6,28 @@ import (
 
 	// Import your app and other necessary packages
 	// "github.com/cosmos/ibc-go/testing"
-	ibctesting "github.com/cosmos/ibc-go/v4/testing"
+	// ibctesting "github.com/cosmos/ibc-go/v4/testing"
+	// ibctesting "github.com/cosmos/ibc-go/testing"
+	"cosmossdk.io/log"
+	simapp "github.com/cosmos/cosmos-sdk/simapp"
+
+	// simapp "cosmossdk.io/simapp"
+
+	// ibctesting "github.com/cosmos/ibc-go/testing"
+	// "github.com/cosmos/ibc-go/testing/simapp"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+	dbm "github.com/tendermint/tm-db"
 
 	"github.com/stretchr/testify/suite"
 )
 
 // Define your app-specific testing setup if needed
-func SetupMyApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
-	// Initialize and return your app and genesis state
+// SetupTestingApp creates a new SimApp instance for testing
+func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
+	db := dbm.NewMemDB()
+	encCdc := simapp.MakeTestEncodingConfig()
+	app := simapp.NewSimApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, simapp.DefaultNodeHome, 5, encCdc, simapp.EmptyAppOptions{})
+	return app, simapp.NewDefaultGenesisState(encCdc.Marshaler)
 }
 
 type MyIBCModuleTestSuite struct {
@@ -26,7 +40,7 @@ type MyIBCModuleTestSuite struct {
 
 // Setup the test environment
 func (suite *MyIBCModuleTestSuite) SetupTest() {
-	ibctesting.DefaultTestingAppInit = SetupMyApp
+	ibctesting.DefaultTestingAppInit = SetupTestingApp
 	suite.coordinator = ibctesting.NewCoordinator(suite.T(), 2)
 
 	suite.chainA = suite.coordinator.GetChain(ibctesting.GetChainID(1))
@@ -40,4 +54,8 @@ func (suite *MyIBCModuleTestSuite) TestClientCreation() {
 
 func TestMyIBCModuleTestSuite(t *testing.T) {
 	suite.Run(t, new(MyIBCModuleTestSuite))
+}
+
+func init() {
+	ibctesting.DefaultTestingAppInit = SetupTestingApp
 }

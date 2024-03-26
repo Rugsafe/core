@@ -84,7 +84,7 @@ ifeq ($(OS),Windows_NT)
 	$(error wasmd server not supported. Use "make build-windows-client" for client)
 	exit 1
 else
-	go build -mod=readonly $(BUILD_FLAGS) -o build/wasmd ./cmd/wasmd
+	go build $(BUILD_FLAGS) -o build/wasmd ./cmd/wasmd
 #go build $(BUILD_FLAGS) -o build/wasmd ./cmd/wasmd
 endif
 
