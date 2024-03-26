@@ -27,6 +27,7 @@ func InitGenesis(ctx sdk.Context, k *Keeper, state types.GenesisState) ([]abci.V
 		}
 	}
 	// panic(2)
+	//set params
 	k.SetParams(ctx, state.Params)
 	return nil, nil
 }

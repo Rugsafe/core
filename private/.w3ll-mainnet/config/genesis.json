@@ -1,7 +1,7 @@
 {
   "app_name": "wasmd",
   "app_version": "",
-  "genesis_time": "2024-03-26T00:34:35.272125Z",
+  "genesis_time": "2024-03-26T01:14:08.512962Z",
   "chain_id": "w3ll-mainnet",
   "initial_height": 1,
   "app_hash": null,
@@ -132,7 +132,7 @@
                 "validator_address": "w3llvaloper1p0k8gygawzpggzwftv7cv47zvgg8zaunxlk5ea",
                 "pubkey": {
                   "@type": "/cosmos.crypto.ed25519.PubKey",
-                  "key": "JCLqD4gXZCcm83RrWWiU7JZemf5e+2UN39yGCxK5h1Q="
+                  "key": "LybCXjDgrCekxGsivV/LPCLrpopz2RWZCulHQ49CkG8="
                 },
                 "value": {
                   "denom": "stake",
@@ -140,7 +140,7 @@
                 }
               }
             ],
-            "memo": "519a1de8a5e3daa4d5aeaae4cab3762944e28457@192.168.1.101:26656",
+            "memo": "8b7cc02837547b15fbf4065dfbdda844af9cd873@192.168.1.101:26656",
             "timeout_height": "0",
             "extension_options": [],
             "non_critical_extension_options": []
@@ -169,7 +169,7 @@
             "tip": null
           },
           "signatures": [
-            "ORM+zKEzCzKA6CZ3rQcoyFaj4TybnzYgAsBbeAyPnBMasxB00y+adxsqLxat2zRdITPtWw3R/4JBp+3zxwtKHg=="
+            "QHDmiBsfaGmSj573eKhb3WrEJQ+BhRZ15hMS9p0p/TJPrUaWzLXljCZ4DQisvdNcEDkTd3wnHpZeKjUCd4AbDw=="
           ]
         }
       ]

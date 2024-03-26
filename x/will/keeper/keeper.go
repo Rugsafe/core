@@ -125,8 +125,10 @@ func (k Keeper) GetParams(ctx context.Context) types.Params {
 // }
 
 // SetParams sets the transfer module parameters.
-func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
-	store := ctx.KVStore(k.storeKey)
+func (k *Keeper) SetParams(ctx sdk.Context, params types.Params) {
+	fmt.Println("SetParams k.storeKey: %s", k.storeKey)
+	// store := ctx.KVStore(k.storeKey)
+	store := k.storeService.OpenKVStore(ctx)
 	bz := k.cdc.MustMarshal(&params)
 	store.Set([]byte(types.ParamsKey), bz)
 }
