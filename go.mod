@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/CosmWasm/wasmvm v1.5.0
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
-	github.com/cosmos/cosmos-sdk v0.50.1
+	github.com/cosmos/cosmos-sdk v0.50.1 //v0.50.1
 	github.com/cosmos/gogogateway v1.2.0 // indirect
 	github.com/cosmos/gogoproto v1.4.11
 	github.com/cosmos/iavl v1.0.0
@@ -232,7 +232,9 @@ replace github.com/CosmWasm/wasmd/x/will => ./x/will
 replace github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.2
 
 // replace github.com/cosmos/cosmos-sdk/simapp => cosmossdk.io/simapp v0.50.1 //v1.22.0 //v0.0.0-20240321112119-9933a444c4d9
-replace github.com/cosmos/cosmos-sdk/simapp => cosmossdk.io/simapp v0.50.1 //v1.22.0 //v0.0.0-20240321112119-9933a444c4d9
+// replace github.com/cosmos/cosmos-sdk/simapp => cosmossdk.io/simapp v0.50.1 //v1.22.0 //v0.0.0-20240321112119-9933a444c4d9
+
+replace cosmossdk.io/simapp => github.com/cosmos/cosmos-sdk/simapp v1.21.0 //v0.0.0-20230309163709-87da587416ba
 
 // replace github.com/cosmos/cosmos-sdk/store => cosmossdk.io/store v1.1.0
 
