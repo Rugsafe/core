@@ -54,7 +54,7 @@ require (
 	github.com/rs/zerolog v1.31.0
 	github.com/spf13/viper v1.17.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20231106174013-bbf56f31fb17
-	google.golang.org/protobuf v1.31.0
+	google.golang.org/protobuf v1.31.0 // indirect
 )
 
 require (
@@ -87,7 +87,6 @@ require (
 	github.com/cometbft/cometbft-db v0.9.1 // indirect
 	github.com/cosmos/btcutil v1.0.5 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
-	github.com/cosmos/gorocksdb v1.2.0 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.13.3 // indirect
 	github.com/creachadair/atomicfile v0.3.1 // indirect
 	github.com/creachadair/tomledit v0.0.24 // indirect
@@ -209,10 +208,7 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-require (
-	github.com/tendermint/tm-db v0.6.7
-	go.dedis.ch/kyber/v3 v3.1.0
-)
+require go.dedis.ch/kyber/v3 v3.1.0
 
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0

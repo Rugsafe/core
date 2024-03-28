@@ -136,6 +136,7 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/CosmWasm/wasmd/x/will"
+
 	willkeeper "github.com/CosmWasm/wasmd/x/will/keeper"
 	willtypes "github.com/CosmWasm/wasmd/x/will/types"
 )
