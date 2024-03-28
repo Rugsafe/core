@@ -66,8 +66,10 @@ func (suite *IBCTestSuite) TestPacketTransmission() {
 
 	// Adjustments for packet creation with height and timeout timestamp
 	currentHeight := suite.chainA.CurrentHeader.Height
-	timeoutHeight := uint64(currentHeight + 100)                     // Example height timeout
-	timeoutTimestamp := uint64(time.Now().Add(time.Hour).UnixNano()) // Example timestamp timeout
+	timeoutHeight := uint64(currentHeight + 100)
+	// Example height timeout
+	// timeoutTimestamp := uint64(time.Now().Add(time.Hour).UnixNano()) // Example timestamp timeout
+	timeoutTimestamp := uint64(time.Now().Add(time.Minute * 10).UnixNano()) // 10 minutes in the future
 
 	packetData := []byte("data")
 	packet := channeltypes.NewPacket(
