@@ -68,7 +68,6 @@ func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 
 	// scopedWillKeeper := w3llApp.CapabilityKeeper.ScopeToModule(willtypes.ModuleName)
 	// scopedIBCKeeper := w3llApp.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
-
 	k := keeper.NewKeeper(
 		mockedCodec,
 		storeservice,
@@ -219,7 +218,8 @@ func TestSendIBCMessage(t *testing.T) {
 
 	// Act
 	fmt.Println("CTX:")
-	fmt.Println(ctx)
+	// fmt.Println(ctx)
+	fmt.Println(keeper.ChannelKeeper.GetNextSequenceSend(ctx, portID, channelID))
 	err := keeper.SendIBCMessage(ctx, channelID, portID, data)
 	require.NoError(t, err, "SendIBCMessage should not error")
 

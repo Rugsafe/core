@@ -391,7 +391,6 @@ func NewWasmApp(
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
 	scopedWillKeeper := app.CapabilityKeeper.ScopeToModule(willtypes.ModuleName)
-
 	fmt.Println("scopedWillKeeper app")
 	fmt.Println(scopedWillKeeper)
 	app.CapabilityKeeper.Seal()
