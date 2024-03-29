@@ -73,8 +73,17 @@ func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 
 	// Initialize keeper with the store key
 	//TODO: FIX
-	k := keeper.NewKeeper(mockedCodec, storeservice, nil, channelKeeper, scopedKeeper)
-
+	// k := keeper.NewKeeper(mockedCodec, storeservice, nil, channelKeeper, scopedKeeper)
+	k := keeper.NewKeeper(
+		mockedCodec,
+		storeservice,
+		nil,
+		channelKeeper,
+		w3llApp.GetIBCKeeper().PortKeeper,
+		w3llApp.ScopedWillKeeper,
+		w3llApp.ScopedIBCKeeper,
+		*w3llApp.CapabilityKeeper,
+	)
 	return &k, ctx
 }
 

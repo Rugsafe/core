@@ -288,4 +288,5 @@ run:
 will_test_keeper:
 	go test -v x/will/keeper/keeper_test.go
 will_test_ibc:
-	go test -v x/will/ibc_tests/ibc_test.go
+# go test -v x/will/ibc_tests/ibc_test.go
+	go test -v ./x/will/ibc_tests2/app_test.go

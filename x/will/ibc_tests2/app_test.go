@@ -14,7 +14,6 @@ import (
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
@@ -40,29 +39,16 @@ type IBCTestSuite struct {
 func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	w3llApp := app.Setup(t)
 	mockedCodec := w3llApp.AppCodec()
-
-	// channelKeeper := w3llApp.IBCKeeper.ChannelKeeper
-	// channelKeeper := w3llApp.WillKeeper.ChannelKeeper
-	channelKeeper := w3llApp.GetIBCKeeper().ChannelKeeper
-	// scopedKeeper := w3llApp.ScopedIBCKeeper
-	// scopedKeeper := w3llApp.WillKeeper.ScopedKeeper
-	// scopedKeeper := w3llApp.ScopedKeeper
-
-	fmt.Println(channelKeeper)
-	// fmt.Println(scopedKeeper)
 	// Initialize DB and store
 	memDB := dbm.NewMemDB()
-	// ms := corestore.NewCommitMultiStore(memDB) // Initialize the MultiStore with the in-memory DB
 	ms := corestore.NewCommitMultiStore(memDB, log.NewTestLogger(t), storemetrics.NewNoOpMetrics())
-	// keyWill := storetypes.NewKVStoreKey(types.StoreKey)
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
 	ibcStoreKey := storetypes.NewKVStoreKey(ibctransfertypes.StoreKey)    // IBC store key
 	ibcExportedStoreKey := storetypes.NewKVStoreKey(ibcexported.StoreKey) // IBC store key
 	storeservice := runtime.NewKVStoreService(storeKey)
-	memKey := storetypes.NewMemoryStoreKey("mem_capability") // Memory key for capability
+	// memKey := storetypes.NewMemoryStoreKey("mem_capability") // Memory key for capability
 
 	// Create and mount store keys
-	// ms.MountStoreWithDB(keyWill, storetypes.StoreTypeIAVL, memDB)
 	ms.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, memDB)
 	ms.MountStoreWithDB(ibcStoreKey, storetypes.StoreTypeIAVL, memDB)         // Mount the IBC store
 	ms.MountStoreWithDB(ibcExportedStoreKey, storetypes.StoreTypeIAVL, memDB) // Mount the IBC store
@@ -71,24 +57,32 @@ func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	// Create context
 	ctx := sdk.NewContext(ms, tmproto.Header{}, false, log.NewNopLogger())
 
-	// clientKeeper := clientkeeper.NewKeeper(cdc, key, paramSpace, stakingKeeper, upgradeKeeper)
-	// connectionKeeper := connectionkeeper.NewKeeper(cdc, key, paramSpace, clientKeeper)
-	// portKeeper := portkeeper.NewKeeper(scopedKeeper)
-	// channelKeeper := channelkeeper.NewKeeper(cdc, key, clientKeeper, connectionKeeper, &portKeeper, scopedKeeper)
-	capabilityKeeper := capabilitykeeper.NewKeeper(mockedCodec, storeKey, memKey)
+	// capabilityKeeper := capabilitykeeper.NewKeeper(mockedCodec, storeKey, memKey)
 
 	// Initialize keeper with the store key
-	//TODO: FIX
-	// k := keeper.NewKeeper(mockedCodec, storeservice, nil, channelKeeper, w3llApp.GetIBCKeeper().PortKeeper, scopedKeeper, capabilityKeeper)
+	fmt.Println("IBC TESTING LOGS")
+	fmt.Println(w3llApp.IBCKeeper.ChannelKeeper)
+	fmt.Println(w3llApp.ScopedWillKeeper)
+	fmt.Println(w3llApp.ScopedIBCKeeper)
+	fmt.Println(w3llApp.CapabilityKeeper)
+
+	// scopedWillKeeper := w3llApp.CapabilityKeeper.ScopeToModule(willtypes.ModuleName)
+	// scopedIBCKeeper := w3llApp.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
+
 	k := keeper.NewKeeper(
 		mockedCodec,
 		storeservice,
 		nil,
-		channelKeeper,
-		w3llApp.GetIBCKeeper().PortKeeper,
+		w3llApp.IBCKeeper.ChannelKeeper,
+		w3llApp.IBCKeeper.PortKeeper,
+
+		//scopedWillKeeper,
+		//scopedIBCKeeper,
+
 		w3llApp.ScopedWillKeeper,
 		w3llApp.ScopedIBCKeeper,
-		*capabilityKeeper,
+
+		*w3llApp.CapabilityKeeper,
 	)
 
 	return &k, ctx
@@ -216,23 +210,31 @@ func (suite *IBCTestSuite) TestPacketTransmission() {
 
 func TestSendIBCMessage(t *testing.T) {
 	// Setup
-	// keeper, ctx := setupKeeper(t)
-	// mockChannelKeeper := MockChannelKeeper{}   // Your mock implementation
-	// keeper.SetChannelKeeper(mockChannelKeeper) // Assuming you have a setter or pass it during initialization
+	keeper, ctx := setupKeeper(t)
 
-	// // Define your test channel ID, port ID, and data
-	// channelID := "channel-0"
-	// portID := "port-0"
-	// data := []byte("test data")
+	// Define your test channel ID, port ID, and data
+	channelID := "channel-0"
+	portID := "port-0"
+	data := []byte("test data")
 
-	// // Act
-	// err := keeper.SendIBCMessage(ctx, channelID, portID, data)
-	// require.NoError(t, err)
+	// Act
+	fmt.Println("CTX:")
+	fmt.Println(ctx)
+	err := keeper.SendIBCMessage(ctx, channelID, portID, data)
+	require.NoError(t, err, "SendIBCMessage should not error")
 
-	// // Assert
-	// // Verify that SendPacket was called on the mock with expected arguments
-	// mockChannelKeeper.AssertCalled(t, "SendPacket", ctx, channelID, portID, data)
-	// // Further assertions based on your logic
+	// Here you would check for effects of sending the message.
+	// In an actual blockchain environment, you would check state changes or events.
+	// For this test environment, you might check if state entries expected to change have changed,
+	// if events are emitted, or other side effects depending on what SendIBCMessage does.
+
+	// Example: Check if a packet has been sent (mocking or state inspection)
+	// This part is highly dependent on how your app is structured and what tools or mock setups you have available.
+	// For an actual chain, you'd look into the state storage or events to see if the packet send operation has been initiated.
+
+	// Assert
+	// Verify that SendPacket was called on the mock with expected arguments
+
 }
 
 func TestMyIBCTestSuite(t *testing.T) {
