@@ -14,9 +14,17 @@ BUF_IMAGE=bufbuild/buf@sha256:3cb1f8a4b48bd5ad8f09168f10f607ddc318af202f5c057d52
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(BUF_IMAGE)
 HTTPS_GIT := https://github.com/CosmWasm/wasmd.git
 
-W3LL_CHAIN_ID="w3ll-devnet"
+
+W3LL_CHAIN_ID="w3ll-mainnet"
 W3LL_DENOM=uw3ll
 W3LL_NODE=http://localhost:26657
+
+# W3LL_CHAIN_ID="w3ll-testnet"
+# W3LL_DENOM=uw3ll
+# W3LL_NODE=http://192.168.1.100:26657
+
+W3LL_CHAIN_ID_ARGS=--chain-id=$(W3LL_CHAIN_ID)
+W3LL_NODE_ARGS=--node=$(W3LL_NODE)
 
 export GO111MODULE = on
 
