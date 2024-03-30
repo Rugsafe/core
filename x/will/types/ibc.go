@@ -54,11 +54,11 @@ type IBCEndpoint struct {
 }
 
 type IBCChannel struct {
-	Endpoint             IBCEndpoint `json:"endpoint"`
-	CounterpartyEndpoint IBCEndpoint `json:"counterparty_endpoint"`
-	Order                IBCOrder    `json:"order"`
-	Version              string      `json:"version"`
-	ConnectionID         string      `json:"connection_id"`
+	// Endpoint             IBCEndpoint `json:"endpoint"`
+	// CounterpartyEndpoint IBCEndpoint `json:"counterparty_endpoint"`
+	Order        IBCOrder `json:"order"`
+	Version      string   `json:"version"`
+	ConnectionID string   `json:"connection_id"`
 }
 
 type IBCChannelOpenMsg struct {

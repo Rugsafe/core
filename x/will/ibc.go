@@ -232,17 +232,17 @@ func (i IBCModule) OnChanOpenInit(
 	if err := ValidateChannelParams(channelID); err != nil {
 		return "", err
 	}
-	contractAddr, err := sdk.AccAddressFromBech32(portID)
-	if err != nil {
-		return "", errorsmod.Wrapf(err, "contract port id")
-	}
+	// contractAddr, err := sdk.AccAddressFromBech32(portID)
+	// if err != nil {
+	// 	return "", errorsmod.Wrapf(err, "contract port id")
+	// }
 
 	msg := types.IBCChannelOpenMsg{
 		OpenInit: &types.IBCOpenInit{
 			Channel: types.IBCChannel{
-				Endpoint:             types.IBCEndpoint{PortID: portID, ChannelID: channelID},
-				CounterpartyEndpoint: types.IBCEndpoint{PortID: counterParty.PortId, ChannelID: counterParty.ChannelId},
-				Order:                order.String(),
+				// Endpoint:             types.IBCEndpoint{PortID: portID, ChannelID: channelID},
+				// CounterpartyEndpoint: types.IBCEndpoint{PortID: counterParty.PortId, ChannelID: counterParty.ChannelId},
+				Order: order.String(),
 				// DESIGN V3: this may be "" ??
 				Version:      version,
 				ConnectionID: connectionHops[0], // At the moment this list must be of length 1. In the future multi-hop channels may be supported.
@@ -251,7 +251,11 @@ func (i IBCModule) OnChanOpenInit(
 	}
 
 	// Allow contracts to return a version (or default to proposed version if unset)
-	acceptedVersion, err := i.keeper.OnOpenChannel(ctx, contractAddr, msg)
+	acceptedVersion, err := i.keeper.OnOpenChannel(
+		ctx,
+		// contractAddr,
+		msg,
+	)
 	if err != nil {
 		return "", err
 	}
@@ -285,26 +289,30 @@ func (i IBCModule) OnChanOpenTry(
 		return "", err
 	}
 
-	contractAddr, err := sdk.AccAddressFromBech32(portID)
-	if err != nil {
-		return "", errorsmod.Wrapf(err, "contract port id")
-	}
+	// contractAddr, err := sdk.AccAddressFromBech32(portID)
+	// if err != nil {
+	// 	return "", errorsmod.Wrapf(err, "contract port id")
+	// }
 
 	msg := types.IBCChannelOpenMsg{
 		OpenTry: &types.IBCOpenTry{
 			Channel: types.IBCChannel{
-				Endpoint:             types.IBCEndpoint{PortID: portID, ChannelID: channelID},
-				CounterpartyEndpoint: types.IBCEndpoint{PortID: counterParty.PortId, ChannelID: counterParty.ChannelId},
-				Order:                order.String(),
-				Version:              counterpartyVersion,
-				ConnectionID:         connectionHops[0], // At the moment this list must be of length 1. In the future multi-hop channels may be supported.
+				// Endpoint:             types.IBCEndpoint{PortID: portID, ChannelID: channelID},
+				// CounterpartyEndpoint: types.IBCEndpoint{PortID: counterParty.PortId, ChannelID: counterParty.ChannelId},
+				Order:        order.String(),
+				Version:      counterpartyVersion,
+				ConnectionID: connectionHops[0], // At the moment this list must be of length 1. In the future multi-hop channels may be supported.
 			},
 			CounterpartyVersion: counterpartyVersion,
 		},
 	}
 
 	// Allow contracts to return a version (or default to counterpartyVersion if unset)
-	version, err := i.keeper.OnOpenChannel(ctx, contractAddr, msg)
+	version, err := i.keeper.OnOpenChannel(
+		ctx,
+		// contractAddr,
+		msg,
+	)
 	if err != nil {
 		return "", err
 	}
@@ -374,11 +382,11 @@ func (i IBCModule) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Packet, 
 func toWillChannel(portID, channelID string, channelInfo channeltypes.Channel, appVersion string) types.IBCChannel {
 	fmt.Println("IBC DEBUG: toWillChannel")
 	return types.IBCChannel{
-		Endpoint:             types.IBCEndpoint{PortID: portID, ChannelID: channelID},
-		CounterpartyEndpoint: types.IBCEndpoint{PortID: channelInfo.Counterparty.PortId, ChannelID: channelInfo.Counterparty.ChannelId},
-		Order:                channelInfo.Ordering.String(),
-		Version:              appVersion,
-		ConnectionID:         channelInfo.ConnectionHops[0], // At the moment this list must be of length 1. In the future multi-hop channels may be supported.
+		// Endpoint:             types.IBCEndpoint{PortID: portID, ChannelID: channelID},
+		// CounterpartyEndpoint: types.IBCEndpoint{PortID: channelInfo.Counterparty.PortId, ChannelID: channelInfo.Counterparty.ChannelId},
+		Order:        channelInfo.Ordering.String(),
+		Version:      appVersion,
+		ConnectionID: channelInfo.ConnectionHops[0], // At the moment this list must be of length 1. In the future multi-hop channels may be supported.
 	}
 }
 

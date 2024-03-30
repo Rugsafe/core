@@ -49,7 +49,7 @@ func (k Keeper) OnConnectChannel(
 
 func (k Keeper) OnOpenChannel(
 	ctx sdk.Context,
-	contractAddr sdk.AccAddress,
+	// contractAddr sdk.AccAddress,
 	msg types.IBCChannelOpenMsg,
 ) (string, error) {
 	defer telemetry.MeasureSince(time.Now(), "wasm", "contract", "ibc-open-channel")
