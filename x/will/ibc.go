@@ -169,10 +169,10 @@ func (i IBCModule) OnChanOpenAck(
 	counterpartyVersion string,
 ) error {
 	fmt.Println("IBC DEBUG: OnChanOpenAck")
-	contractAddr, err := sdk.AccAddressFromBech32("abc") // keeper.ContractFromPortID(portID)
-	if err != nil {
-		return errorsmod.Wrapf(err, "address errored out")
-	}
+	// contractAddr, err := sdk.AccAddressFromBech32("abc") // keeper.ContractFromPortID(portID)
+	// if err != nil {
+	// 	return errorsmod.Wrapf(err, "address errored out")
+	// }
 	channelInfo, ok := i.channelKeeper.GetChannel(ctx, portID, channelID)
 	if !ok {
 		return errorsmod.Wrapf(channeltypes.ErrChannelNotFound, "port ID (%s) channel ID (%s)", portID, channelID)
@@ -190,16 +190,20 @@ func (i IBCModule) OnChanOpenAck(
 			CounterpartyVersion: counterpartyVersion,
 		},
 	}
-	return i.keeper.OnConnectChannel(ctx, contractAddr, msg)
+	return i.keeper.OnConnectChannel(
+		ctx,
+		// contractAddr,
+		msg,
+	)
 }
 
 // OnChanOpenConfirm implements the IBCModule interface
 func (i IBCModule) OnChanOpenConfirm(ctx sdk.Context, portID, channelID string) error {
 	fmt.Println("IBC DEBUG: OnChanOpenConfirm")
-	contractAddr, err := sdk.AccAddressFromBech32(portID)
-	if err != nil {
-		return errorsmod.Wrapf(err, "contract port id")
-	}
+	// contractAddr, err := sdk.AccAddressFromBech32(portID)
+	// if err != nil {
+	// 	return errorsmod.Wrapf(err, "contract port id")
+	// }
 	channelInfo, ok := i.channelKeeper.GetChannel(ctx, portID, channelID)
 	if !ok {
 		return errorsmod.Wrapf(channeltypes.ErrChannelNotFound, "port ID (%s) channel ID (%s)", portID, channelID)
@@ -213,7 +217,11 @@ func (i IBCModule) OnChanOpenConfirm(ctx sdk.Context, portID, channelID string) 
 			Channel: toWillChannel(portID, channelID, channelInfo, appVersion),
 		},
 	}
-	return i.keeper.OnConnectChannel(ctx, contractAddr, msg)
+	return i.keeper.OnConnectChannel(
+		ctx,
+		// contractAddr,
+		msg,
+	)
 }
 
 // OnChanOpenInit implements the IBCModule interface
@@ -345,15 +353,19 @@ func (i IBCModule) OnRecvPacket(
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
 	fmt.Println("IBC DEBUG: OnRecvPacket")
-	contractAddr, err := sdk.AccAddressFromBech32(packet.DestinationPort)
-	if err != nil {
-		// this must not happen as ports were registered before
-		panic(errorsmod.Wrapf(err, "contract port id"))
-	}
+	// contractAddr, err := sdk.AccAddressFromBech32(packet.DestinationPort)
+	// if err != nil {
+	// 	// this must not happen as ports were registered before
+	// 	panic(errorsmod.Wrapf(err, "contract port id"))
+	// }
 
 	em := sdk.NewEventManager()
 	msg := types.IBCPacketReceiveMsg{Packet: newIBCPacket(packet), Relayer: relayer.String()}
-	ack, err := i.keeper.OnRecvPacket(ctx.WithEventManager(em), contractAddr, msg)
+	ack, err := i.keeper.OnRecvPacket(
+		ctx.WithEventManager(em),
+		// contractAddr,
+		msg,
+	)
 	if err != nil {
 		ack = channeltypes.NewErrorAcknowledgement(err)
 		// the state gets reverted, so we drop all captured events
@@ -370,12 +382,16 @@ func (i IBCModule) OnRecvPacket(
 // OnTimeoutPacket implements the IBCModule interface
 func (i IBCModule) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error {
 	fmt.Println("IBC DEBUG: OnTimeoutPacket")
-	contractAddr, err := sdk.AccAddressFromBech32(packet.SourcePort)
-	if err != nil {
-		return errorsmod.Wrapf(err, "contract port id")
-	}
+	// contractAddr, err := sdk.AccAddressFromBech32(packet.SourcePort)
+	// if err != nil {
+	// 	return errorsmod.Wrapf(err, "contract port id")
+	// }
 	msg := types.IBCPacketTimeoutMsg{Packet: newIBCPacket(packet), Relayer: relayer.String()}
-	err = i.keeper.OnTimeoutPacket(ctx, contractAddr, msg)
+	err := i.keeper.OnTimeoutPacket(
+		ctx,
+		// contractAddr,
+		msg,
+	)
 	if err != nil {
 		return errorsmod.Wrap(err, "on timeout")
 	}

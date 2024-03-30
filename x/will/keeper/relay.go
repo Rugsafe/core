@@ -16,7 +16,7 @@ import (
 
 func (k Keeper) OnAckPacket(
 	ctx sdk.Context,
-	contractAddr sdk.AccAddress,
+	// contractAddr sdk.AccAddress,
 	msg types.IBCPacketAckMsg,
 ) error {
 	defer telemetry.MeasureSince(time.Now(), "will", "contract", "ibc-ack-packet")
@@ -27,7 +27,7 @@ func (k Keeper) OnAckPacket(
 
 func (k Keeper) OnCloseChannel(
 	ctx sdk.Context,
-	contractAddr sdk.AccAddress,
+	// contractAddr sdk.AccAddress,
 	msg types.IBCChannelCloseMsg,
 ) error {
 	defer telemetry.MeasureSince(time.Now(), "will", "contract", "ibc-close-channel")
@@ -38,7 +38,7 @@ func (k Keeper) OnCloseChannel(
 
 func (k Keeper) OnConnectChannel(
 	ctx sdk.Context,
-	contractAddr sdk.AccAddress,
+	// contractAddr sdk.AccAddress,
 	msg types.IBCChannelConnectMsg,
 ) error {
 	defer telemetry.MeasureSince(time.Now(), "will", "contract", "ibc-connect-channel")
@@ -83,7 +83,7 @@ func (k Keeper) ClaimCapability(ctx sdk.Context, cap *capabilitytypes.Capability
 // For more information see: https://github.com/cosmos/ics/tree/master/spec/ics-004-channel-and-packet-semantics#packet-flow--handling
 func (k Keeper) OnRecvPacket(
 	ctx sdk.Context,
-	contractAddr sdk.AccAddress,
+	// contractAddr sdk.AccAddress,
 	msg types.IBCPacketReceiveMsg,
 ) (ibcexported.Acknowledgement, error) {
 	defer telemetry.MeasureSince(time.Now(), "wasm", "contract", "ibc-recv-packet")
@@ -97,7 +97,7 @@ func (k Keeper) OnRecvPacket(
 // The contract should handle this on the application level and undo the original operation
 func (k Keeper) OnTimeoutPacket(
 	ctx sdk.Context,
-	contractAddr sdk.AccAddress,
+	// contractAddr sdk.AccAddress,
 	msg types.IBCPacketTimeoutMsg,
 ) error {
 	defer telemetry.MeasureSince(time.Now(), "wasm", "contract", "ibc-timeout-packet")
