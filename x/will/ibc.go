@@ -268,13 +268,13 @@ func (i IBCModule) OnChanOpenInit(
 		fmt.Println("IBC DEBUG: OnChanOpenInit 2")
 		return "", err
 	}
-	if acceptedVersion == "" { // accept incoming version when nothing returned by contract
-		if version == "" {
-			fmt.Println("IBC DEBUG: OnChanOpenInit 3")
-			return "", types.ErrEmpty.Wrap("version")
-		}
-		acceptedVersion = version
-	}
+	// if acceptedVersion == "" { // accept incoming version when nothing returned by contract
+	// 	if version == "" {
+	// 		fmt.Println("IBC DEBUG: OnChanOpenInit 3")
+	// 		return "", types.ErrEmpty.Wrap("version")
+	// 	}
+	// 	acceptedVersion = version
+	// }
 
 	// Claim channel capability passed back by IBC module
 	if err := i.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {

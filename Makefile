@@ -305,8 +305,9 @@ will_test_ibc:
 # deploy contracts
 DEV_WALLET=alice
 CODE_ID=1
-# DEPLOYED_CONTRACT_ADDRESS=w3ll1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqmujmse
+# DEPLOYED_CONTRACT_ADDRESS=w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
 DEPLOYED_CONTRACT_ADDRESS=w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
+
 
 dc1:
 	./build/wasmd tx wasm store ./wasm_artifacts/simple_option.wasm --from $(DEV_WALLET) --gas auto --gas-adjustment 1.3 -y -b sync --output json $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS)
@@ -327,5 +328,5 @@ contract_info:
 
 
 # dev
-# mainnet - wasm.w3ll1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqmujmse
+# mainnet - wasm.w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
 # testnet - wasm.w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
