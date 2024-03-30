@@ -15,13 +15,13 @@ DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(
 HTTPS_GIT := https://github.com/CosmWasm/wasmd.git
 
 
-W3LL_CHAIN_ID="w3ll-mainnet"
-W3LL_DENOM=uw3ll
-W3LL_NODE=http://localhost:26657
-
-# W3LL_CHAIN_ID="w3ll-testnet"
+# W3LL_CHAIN_ID="w3ll-mainnet"
 # W3LL_DENOM=uw3ll
-# W3LL_NODE=http://192.168.1.100:26657
+# W3LL_NODE=http://localhost:26657
+
+W3LL_CHAIN_ID="w3ll-testnet"
+W3LL_DENOM=uw3ll
+W3LL_NODE=http://192.168.1.100:26657
 
 W3LL_CHAIN_ID_ARGS=--chain-id=$(W3LL_CHAIN_ID)
 W3LL_NODE_ARGS=--node=$(W3LL_NODE)
@@ -304,7 +304,9 @@ will_test_ibc:
 
 # deploy contracts
 DEV_WALLET=alice
-CODE_ID=7
+CODE_ID=1
+# DEPLOYED_CONTRACT_ADDRESS=w3ll1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqmujmse
+DEPLOYED_CONTRACT_ADDRESS=w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
 
 dc1:
 	./build/wasmd tx wasm store ./wasm_artifacts/simple_option.wasm --from $(DEV_WALLET) --gas auto --gas-adjustment 1.3 -y -b sync --output json $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS)
@@ -315,9 +317,15 @@ check:
 instantiate:
 	./build/wasmd tx wasm instantiate $(CODE_ID) \
 	"{}" \
-	--amount="1w3ll" --no-admin --label "test contract" --from ${DEV_WALLET} --gas auto --gas-adjustment 1.3 -b sync -y --chain-id="w3ll-mainnet"
-	--amount="10000000$(COREUM_DENOM)" --no-admin --label "awesomwasm token" --from ${DEV_WALLET} --gas auto --gas-adjustment 1.3 -b block -y $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS)
+	--amount="1w3ll" --no-admin --label "test ibc" --from ${DEV_WALLET} --gas auto --gas-adjustment 1.3 -b sync -y $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS)
 contract_address:
-	./build/wasmd q wasm list-contract-by-code $(CODE_ID) --output json $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS)
-	CONTRACT_ADDRESS=$(shell ./build/wasmd q wasm list-contract-by-code $(CODE_ID) --output json $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS) ')
+	./build/wasmd q wasm list-contract-by-code $(CODE_ID) --output json $(W3LL_NODE_ARGS)
+	CONTRACT_ADDRESS=$(shell ./build/wasmd q wasm list-contract-by-code $(CODE_ID) --output json $(W3LL_NODE_ARGS) ')
 	echo $$CONTRACT_ADDRESS
+contract_info:
+	./build/wasmd q wasm contract $(DEPLOYED_CONTRACT_ADDRESS) --output json $(W3LL_NODE_ARGS)
+
+
+# dev
+# mainnet - wasm.w3ll1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtqmujmse
+# testnet - wasm.w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn

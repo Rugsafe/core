@@ -56,7 +56,7 @@ func (k Keeper) OnOpenChannel(
 	fmt.Println("INSIDE OnOpenChannel")
 
 	// panic(1)
-	return "version", nil
+	return "", nil
 }
 
 func (k Keeper) AuthenticateCapability(ctx sdk.Context, cap *capabilitytypes.Capability, name string) bool {
