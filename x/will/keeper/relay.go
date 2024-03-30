@@ -54,8 +54,9 @@ func (k Keeper) OnOpenChannel(
 ) (string, error) {
 	defer telemetry.MeasureSince(time.Now(), "wasm", "contract", "ibc-open-channel")
 	fmt.Println("INSIDE OnOpenChannel")
+	k.
 	// panic(1)
-	return "", nil
+	return "dummy-version", nil
 }
 
 func (k Keeper) AuthenticateCapability(ctx sdk.Context, cap *capabilitytypes.Capability, name string) bool {
