@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Define necessary variables
-W3LL_CHAIN_ID="w3ll-chain"
+W3LL_CHAIN_ID="w3ll-mainnet"
 W3LL_NODE=http://localhost:26657
 DEV_WALLET=alice
 
 # Path to your wasm file (update this accordingly)
-WASM_FILE="./simple_option.wasm"
+WASM_FILE="./wasm_artifacts/simple_option.wasm"
 
 # Deploy the contract
 echo "Deploying contract..."

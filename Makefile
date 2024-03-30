@@ -14,6 +14,9 @@ BUF_IMAGE=bufbuild/buf@sha256:3cb1f8a4b48bd5ad8f09168f10f607ddc318af202f5c057d52
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(BUF_IMAGE)
 HTTPS_GIT := https://github.com/CosmWasm/wasmd.git
 
+W3LL_CHAIN_ID="w3ll-devnet"
+W3LL_DENOM=uw3ll
+W3LL_NODE=http://localhost:26657
 
 export GO111MODULE = on
 
@@ -290,3 +293,23 @@ will_test_keeper:
 will_test_ibc:
 # go test -v x/will/ibc_tests/ibc_test.go
 	go test -v ./x/will/ibc_tests2/app_test.go
+
+# deploy contracts
+DEV_WALLET=alice
+CODE_ID=7
+
+dc1:
+	./build/wasmd tx wasm store ./wasm_artifacts/simple_option.wasm --from $(DEV_WALLET) --gas auto --gas-adjustment 1.3 -y -b sync --output json $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS)
+dc2:
+	./build/wasmd tx wasm store ./wasm_artifacts/ibc_tutorial.wasm --from $(DEV_WALLET) --gas auto --gas-adjustment 1.3 -y -b sync --output json $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS)
+check:
+	./build/wasmd q wasm code-info $(CODE_ID)
+instantiate:
+	./build/wasmd tx wasm instantiate $(CODE_ID) \
+	"{}" \
+	--amount="1w3ll" --no-admin --label "test contract" --from ${DEV_WALLET} --gas auto --gas-adjustment 1.3 -b sync -y --chain-id="w3ll-mainnet"
+	--amount="10000000$(COREUM_DENOM)" --no-admin --label "awesomwasm token" --from ${DEV_WALLET} --gas auto --gas-adjustment 1.3 -b block -y $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS)
+contract_address:
+	./build/wasmd q wasm list-contract-by-code $(CODE_ID) --output json $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS)
+	CONTRACT_ADDRESS=$(shell ./build/wasmd q wasm list-contract-by-code $(CODE_ID) --output json $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS) ')
+	echo $$CONTRACT_ADDRESS
