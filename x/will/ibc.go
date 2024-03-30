@@ -227,7 +227,7 @@ func (i IBCModule) OnChanOpenInit(
 	counterParty channeltypes.Counterparty,
 	version string,
 ) (string, error) {
-	fmt.Println("IBC DEBUG: OnChanOpenInit")
+	fmt.Println("IBC DEBUG: OnChanOpenInit 1")
 	// ensure port, version, capability
 	if err := ValidateChannelParams(channelID); err != nil {
 		return "", err
@@ -257,10 +257,12 @@ func (i IBCModule) OnChanOpenInit(
 		msg,
 	)
 	if err != nil {
+		fmt.Println("IBC DEBUG: OnChanOpenInit 2")
 		return "", err
 	}
 	if acceptedVersion == "" { // accept incoming version when nothing returned by contract
 		if version == "" {
+			fmt.Println("IBC DEBUG: OnChanOpenInit 3")
 			return "", types.ErrEmpty.Wrap("version")
 		}
 		acceptedVersion = version
@@ -268,8 +270,10 @@ func (i IBCModule) OnChanOpenInit(
 
 	// Claim channel capability passed back by IBC module
 	if err := i.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
+		fmt.Println("IBC DEBUG: OnChanOpenInit 4")
 		return "", errorsmod.Wrap(err, "claim capability")
 	}
+	fmt.Println("IBC DEBUG: OnChanOpenInit 5")
 	return acceptedVersion, nil
 }
 
