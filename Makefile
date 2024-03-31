@@ -305,8 +305,8 @@ will_test_ibc:
 # deploy contracts
 DEV_WALLET=alice
 CODE_ID=1
-# DEPLOYED_CONTRACT_ADDRESS=w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
 DEPLOYED_CONTRACT_ADDRESS=w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
+# DEPLOYED_CONTRACT_ADDRESS=w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
 
 
 dc1:

@@ -52,11 +52,11 @@ func (k Keeper) OnOpenChannel(
 	// contractAddr sdk.AccAddress,
 	msg types.IBCChannelOpenMsg,
 ) (string, error) {
-	defer telemetry.MeasureSince(time.Now(), "wasm", "contract", "ibc-open-channel")
+	defer telemetry.MeasureSince(time.Now(), "will", "contract", "ibc-open-channel")
 	fmt.Println("INSIDE OnOpenChannel")
 
 	// panic(1)
-	return "", nil
+	return "will-version-1", nil
 }
 
 func (k Keeper) AuthenticateCapability(ctx sdk.Context, cap *capabilitytypes.Capability, name string) bool {
@@ -86,7 +86,7 @@ func (k Keeper) OnRecvPacket(
 	// contractAddr sdk.AccAddress,
 	msg types.IBCPacketReceiveMsg,
 ) (ibcexported.Acknowledgement, error) {
-	defer telemetry.MeasureSince(time.Now(), "wasm", "contract", "ibc-recv-packet")
+	defer telemetry.MeasureSince(time.Now(), "will", "contract", "ibc-recv-packet")
 	fmt.Println("INSIDE OnRecvPacket")
 	// panic(1)
 	return nil, nil
@@ -100,7 +100,7 @@ func (k Keeper) OnTimeoutPacket(
 	// contractAddr sdk.AccAddress,
 	msg types.IBCPacketTimeoutMsg,
 ) error {
-	defer telemetry.MeasureSince(time.Now(), "wasm", "contract", "ibc-timeout-packet")
+	defer telemetry.MeasureSince(time.Now(), "will", "contract", "ibc-timeout-packet")
 	fmt.Println("INSIDE OnTimeoutPacket")
 	// panic(1)
 	return nil

@@ -1,6 +1,16 @@
 =============== Mar 30, 2024 (EDT) ===============
-18:15:12.907366 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-18:15:12.964109 db@open opening
-18:15:12.964713 version@stat F·[] S·0B[] Sc·[]
-18:15:12.982225 db@janitor F·2 G·0
-18:15:12.982268 db@open done T·18.11575ms
+19:34:23.539476 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+19:34:23.593934 db@open opening
+19:34:23.594478 version@stat F·[] S·0B[] Sc·[]
+19:34:23.612321 db@janitor F·2 G·0
+19:34:23.612388 db@open done T·18.401ms
+21:43:08.307533 memdb@flush N·59347 S·3MiB
+21:43:08.359082 memdb@flush created L0@3 N·59347 S·891KiB "W\x00\xe3..\"\xa3\xc4,v1453":"\xf86\x97..\xddf\xbb,v793"
+21:43:08.359139 version@stat F·[1] S·891KiB[891KiB] Sc·[0.25]
+21:43:08.376117 memdb@flush committed F·1 T·68.410584ms
+21:43:08.382442 journal@remove removed @1
+23:45:37.279776 memdb@flush N·60270 S·3MiB
+23:45:37.349310 memdb@flush created L0@5 N·60270 S·838KiB "blo..\x01Ń,v59348":"blo..\xe0\x90k,v119590"
+23:45:37.349369 version@stat F·[2] S·1MiB[1MiB] Sc·[0.50]
+23:45:37.366700 memdb@flush committed F·1 T·86.466582ms
+23:45:37.372485 journal@remove removed @2
