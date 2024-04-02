@@ -9,11 +9,18 @@ import (
 	"testing"
 	"time"
 
-	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
+	// ibcgotesting "github.com/cosmos/ibc-go/v7/testing"
+	dbm "github.com/cosmos/cosmos-db"
+	ibcgotesting "github.com/cosmos/ibc-go/v8/testing"
+	simapp "github.com/cosmos/ibc-go/v8/testing/simapp"
+	simappparams "github.com/cosmos/ibc-go/v8/testing/simapp/params"
+	"github.com/stretchr/testify/require"
+
+	"cosmossdk.io/math"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -21,22 +28,6 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/stretchr/testify/require"
-
-	// ibcgotesting "github.com/cosmos/ibc-go/v7/testing"
-	dbm "github.com/cosmos/cosmos-db"
-	ibcgotesting "github.com/cosmos/ibc-go/v8/testing"
-
-	// evmosapp "github.com/evmos/evmos/v16/app"
-
-	// "github.com/evmos/evmos/v16/types"
-	// "github.com/evmos/evmos/v16/utils"
-
-	// ibctesting "github.com/cosmos/ibc-go/testing"
-
-	simapp "github.com/cosmos/ibc-go/v8/testing/simapp"
-	simappparams "github.com/cosmos/ibc-go/v8/testing/simapp/params"
-	//	simappparams "github.com/cosmos/ibc-go/v8/testing/simapp/params"
 )
 
 var _ ibcgotesting.TestingApp = &simapp.SimApp{}
@@ -124,7 +115,7 @@ func SetupWithGenesisValSet(t *testing.T, valSet *tmtypes.ValidatorSet, genAccs 
 	// set validators and delegations
 	stakingParams := stakingtypes.DefaultParams()
 	// set bond demon to be aevmos
-	stakingParams.BondDenom = "stake" //utils.BaseDenom
+	stakingParams.BondDenom = "stake" // utils.BaseDenom
 	stakingGenesis := stakingtypes.NewGenesisState(stakingParams, validators, delegations)
 	genesisState[stakingtypes.ModuleName] = app.AppCodec().MustMarshalJSON(stakingGenesis)
 

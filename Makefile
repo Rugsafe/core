@@ -15,13 +15,13 @@ DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(
 HTTPS_GIT := https://github.com/CosmWasm/wasmd.git
 
 
-# W3LL_CHAIN_ID="w3ll-mainnet"
-# W3LL_DENOM=uw3ll
-# W3LL_NODE=http://localhost:26657
-
-W3LL_CHAIN_ID="w3ll-testnet"
+W3LL_CHAIN_ID="w3ll-mainnet"
 W3LL_DENOM=uw3ll
-W3LL_NODE=http://192.168.1.100:26657
+W3LL_NODE=http://localhost:26657
+
+# W3LL_CHAIN_ID="w3ll-testnet"
+# W3LL_DENOM=uw3ll
+# W3LL_NODE=http://192.168.1.100:26657
 
 W3LL_CHAIN_ID_ARGS=--chain-id=$(W3LL_CHAIN_ID)
 W3LL_NODE_ARGS=--node=$(W3LL_NODE)
@@ -257,7 +257,7 @@ will_create:
 	--component-name "component_for_schnorr_claim" --component-args "schnorr:${SIGNATURE},${PUBKEY},${MESSAGE}" \
 	--component-name "component_for_pedersen_claim" --component-args "pedersen:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" \
 	--component-name "component_for_gnark_claim" --component-args "gnark:verification_key_hex,public_inputs_hex,proof_hex" \
-	--from alice --chain-id w3ll-chain -y
+	--from alice --chain-id w3ll-mainnet -y
 	sleep 1
 will_cx:
 	@for i in {1..20}; do \

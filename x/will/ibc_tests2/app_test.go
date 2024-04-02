@@ -5,28 +5,28 @@ import (
 	"testing"
 	"time"
 
-	"cosmossdk.io/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-
-	corestore "cosmossdk.io/store"
-	storemetrics "cosmossdk.io/store/metrics"
-	storetypes "cosmossdk.io/store/types"
 	dbm "github.com/cosmos/cosmos-db"
-	"github.com/cosmos/cosmos-sdk/runtime"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+
+	"cosmossdk.io/log"
+	corestore "cosmossdk.io/store"
+	storemetrics "cosmossdk.io/store/metrics"
+	storetypes "cosmossdk.io/store/types"
+
+	"github.com/cosmos/cosmos-sdk/runtime"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	//
 	"github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/will/keeper"
 	"github.com/CosmWasm/wasmd/x/will/types"
-
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
 type IBCTestSuite struct {
@@ -75,8 +75,8 @@ func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 		w3llApp.IBCKeeper.ChannelKeeper,
 		w3llApp.IBCKeeper.PortKeeper,
 
-		//scopedWillKeeper,
-		//scopedIBCKeeper,
+		// scopedWillKeeper,
+		// scopedIBCKeeper,
 
 		w3llApp.ScopedWillKeeper,
 		w3llApp.ScopedIBCKeeper,
@@ -100,7 +100,6 @@ func (suite *IBCTestSuite) TestClientCreation() {
 	// Now you can assert that clients have been created correctly
 	suite.Require().NotEmpty(path.EndpointA.ClientID)
 	suite.Require().NotEmpty(path.EndpointB.ClientID)
-
 }
 
 // util
@@ -163,7 +162,7 @@ func (suite *IBCTestSuite) TestPacketTransmission() {
 	fmt.Println("packetSeq: ", packetSeq)
 	suite.Require().NoError(sendPacketErr)
 
-	//increment?
+	// increment?
 	suite.incrementTimeAndCommit()
 
 	// Ensure clients on both chains are updated before receiving the packet
@@ -188,7 +187,6 @@ func (suite *IBCTestSuite) TestPacketTransmission() {
 	suite.Require().NoError(ackErr)
 
 	fmt.Printf("Final block height: A: %d, B: %d\n", suite.chainA.App.LastBlockHeight(), suite.chainB.App.LastBlockHeight())
-
 }
 
 // func (suite *IBCTestSuite) TestBeginBlockerInteractionWithIBC() {
@@ -234,7 +232,6 @@ func TestSendIBCMessage(t *testing.T) {
 
 	// Assert
 	// Verify that SendPacket was called on the mock with expected arguments
-
 }
 
 func TestMyIBCTestSuite(t *testing.T) {

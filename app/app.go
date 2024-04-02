@@ -136,7 +136,6 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/CosmWasm/wasmd/x/will"
-
 	willkeeper "github.com/CosmWasm/wasmd/x/will/keeper"
 	willtypes "github.com/CosmWasm/wasmd/x/will/types"
 )
@@ -230,12 +229,13 @@ type WasmApp struct {
 	CircuitKeeper         circuitkeeper.Keeper
 	WillKeeper            willkeeper.Keeper
 
-	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	IBCFeeKeeper        ibcfeekeeper.Keeper
-	ICAControllerKeeper icacontrollerkeeper.Keeper
-	ICAHostKeeper       icahostkeeper.Keeper
-	TransferKeeper      ibctransferkeeper.Keeper
-	WasmKeeper          wasmkeeper.Keeper
+	IBCKeeper              *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	IBCFeeKeeper           ibcfeekeeper.Keeper
+	ICAControllerKeeper    icacontrollerkeeper.Keeper
+	ICAHostKeeper          icahostkeeper.Keeper
+	TransferKeeper         ibctransferkeeper.Keeper
+	WasmKeeper             wasmkeeper.Keeper
+	PermissionedWasmKeeper wasmkeeper.PermissionedKeeper
 
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
@@ -640,22 +640,7 @@ func NewWasmApp(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	// WILL
-	fmt.Println("cap keeper app")
-	fmt.Println(app.CapabilityKeeper)
-	app.WillKeeper = willkeeper.NewKeeper(
-		appCodec,
-		// keys[willtypes.StoreKey],
-		runtime.NewKVStoreService(keys[willtypes.StoreKey]),
-		logger,
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.PortKeeper,
-
-		scopedWillKeeper,
-		scopedIBCKeeper,
-		*app.CapabilityKeeper,
-	)
-
+	// wasm.Keeper.
 	// wasmDir := filepath.Join(homePath, "wasm")
 	wasmDir := filepath.Join(homePath, "w3ll")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
@@ -666,6 +651,7 @@ func NewWasmApp(
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
 	availableCapabilities := strings.Join(AllCapabilities(), ",")
+
 	app.WasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
@@ -685,6 +671,35 @@ func NewWasmApp(
 		availableCapabilities,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		wasmOpts...,
+	)
+
+	app.PermissionedWasmKeeper = *wasmkeeper.NewDefaultPermissionKeeper(app.WasmKeeper)
+	// app.PermissionedWasmKeeper = *wasmkeeper.NewPermissionedKeeper(
+	// 	app.WasmKeeper, // The original Wasm Keeper
+	// 	wasmkeeper.NewDefaultPermissionKeeper(), // Authorization policy
+	// )
+	// NOTE: MOVED BELOW WASM INIT BECAUSE WE NOW NEED THE WASM CONTRACT KEEPER
+
+	// WILL
+	fmt.Println("cap keeper app")
+	fmt.Println(app.CapabilityKeeper)
+	app.WillKeeper = willkeeper.NewKeeper(
+		appCodec,
+		// keys[willtypes.StoreKey],
+		runtime.NewKVStoreService(keys[willtypes.StoreKey]),
+		logger,
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.PortKeeper,
+
+		scopedWillKeeper,
+		scopedIBCKeeper,
+		*app.CapabilityKeeper,
+
+		// to support contract execution
+		app.WasmKeeper,
+		// scopedWasmKeeper,
+		app.BankKeeper,
+		app.PermissionedWasmKeeper,
 	)
 
 	// Create Transfer Stack

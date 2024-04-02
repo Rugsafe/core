@@ -8,10 +8,14 @@ import (
 	"strconv"
 	"time"
 
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
+
 	"go.dedis.ch/kyber/v3/group/edwards25519"
 
 	"cosmossdk.io/collections"
@@ -19,7 +23,6 @@ import (
 	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -39,21 +42,29 @@ type IKeeper interface {
 	Claim(ctx context.Context, msg *types.MsgClaimRequest) error
 }
 
+type IContractCall interface {
+	CallContract(address sdk.AccAddress)
+}
+
 // var (
 // 	_ ibctypes.ChannelKeeper = (*Keeper)(nil)
 // 	_ ibctypes.PortKeeper    = (*Keeper)(nil)
 // )
 
 type (
+	ContractHandler struct{}
+
 	Keeper struct {
 		storeService corestoretypes.KVStoreService
 		// storeService storetypes.KVStoreKey
-		cdc           codec.Codec
-		storeKey      storetypes.StoreKey // Add this line
-		ChannelKeeper ChannelKeeper
-		scopedKeeper  capabilitykeeper.ScopedKeeper
-		portKeeper    PortKeeper
-
+		cdc                    codec.Codec
+		storeKey               storetypes.StoreKey // Add this line
+		ChannelKeeper          ChannelKeeper
+		scopedKeeper           capabilitykeeper.ScopedKeeper
+		portKeeper             PortKeeper
+		wasmKeeper             wasmkeeper.Keeper
+		bankKeeper             bankkeeper.Keeper
+		permissionedWasmKeeper wasmkeeper.PermissionedKeeper
 		// capabilityKeeper CapabilityKeeper
 		capabilityKeeper capabilitykeeper.Keeper
 
@@ -82,6 +93,9 @@ func NewKeeper(
 
 	// capabilityKeeper CapabilityKeeper,
 	capabilityKeeper capabilitykeeper.Keeper,
+	wk wasmkeeper.Keeper,
+	bk bankkeeper.Keeper,
+	pwk wasmkeeper.PermissionedKeeper,
 ) Keeper {
 	fmt.Println("NewKeeper:")
 	// sb := collections.NewSchemaBuilder(storeService)
@@ -99,12 +113,15 @@ func NewKeeper(
 	fmt.Println(scopedIBCKeeper)
 	fmt.Println(capabilityKeeper)
 	keeper := &Keeper{
-		storeService:     storeService,
-		cdc:              cdc,
-		ChannelKeeper:    channelKeeper,
-		portKeeper:       portKeeper,
-		scopedKeeper:     scopedKeeper,
-		capabilityKeeper: capabilityKeeper,
+		storeService:           storeService,
+		cdc:                    cdc,
+		ChannelKeeper:          channelKeeper,
+		portKeeper:             portKeeper,
+		scopedKeeper:           scopedKeeper,
+		capabilityKeeper:       capabilityKeeper,
+		wasmKeeper:             wk,
+		bankKeeper:             bk,
+		permissionedWasmKeeper: pwk,
 	}
 
 	return *keeper
@@ -166,6 +183,9 @@ func (k Keeper) GetWillByID(ctx context.Context, id string) (*types.Will, error)
 	return &will, nil
 }
 
+// TODO: use Decentralized Identifier in Will ID
+// @note: https://pkg.go.dev/go.bryk.io/pkg/did
+// @note: https://w3c.github.io/did-core/
 func createWillId(creator string, name string, beneficiary string, height int64) string {
 	return fmt.Sprintf("%s-%s-%s-%s", creator, name, beneficiary, strconv.Itoa(int(height)))
 }
@@ -530,31 +550,72 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 		// This is where you would implement the logic specific to your application's requirements
 		fmt.Printf("Successfully fetched will with ID %s for further processing.\n", will.ID)
 
+		// if the will is not live, because this transition should only happen is the will is going from inactive->active (maybe terminology can be better)
+		if will.Status != "live" {
+			fmt.Printf("Error executing will components with WILL ID %s, will is NOT EXPIRED: %v\n", willID, err)
+			continue
+		}
+
 		for component_index, component := range will.Components {
 			fmt.Printf("Iterating over compnents for will ID %s for further processing.\n", will.ID)
 			fmt.Println(component_index)
 			fmt.Println(component)
 			switch c := component.ComponentType.(type) {
+
 			case *types.ExecutionComponent_Transfer:
 				fmt.Printf("Transfer component found, to: %s, amount: %s\n", c.Transfer.To, c.Transfer.Amount.String())
 
-				// TODO: actually execute the trades
+				// TODO: actually execute the token send
 
 				// update status to executed
 				component.Status = "executed"
 
-				// TODO: DEV TESTING FOR SENDIBCMESSAGE
-				channelID := "testChannelID"
-				portID := "testPortID"
-				data := []byte("testData")
-				k.SendIBCMessage(sdk.UnwrapSDKContext(ctx), channelID, portID, data)
+				// HandleOutput()
 
 			case *types.ExecutionComponent_Claim:
 				fmt.Printf("Claim component found, evidence")
 				// set all claimable components to active - can now have claims submitted
 				component.Status = "active"
 				// fmt.Printf("Claim component found, evidence: %s\n", c.Claim.Evidence)
-			// case *types.ExecutionComponent_ContractCall:
+
+			case *types.ExecutionComponent_Contract:
+				// Prepare the message you want to send to the contract. You might need to serialize it if it's not already in []byte form.
+				msg := c.Contract.Data // Assuming this is already in []byte form.
+
+				// Convert sdk.Context to context.Context. Be cautious with context conversions and make sure you're handling it correctly across your entire application.
+				ctxContext := sdk.UnwrapSDKContext(ctx)
+
+				// Prepare coins if your contract call requires sending tokens along. If not, just pass nil or an empty sdk.Coins{}.
+				coins := sdk.NewCoins() // Assuming no coins are needed for this example.
+
+				// Call the execute function. You need to replace "contractAddress" with the actual address of the contract and "caller" with the appropriate caller address.
+				contractAddr, err := sdk.AccAddressFromBech32(c.Contract.Address)
+				if err != nil {
+					// handle error
+				}
+
+				callerAddr := sdk.AccAddress{} // Determine how you get or set the caller address.
+				// k.wasmKeeper.
+				_, err = k.permissionedWasmKeeper.Execute(ctxContext, contractAddr, callerAddr, msg, coins)
+				if err != nil {
+					// Handle error, maybe log it or take appropriate action.
+					continue
+				}
+
+				// Update the status based on the execution result.
+				component.Status = "executed"
+				// Handle other component outputs if necessary.
+
+			case *types.ExecutionComponent_IbcMsg:
+				// send an IBC message
+				// TODO: DEV TESTING FOR SENDIBCMESSAGE
+				// HandleOutput()
+				channelID := "channel-0"
+				portID := "wasm.w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn"
+				data := []byte("testData")
+				k.SendIBCMessage(sdk.UnwrapSDKContext(ctx), channelID, portID, data)
+				// change status depending on result
+				component.Status = "executed"
 
 			default:
 				fmt.Println("Unknown component type found")
@@ -592,6 +653,13 @@ func (k *Keeper) EndBlocker(ctx sdk.Context) error {
 	fmt.Println("INSIDE END BLOCKER FOR WILL MODULE")
 	return nil
 }
+
+// TODO: early claiming (im not a fan of this)
+// at will creation, for each component, configure if it
+// can be claimable early. If yes, whenever a beneficiary makes a claim
+// we will check if the will component is early claimable.
+// if so, and the verification is successful
+// store will at a new key in the store [block_number]:early_claim
 
 //////////////////////////////////////////////// IBC
 
@@ -669,14 +737,7 @@ func (k Keeper) SetPort(ctx sdk.Context, portID string) {
 	store.Set(types.PortKey, []byte(portID))
 }
 
-// SetPort sets the portID for the transfer module. Used in InitGenesis
-// func (k *Keeper) SetPort(ctx sdk.Context, portID string) {
-// 	// fmt.Println("SETTING PORT HERE: %s", portID)
-// 	// fmt.Println("SETTING PORT HERE storekey: %s", k.storeKey)
-// 	// store := ctx.KVStore(k.storeKey)
-
-// 	store.Set(types.PortKey, []byte(portID))
-// 	store := k.storeService.OpenKVStore(ctx)
-// 	store.Set(expiryKey, []byte(willID))
-
-// }
+// function to invoke contract during will execution, or claim
+func (k Keeper) ExecuteContract(caller ContractHandler) {
+	//
+}

@@ -5,17 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 
+	// "github.com/CosmWasm/wasmd/x/wasm/types"
+	abci "github.com/cometbft/cometbft/abci/types"
 	// "github.com/gogo/protobuf/codec"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
-	// "cosmossdk.io/api/tendermint/abci"
-
 	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
 
-	// "github.com/CosmWasm/wasmd/x/wasm/types"
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"

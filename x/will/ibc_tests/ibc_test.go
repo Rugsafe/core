@@ -1,10 +1,8 @@
 package ibctesting
 
 import (
-
 	// ibctesting "github.com/cosmos/ibc-go/testing"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
-
 	"github.com/cosmos/ibc-go/v8/testing/simapp"
 )
 

@@ -64,20 +64,10 @@ func (i IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	fmt.Println("IBC DEBUG: NewIBCModule")
-	// contractAddr, err := keeper.ContractFromPortID(packet.SourcePort)
-	// if err != nil {
-	// 	return errorsmod.Wrapf(err, "contract port id")
-	// }
+	fmt.Println("IBC DEBUG: NewIBCModule OnAcknowledgementPacket")
 
-	// err = i.keeper.OnAckPacket(ctx, contractAddr, willtypes.IBCPacketAckMsg{
-	// 	Acknowledgement: willtypes.IBCAcknowledgement{Data: acknowledgement},
-	// 	OriginalPacket:  newIBCPacket(packet),
-	// 	Relayer:         relayer.String(),
-	// })
-	// if err != nil {
-	// 	return errorsmod.Wrap(err, "on ack")
-	// }
+	// TODO: check type of ack
+
 	return nil
 }
 
@@ -353,12 +343,6 @@ func (i IBCModule) OnRecvPacket(
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
 	fmt.Println("IBC DEBUG: OnRecvPacket")
-	// contractAddr, err := sdk.AccAddressFromBech32(packet.DestinationPort)
-	// if err != nil {
-	// 	// this must not happen as ports were registered before
-	// 	panic(errorsmod.Wrapf(err, "contract port id"))
-	// }
-
 	em := sdk.NewEventManager()
 	msg := types.IBCPacketReceiveMsg{Packet: newIBCPacket(packet), Relayer: relayer.String()}
 	ack, err := i.keeper.OnRecvPacket(
@@ -374,6 +358,9 @@ func (i IBCModule) OnRecvPacket(
 		// nil ack is a success case, see: https://github.com/cosmos/ibc-go/blob/v7.0.0/modules/core/keeper/msg_server.go#L453
 		ctx.EventManager().EmitEvents(em.Events())
 	}
+
+	// TODO: check type of ack
+
 	// TODO: emit ack event?
 	// types.EmitAcknowledgementEvent(ctx, contractAddr, ack, err)
 	return ack

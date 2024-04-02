@@ -3,11 +3,12 @@ package keeper
 import (
 	"fmt"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	// "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"github.com/CosmWasm/wasmd/x/will/types"
-	abci "github.com/cometbft/cometbft/abci/types"
 )
 
 // InitGenesis initializes the ibc-transfer state and binds to PortID.
@@ -25,11 +26,11 @@ func InitGenesis(ctx sdk.Context, k *Keeper, state types.GenesisState) ([]abci.V
 		if err != nil {
 			panic(fmt.Errorf("could not claim port capability: %v", err))
 		} else {
-			fmt.Println("INITGENESIS PORT BIND WILL SUCCESSFULL")
+			fmt.Println("INITGENESIS PORT BIND WILL SUCCESSFUL")
 		}
 	}
 	// panic(2)
-	//set params
+	// set params
 	k.SetParams(ctx, state.Params)
 	fmt.Println("AFTER SET PARAMS")
 	return nil, nil
