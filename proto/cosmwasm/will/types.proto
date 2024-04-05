@@ -20,17 +20,21 @@ message ExecutionComponent {
   // component type for automatic execution
   oneof component_type {
     TransferComponent transfer = 4; // Represents an asset transfer action.
-    ClaimComponent claim = 5; // Represents a claim action that a beneficiary must perform.
-    ContractComponent contract = 6; // Future use: Represents an interaction with a smart contract.
+    ClaimComponent claim =
+        5; // Represents a claim action that a beneficiary must perform.
+    ContractComponent contract =
+        6; // Future use: Represents an interaction with a smart contract.
     IBCMsgComponent ibc_msg = 7; // future use: for ibc message
   }
 }
 
 // TransferComponent is used for direct asset transfers.
 message TransferComponent {
-  string to = 1;    // Destination address for the asset transfer.
-  string denom = 2; // denom to send
-  cosmos.base.v1beta1.Coin amount = 3; // The amount and type of asset to transfer.
+  string from = 1;  // source address for the asset transfer
+  string to = 2;    // Destination address for the asset transfer.
+  string denom = 3; // denom to send
+  cosmos.base.v1beta1.Coin amount =
+      4; // The amount and type of asset to transfer.
 }
 
 // ClaimComponent is designed for actions requiring a claim with proof.
@@ -92,7 +96,6 @@ message IBCMsgComponent {
   }
 }
 
-
 // for ibc output message, we could make this be contract, or IBC send...
 message IBCContractCall {
   // contract address
@@ -118,7 +121,6 @@ message IBCSend {
   // amount to send over IBC
   cosmos.base.v1beta1.Coin amount = 5;
 }
-
 
 // CLAIM TYPES
 // SchnorrSignature is used for claims that require a Schnorr signature.

@@ -82,6 +82,9 @@ func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 		w3llApp.ScopedIBCKeeper,
 
 		*w3llApp.CapabilityKeeper,
+		w3llApp.WasmKeeper,
+		w3llApp.BankKeeper,
+		w3llApp.PermissionedWasmKeeper,
 	)
 
 	return &k, ctx

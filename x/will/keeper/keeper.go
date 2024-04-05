@@ -8,14 +8,11 @@ import (
 	"strconv"
 	"time"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
-
 	"go.dedis.ch/kyber/v3/group/edwards25519"
 
 	"cosmossdk.io/collections"
@@ -24,12 +21,14 @@ import (
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/CosmWasm/wasmd/x/will/schemes/schnorr"
+	"github.com/CosmWasm/wasmd/x/will/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/CosmWasm/wasmd/x/will/schemes/schnorr"
-	"github.com/CosmWasm/wasmd/x/will/types"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 )
 
 type IKeeper interface {
@@ -52,14 +51,14 @@ type IContractCall interface {
 // )
 
 type (
-	ContractHandler struct{}
+	// ContractHandler struct{}
 
 	Keeper struct {
 		storeService corestoretypes.KVStoreService
 		// storeService storetypes.KVStoreKey
 		cdc                    codec.Codec
 		storeKey               storetypes.StoreKey // Add this line
-		ChannelKeeper          ChannelKeeper
+		channelKeeper          ChannelKeeper
 		scopedKeeper           capabilitykeeper.ScopedKeeper
 		portKeeper             PortKeeper
 		wasmKeeper             wasmkeeper.Keeper
@@ -67,6 +66,7 @@ type (
 		permissionedWasmKeeper wasmkeeper.PermissionedKeeper
 		// capabilityKeeper CapabilityKeeper
 		capabilityKeeper capabilitykeeper.Keeper
+		accountKeeper    authkeeper.AccountKeeper
 
 		params    collections.Item[types.Params]
 		authority string
@@ -96,6 +96,7 @@ func NewKeeper(
 	wk wasmkeeper.Keeper,
 	bk bankkeeper.Keeper,
 	pwk wasmkeeper.PermissionedKeeper,
+	ak authkeeper.AccountKeeper,
 ) Keeper {
 	fmt.Println("NewKeeper:")
 	// sb := collections.NewSchemaBuilder(storeService)
@@ -115,13 +116,14 @@ func NewKeeper(
 	keeper := &Keeper{
 		storeService:           storeService,
 		cdc:                    cdc,
-		ChannelKeeper:          channelKeeper,
+		channelKeeper:          channelKeeper,
 		portKeeper:             portKeeper,
 		scopedKeeper:           scopedKeeper,
-		capabilityKeeper:       capabilityKeeper,
 		wasmKeeper:             wk,
 		bankKeeper:             bk,
 		permissionedWasmKeeper: pwk,
+		capabilityKeeper:       capabilityKeeper,
+		accountKeeper:          ak,
 	}
 
 	return *keeper
@@ -154,6 +156,18 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 // GetAuthority returns the x/will module's authority.
 func (k Keeper) GetAuthority() string {
 	return k.authority
+}
+
+func (k *Keeper) GetBankKeeper() bankkeeper.Keeper {
+	return k.bankKeeper
+}
+
+func (k *Keeper) GetAccountKeeper() authkeeper.AccountKeeper {
+	return k.accountKeeper
+}
+
+func (k *Keeper) GetChannelKeeper() ChannelKeeper {
+	return k.channelKeeper
 }
 
 // TruncateHash creates a shorter hash by taking the first n bytes of the SHA256 hash.
@@ -370,6 +384,8 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 	switch claim := msg.ClaimType.(type) {
 	case *types.MsgClaimRequest_SchnorrClaim:
 
+		// todo: invoke schno
+
 		// TODO: the will component is in the will object here
 		// but we have the claim ID, so iterate over the will to fetch the actual component itself
 		// that matches the claim id
@@ -566,7 +582,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				fmt.Printf("Transfer component found, to: %s, amount: %s\n", c.Transfer.To, c.Transfer.Amount.String())
 
 				// TODO: actually execute the token send
-
+				k.ExecuteTransfer(ctx, component, *will)
 				// update status to executed
 				component.Status = "executed"
 
@@ -579,24 +595,8 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				// fmt.Printf("Claim component found, evidence: %s\n", c.Claim.Evidence)
 
 			case *types.ExecutionComponent_Contract:
-				// Prepare the message you want to send to the contract. You might need to serialize it if it's not already in []byte form.
-				msg := c.Contract.Data // Assuming this is already in []byte form.
 
-				// Convert sdk.Context to context.Context. Be cautious with context conversions and make sure you're handling it correctly across your entire application.
-				ctxContext := sdk.UnwrapSDKContext(ctx)
-
-				// Prepare coins if your contract call requires sending tokens along. If not, just pass nil or an empty sdk.Coins{}.
-				coins := sdk.NewCoins() // Assuming no coins are needed for this example.
-
-				// Call the execute function. You need to replace "contractAddress" with the actual address of the contract and "caller" with the appropriate caller address.
-				contractAddr, err := sdk.AccAddressFromBech32(c.Contract.Address)
-				if err != nil {
-					// handle error
-				}
-
-				callerAddr := sdk.AccAddress{} // Determine how you get or set the caller address.
-				// k.wasmKeeper.
-				_, err = k.permissionedWasmKeeper.Execute(ctxContext, contractAddr, callerAddr, msg, coins)
+				_, err := k.ExecuteContract(ctx, c)
 				if err != nil {
 					// Handle error, maybe log it or take appropriate action.
 					continue
@@ -661,13 +661,97 @@ func (k *Keeper) EndBlocker(ctx sdk.Context) error {
 // if so, and the verification is successful
 // store will at a new key in the store [block_number]:early_claim
 
+// //////////////// EXECUTE TRANSFER
+// ExecuteTransferComponent handles the execution of a transfer component within a will.
+
+// ExecuteTransfer executes a transfer component within a will.
+func (k *Keeper) ExecuteTransfer(ctx sdk.Context, component *types.ExecutionComponent, will types.Will) error {
+	// Check if the component is a TransferComponent
+	transferComponent, ok := component.ComponentType.(*types.ExecutionComponent_Transfer)
+	if !ok {
+		return fmt.Errorf("component is not a TransferComponent")
+	}
+
+	// Prepare the coins for transfer
+	coins := sdk.NewCoins(*transferComponent.Transfer.Amount)
+
+	// Parse addresses
+	// fromAddr, err := sdk.AccAddressFromBech32(transferComponent.Transfer.From)
+
+	fmt.Println(transferComponent.Transfer.From)
+	fmt.Println(transferComponent.Transfer.To)
+
+	fromAddr, err := sdk.AccAddressFromBech32(transferComponent.Transfer.From)
+	if err != nil {
+		return fmt.Errorf("parsing from address failed: %w", err)
+	}
+
+	toAddr, err := sdk.AccAddressFromBech32(transferComponent.Transfer.To)
+	if err != nil {
+		return fmt.Errorf("parsing to address failed: %w", err)
+	}
+
+	// fromAddr := sdk.AccAddress{}
+	// toAddr := sdk.AccAddress{}
+
+	// Use the bank module's SendCoinsFromAccountToAccount to transfer the coins
+	fmt.Println("ExecuteTransfer")
+	fmt.Println(fromAddr)
+	fmt.Println(toAddr)
+
+	fmt.Println(coins)
+	if err := k.bankKeeper.SendCoins(ctx, fromAddr, toAddr, coins); err != nil {
+		return fmt.Errorf("failed to send coins: %w", err)
+	}
+
+	// Optionally log the transfer event
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(component.Name,
+			sdk.NewAttribute("will_id", will.ID),
+			sdk.NewAttribute("from", component.GetTransfer().From),
+			sdk.NewAttribute("to", component.GetTransfer().To),
+			sdk.NewAttribute("amount", coins.String()),
+		),
+	)
+
+	return nil
+}
+
+////////////////////////////// EXECUTE CONTRACT
+
+// function to invoke contract during will execution, or claim
+func (k Keeper) ExecuteContract(ctx sdk.Context, c *types.ExecutionComponent_Contract) ([]byte, error) {
+	// Prepare the message you want to send to the contract. You might need to serialize it if it's not already in []byte form.
+	msg := c.Contract.Data // Assuming this is already in []byte form.
+
+	// Convert sdk.Context to context.Context. Be cautious with context conversions and make sure you're handling it correctly across your entire application.
+	ctxContext := sdk.UnwrapSDKContext(ctx)
+
+	// Prepare coins if your contract call requires sending tokens along. If not, just pass nil or an empty sdk.Coins{}.
+	coins := sdk.NewCoins() // Assuming no coins are needed for this example.
+
+	// Call the execute function. You need to replace "contractAddress" with the actual address of the contract and "caller" with the appropriate caller address.
+	contractAddr, err := sdk.AccAddressFromBech32(c.Contract.Address)
+	if err != nil {
+		// handle error
+	}
+
+	callerAddr := sdk.AccAddress{} // Determine how you get or set the caller address.
+	// k.wasmKeeper.
+	return k.permissionedWasmKeeper.Execute(ctxContext, contractAddr, callerAddr, msg, coins)
+}
+
+func (k Keeper) ExecutePrivateTransfer(ctx sdk.Context, component *types.ExecutionComponent) error {
+	return nil
+}
+
 //////////////////////////////////////////////// IBC
 
 // SendIBCMessage sends an IBC message from the specified port and channel with the given data
 func (k *Keeper) SendIBCMessage(ctx sdk.Context, channelID, portID string, data []byte) error {
 	// Retrieve the next sequence send for the channel
 	fmt.Println("SendIBCMessage 1")
-	sequence, found := k.ChannelKeeper.GetNextSequenceSend(ctx, portID, channelID)
+	sequence, found := k.GetChannelKeeper().GetNextSequenceSend(ctx, portID, channelID)
 	if !found {
 		fmt.Println("SendIBCMessage 2")
 		return errors.New("sequence not found for channel", 1, "k.channelKeeper.GetNextSequenceSend ran out")
@@ -690,7 +774,7 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, channelID, portID string, data 
 	}
 
 	// Send the packet
-	_, err := k.ChannelKeeper.SendPacket(ctx, channelCap, portID, channelID, timeoutHeight, timeoutTimestamp, packet.GetData())
+	_, err := k.GetChannelKeeper().SendPacket(ctx, channelCap, portID, channelID, timeoutHeight, timeoutTimestamp, packet.GetData())
 	fmt.Println("SendIBCMessage 6")
 	return err
 }
@@ -735,9 +819,4 @@ func (k Keeper) SetPort(ctx sdk.Context, portID string) {
 	// store := ctx.KVStore(k.storeKey)
 	store := k.storeService.OpenKVStore(ctx)
 	store.Set(types.PortKey, []byte(portID))
-}
-
-// function to invoke contract during will execution, or claim
-func (k Keeper) ExecuteContract(caller ContractHandler) {
-	//
 }

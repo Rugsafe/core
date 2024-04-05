@@ -267,7 +267,7 @@ func NewWasmApp(
 	wasmOpts []wasmkeeper.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *WasmApp {
-	will.Main()
+	// will.Main() TODO?
 	interfaceRegistry, err := types.NewInterfaceRegistryWithOptions(types.InterfaceRegistryOptions{
 		ProtoFiles: proto.HybridResolver,
 		SigningOptions: signing.Options{
@@ -700,6 +700,7 @@ func NewWasmApp(
 		// scopedWasmKeeper,
 		app.BankKeeper,
 		app.PermissionedWasmKeeper,
+		app.AccountKeeper,
 	)
 
 	// Create Transfer Stack

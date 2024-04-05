@@ -65,11 +65,12 @@ func CreateWillCmd() *cobra.Command {
 				return fmt.Errorf("mismatch between component names and arguments count")
 			}
 
+			var sender string = clientCtx.GetFromAddress().String()
 			var components []*types.ExecutionComponent
 			for i, componentName := range componentNames {
 				componentArg := componentArgs[i]
 				// component, err := parseComponent(componentName, componentArg)
-				component, err := parseComponentFromString(componentName, componentArg)
+				component, err := parseComponentFromString(componentName, componentArg, sender)
 				if err != nil {
 					return fmt.Errorf("failed to parse component: %w", err)
 				}
@@ -77,7 +78,7 @@ func CreateWillCmd() *cobra.Command {
 			}
 
 			msg := types.MsgCreateWillRequest{
-				Creator:     clientCtx.GetFromAddress().String(),
+				Creator:     sender,
 				Name:        args[0],
 				Beneficiary: args[1],
 				Height:      height,
@@ -101,7 +102,7 @@ func generateUniqueComponentID() string {
 	return uuid.New().String()
 }
 
-func parseComponentFromString(componentName, componentData string) (*types.ExecutionComponent, error) {
+func parseComponentFromString(componentName, componentData string, sender string) (*types.ExecutionComponent, error) {
 	// The componentName is already separated, now just need to parse componentData
 	typeParts := strings.SplitN(componentData, ":", 2)
 	if len(typeParts) != 2 {
@@ -131,6 +132,7 @@ func parseComponentFromString(componentName, componentData string) (*types.Execu
 
 		component.ComponentType = &types.ExecutionComponent_Transfer{
 			Transfer: &types.TransferComponent{
+				From:   sender,
 				To:     to,
 				Amount: &amountCoin,
 			},

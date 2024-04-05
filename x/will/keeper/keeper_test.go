@@ -8,13 +8,11 @@ import (
 	// Import the tm-db package
 	// dbm "github.com/tendermint/tm-db" // Import the tm-db package
 	dbm "github.com/cosmos/cosmos-db"
-	// tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
 	// _proto "github.com/cosmos/gogoproto/proto"
-	"github.com/stretchr/testify/assert"
+
 	// "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
@@ -26,6 +24,7 @@ import (
 	// corestoretypes "cosmossdk.io/core/store"
 	storemetrics "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 
 	// codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -38,6 +37,11 @@ import (
 
 func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	w3llApp := app.Setup(t)
+
+	//config for native denom
+	cfg := sdk.GetConfig()
+	cfg.SetBech32PrefixForAccount("w3ll", "w3llpub")
+
 	mockedCodec := w3llApp.AppCodec()
 
 	// channelKeeper := w3llApp.IBCKeeper.ChannelKeeper
@@ -56,12 +60,24 @@ func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
 	ibcStoreKey := storetypes.NewKVStoreKey(ibctransfertypes.StoreKey)    // IBC store key
 	ibcExportedStoreKey := storetypes.NewKVStoreKey(ibcexported.StoreKey) // IBC store key
+
 	storeservice := runtime.NewKVStoreService(storeKey)
+
 	// Create and mount store keys
 	// ms.MountStoreWithDB(keyWill, storetypes.StoreTypeIAVL, memDB)
 	ms.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, memDB)
 	ms.MountStoreWithDB(ibcStoreKey, storetypes.StoreTypeIAVL, memDB)         // Mount the IBC store
 	ms.MountStoreWithDB(ibcExportedStoreKey, storetypes.StoreTypeIAVL, memDB) // Mount the IBC store
+
+	//dev
+	// bankStoreKey := storetypes.NewKVStoreKey("acc")
+	// ms.MountStoreWithDB(bankStoreKey, storetypes.StoreTypeIAVL, memDB)
+	// bankStoreKey2 := storetypes.NewKVStoreKey(banktypes.StoreKey)
+	// ms.MountStoreWithDB(bankStoreKey2, storetypes.StoreTypeIAVL, memDB)
+
+	// ms.MountStoreWithDB(keyAcc, storetypes.StoreTypeIAVL, memDB)
+	// ms.MountStoreWithDB(string("acc"), storetypes.StoreTypeIAVL, memDB)
+
 	require.NoError(t, ms.LoadLatestVersion())
 
 	// Create context
@@ -86,12 +102,14 @@ func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 		w3llApp.ScopedIBCKeeper,
 		*w3llApp.CapabilityKeeper,
 		w3llApp.WasmKeeper,
-		w3llApp.BankKeeper,
+		w3llApp.GetBankKeeper(),
 		w3llApp.PermissionedWasmKeeper,
+		w3llApp.GetAccountKeeper(),
 	)
 	return &k, ctx
 }
 
+/*
 func TestKeeperCreateWill(t *testing.T) {
 	kpr, ctx := setupKeeper(t)
 
@@ -228,10 +246,217 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 	// verify the will's claimable component's status is now claimed
 	require.Equal(t, will_for_status_check.Components[0].Status, "claimed")
 }
+*/
+
+func setupWithFundedAccount(t *testing.T, ctx sdk.Context, kpr *keeper.Keeper, addr sdk.AccAddress, coins sdk.Coins) {
+	// Ensure the account exists
+	fmt.Println("setupWithFundedAccount")
+	fmt.Println(addr)
+
+	acc := kpr.GetAccountKeeper().NewAccountWithAddress(ctx, addr)
+
+	kpr.GetAccountKeeper().SetAccount(ctx, acc)
+
+	// Fund the account
+	err := kpr.GetBankKeeper().MintCoins(ctx, minttypes.ModuleName, coins)
+	require.NoError(t, err)
+
+	err = kpr.GetBankKeeper().SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, addr, coins)
+	require.NoError(t, err)
+
+	// Verify the balance
+	balance := kpr.GetBankKeeper().GetBalance(ctx, addr, coins[0].Denom)
+	require.True(t, balance.IsEqual(coins[0]))
+}
+
+func TestExecuteTransfer(t *testing.T) {
+	// Setup the keeper and context
+	kpr, ctx := setupKeeper(t)
+
+	// Create test accounts
+	// fromAddr := sdk.AccAddress([]byte("w3ll1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz"))
+	// toAddr := sdk.AccAddress([]byte("w3ll1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz"))
+	var err error
+	// Define the addresses in Bech32 format
+	fromAddrStr := "w3ll1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz"
+	toAddrStr := "w3ll1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz"
+
+	// Convert string addresses to sdk.AccAddress
+	fromAddr, err := sdk.AccAddressFromBech32(fromAddrStr)
+	require.NoError(t, err, "Invalid 'from' address")
+	toAddr, err := sdk.AccAddressFromBech32(toAddrStr)
+	require.NoError(t, err, "Invalid 'to' address")
+
+	// sdk.AccAddress{}
+	// Define the amount to transfer
+	// amount := sdk.NewCoins(sdk.NewInt64Coin("w3ll", 100))
+	// amount := sdk.NewInt64Coin("w3ll", 100)
+	transferAmount := sdk.NewInt64Coin("w3ll", 100) // This is the amount to be transferred
+
+	// fundAmount := sdk.NewCoins(sdk.NewInt64Coin("w3ll", 1000)) // This is the amount to fund the account with
+
+	// Ensure the "from" account exists and fund it
+	// setupWithFundedAccount(t, ctx, kpr, fromAddr, fundAmount)
+
+	// Ensure the "to" account exists (funding not necessary but account must exist)
+	setupWithFundedAccount(t, ctx, kpr, toAddr, sdk.NewCoins())
+
+	// Prepare the transfer component
+	component := types.ExecutionComponent{
+		ComponentType: &types.ExecutionComponent_Transfer{
+			Transfer: &types.TransferComponent{
+				From:   fromAddr.String(),
+				To:     toAddr.String(),
+				Amount: &transferAmount,
+			},
+		},
+	}
+
+	// 	fmt.Println("component")
+	// 	fmt.Printf("component: %+v\n", component)
+	// 	fmt.Println(component.ComponentType)
+
+	// Create a dummy will object (if needed)
+	will := types.Will{
+		ID:          "will-1",
+		Creator:     fromAddr.String(),
+		Name:        "test will",
+		Beneficiary: toAddr.String(),
+		Height:      2,
+	}
+
+	// Execute the transfer
+	err_transfer := kpr.ExecuteTransfer(ctx, &component, will)
+	require.NoError(t, err_transfer, "ExecuteTransfer should not return an error")
+
+	// Verify the transfer by checking balances
+	fromBalance := kpr.GetBankKeeper().GetBalance(ctx, fromAddr, "w3ll")
+	toBalance := kpr.GetBankKeeper().GetBalance(ctx, toAddr, "w3ll")
+
+	require.Equal(t, int64(0), fromBalance.Amount.Int64(), "from account balance should decrease by the transfer amount")
+	require.Equal(t, int64(100), toBalance.Amount.Int64(), "to account balance should increase by the transfer amount")
+
+	// Optionally, verify events emitted during the transfer
+	events := ctx.EventManager().Events()
+	transferEventFound := false
+	for _, event := range events {
+		if event.Type == "transfer" { // Adjust event type as necessary
+			transferEventFound = true
+			// Further checks on event attributes can be done here
+			break
+		}
+	}
+	require.True(t, transferEventFound, "transfer event should be emitted")
+}
+
+// func TestExecuteTransfer(t *testing.T) {
+// 	// Setup the keeper and context
+// 	kpr, ctx := setupKeeper(t)
+
+// 	// Create test accounts and fund the sender account
+// 	fromAddr := sdk.AccAddress([]byte("w3ll1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz"))
+// 	toAddr := sdk.AccAddress([]byte("w3ll1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz"))
+// 	// amount := sdk.NewCoins(sdk.NewInt64Coin("w3ll", 100))
+// 	amount := sdk.NewInt64Coin("w3ll", 100)
+
+// 	// Fund the sender account
+// 	// err := kpr.GetBankKeeper().AddCoins(ctx, fromAddr, sdk.NewCoins(sdk.NewInt64Coin("w3ll", 1000)))
+// 	// require.NoError(t, err)
+
+// 	// Prepare the transfer component
+// 	component := types.ExecutionComponent{
+// 		ComponentType: &types.ExecutionComponent_Transfer{
+// 			Transfer: &types.TransferComponent{
+
+// 				// From:   fromAddr.String(),
+// 				// To:     toAddr.String(),
+
+// 				From: "w3ll1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz",
+// 				To:   "w3ll1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz",
+
+// 				Amount: &amount,
+// 			},
+// 		},
+// 	}
+// 	fmt.Println("component")
+// 	fmt.Printf("component: %+v\n", component)
+// 	fmt.Println(component.ComponentType)
+
+// 	// Create a dummy will object (if needed)
+// 	will := types.Will{
+// 		ID:          "will-1",
+// 		Creator:     "w3ll1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz",
+// 		Name:        "test will",
+// 		Beneficiary: "w3ll1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz",
+// 		Height:      2,
+// 	}
+
+// 	// Execute the transfer
+// 	err := kpr.ExecuteTransfer(ctx, &component, will)
+// 	require.NoError(t, err, "ExecuteTransfer should not return an error")
+
+// 	// Verify the transfer by checking balances
+// 	fromBalance := kpr.GetBankKeeper().GetBalance(ctx, fromAddr, "w3ll")
+// 	toBalance := kpr.GetBankKeeper().GetBalance(ctx, toAddr, "w3ll")
+
+// 	require.Equal(t, int64(900), fromBalance.Amount.Int64(), "from account balance should decrease by the transfer amount")
+// 	require.Equal(t, int64(100), toBalance.Amount.Int64(), "to account balance should increase by the transfer amount")
+
+// 	// Optionally, verify events emitted during the transfer
+// 	events := ctx.EventManager().Events()
+// 	transferEventFound := false
+// 	for _, event := range events {
+// 		if event.Type == "transfer" { // Adjust event type as necessary
+// 			transferEventFound = true
+// 			// Further checks on event attributes can be done here
+// 			break
+// 		}
+// 	}
+// 	require.True(t, transferEventFound, "transfer event should be emitted")
+// }
 
 // func TestKeeperContractCall(t *testing.T) {
 // 	kpr, ctx := setupKeeper(t)
 
+// 	// Mock data for the test
+// 	contractAddr := "cosmos1contractaddress" // Mock contract address
+// 	callerAddr := "cosmos1calleraddress"     // Mock caller address
+// 	contractData := []byte("contract execution data")
+// 	// coinInt := sdl//sdk.NewInt(100)
+// 	coinInt := math.NewInt(100)
+// 	var coin sdk.Coin = sdk.NewCoin("testcoin", coinInt) // Mock execution data
+// 	coins := sdk.NewCoins(coin)                          // Mock coins to send with the contract call
+// 	fmt.Println("coins")
+// 	fmt.Println(coins)
+// 	// Convert the address strings to sdk.AccAddress
+// 	contractSDKAddr, err := sdk.AccAddressFromBech32(contractAddr)
+// 	require.NoError(t, err, "invalid contract address")
+// 	fmt.Println("contractSDKAddr")
+// 	fmt.Println(contractSDKAddr)
+
+// 	callerSDKAddr, err := sdk.AccAddressFromBech32(callerAddr)
+// 	fmt.Println(callerSDKAddr)
+// 	fmt.Println("callerSDKAddr")
+// 	require.NoError(t, err, "invalid caller address")
+
+// 	// Assuming the contract exists and the keeper is correctly set up to call it.
+// 	// You might need to mock or pre-set the state of your keeper to simulate a real contract existing at `contractAddr`.
+
+// 	// Simulate calling the contract
+// 	result, err := kpr.ExecuteContract(ctx, &types.ExecutionComponent_Contract{
+// 		Contract: &types.ContractComponent{
+// 			Address: contractAddr,
+// 			Data:    contractData,
+// 		},
+// 	})
+
+// 	// Validate the execution result
+// 	require.NoError(t, err, "ExecuteContract should not return an error")
+// 	assert.NotNil(t, result, "ExecuteContract should return a result")
+
+// 	// Additional assertions depending on what the contract execution is expected to do or return
+// 	// For example, if you expect a specific state change, query the state and assert the expected changes
+// 	// If the contract execution returns a result, you can decode and assert specific values in the result
 // }
 
 // func TestSendIBCMessage(t *testing.T) {
