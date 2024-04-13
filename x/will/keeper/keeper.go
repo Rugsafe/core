@@ -162,8 +162,8 @@ func (k *Keeper) GetBankKeeper() bankkeeper.Keeper {
 	return k.bankKeeper
 }
 
-func (k *Keeper) GetAccountKeeper() authkeeper.AccountKeeper {
-	return k.accountKeeper
+func (k *Keeper) GetAccountKeeper() *authkeeper.AccountKeeper {
+	return &k.accountKeeper
 }
 
 func (k *Keeper) GetChannelKeeper() ChannelKeeper {
@@ -481,6 +481,7 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 
 		fmt.Println("Schnorr signature verified and saved now successfully.")
 	case *types.MsgClaimRequest_PedersenClaim:
+
 		// Process PedersenClaim
 		fmt.Printf("Processing Pedersen claim with commitment: %x, blinding factor: %x, and value: %x\n", claim.PedersenClaim.Commitment, claim.PedersenClaim.BlindingFactor, claim.PedersenClaim.Value)
 		// TODO

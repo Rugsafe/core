@@ -218,6 +218,17 @@ proto-check-breaking:
 	test-sim-import-export build-windows-client \
 	test-system
 
+
+
+
+
+
+
+
+
+
+
+
 ################################
 start:
 	./build/wasmd start --home ./private/.wasmapp

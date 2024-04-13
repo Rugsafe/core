@@ -67,6 +67,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
+	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -207,11 +208,11 @@ func NewWasmAppWithCustomOptions(t *testing.T, isCheckTx bool, options SetupOpti
 		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdkmath.NewInt(100000000000000))),
 	}
 
-	// traceFile, err := os.Create("trace.log")
-	// if err != nil {
-	// 	t.Fatalf("Failed to create trace log file: %v", err)
-	// }
-	// defer traceFile.Close()
+	traceFile, err := os.Create("trace.log")
+	if err != nil {
+		t.Fatalf("Failed to create trace log file: %v", err)
+	}
+	defer traceFile.Close()
 
 	// traceStore = traceFile
 
@@ -239,8 +240,11 @@ func NewWasmAppWithCustomOptions(t *testing.T, isCheckTx bool, options SetupOpti
 }
 
 // Setup initializes a new WasmApp. A Nop logger is set in WasmApp.
+// func Setup(t *testing.T, opts ...wasmkeeper.Option) (*WasmApp, sdk.Context) {
 func Setup(t *testing.T, opts ...wasmkeeper.Option) *WasmApp {
 	t.Helper()
+
+	// var ctx sdk.Context =
 
 	appOpts := BlankAppOptions{}
 	wasmOpts := []wasmkeeper.Option{}
@@ -327,6 +331,10 @@ func Setup(t *testing.T, opts ...wasmkeeper.Option) *WasmApp {
 	// bApp.SetTxEncoder(txConfig.TxEncoder())
 
 	bApp := baseapp.NewBaseApp(appName, logger, db, txConfig.TxDecoder())
+	// bApp.SetCommitMultiStoreTracer(traceStore)
+	bApp.SetVersion(version.Version)
+	bApp.SetInterfaceRegistry(interfaceRegistry)
+	bApp.SetTxEncoder(txConfig.TxEncoder())
 
 	// Define and apply any custom ante handler if necessary
 	// This is just an example. Replace or remove if not applicable to your setup.
@@ -378,9 +386,9 @@ func Setup(t *testing.T, opts ...wasmkeeper.Option) *WasmApp {
 	fmt.Println(memKeys)
 
 	// register streaming services
-	// if err := bApp.RegisterStreamingServices(appOpts, keys); err != nil {
-	// 	panic(err)
-	// }
+	if err := bApp.RegisterStreamingServices(appOpts, keys); err != nil {
+		panic(err)
+	}
 
 	app.ParamsKeeper = initParamsKeeper(
 		appCodec,
@@ -426,6 +434,8 @@ func Setup(t *testing.T, opts ...wasmkeeper.Option) *WasmApp {
 		sdk.GetConfig().GetBech32AccountAddrPrefix(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
+	fmt.Println("app.AccountKeeper setup")
+	fmt.Println(app.AccountKeeper)
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
@@ -948,7 +958,7 @@ func Setup(t *testing.T, opts ...wasmkeeper.Option) *WasmApp {
 	app.sm.RegisterStoreDecoders()
 
 	// initialize stores
-	app.MountKVStores(keys)
+	// app.MountKVStores(keys)
 	// app.MountTransientStores(tkeys)
 	// app.MountMemoryStores(memKeys)
 
@@ -1007,6 +1017,7 @@ func Setup(t *testing.T, opts ...wasmkeeper.Option) *WasmApp {
 	}
 
 	// var loadLatest bool = true
+	// var ctx sdk.Context
 	// if loadLatest {
 	// 	if err := app.LoadLatestVersion(); err != nil {
 	// 		panic(fmt.Errorf("error loading last version: %w", err))
@@ -1018,7 +1029,9 @@ func Setup(t *testing.T, opts ...wasmkeeper.Option) *WasmApp {
 	// 		panic(fmt.Sprintf("failed initialize pinned codes %s", err))
 	// 	}
 	// }
-
+	// ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
+	// fmt.Println("test helper ctx")
+	// fmt.Println(ctx)
 	////////////////////////////////////////////////////////////////
 
 	return app
