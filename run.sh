@@ -49,4 +49,4 @@ echo "step 8"
 ./build/wasmd genesis collect-gentxs --home ${HOME_DIR}
 
 echo "step 9"
-./build/wasmd start --home ${HOME_DIR} --rpc.laddr=tcp://0.0.0.0:26657 --grpc.address=0.0.0.0:9090 --api.enable=true --api.address=0.0.0.0:1317
+./build/wasmd start --home ${HOME_DIR} --rpc.laddr=tcp://0.0.0.0:26657 --grpc.address=0.0.0.0:9090 --api.enable=true --api.address=tcp://0.0.0.0:1317
