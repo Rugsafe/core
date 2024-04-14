@@ -116,3 +116,11 @@ type ICS20TransferPortSource interface {
 type WasmKeeper interface {
 	execute(ctx context.Context, contractAddress, caller sdk.AccAddress, msg []byte, coins sdk.Coins) ([]byte, error)
 }
+
+type AccountKeeper interface {
+	GetAllAccounts(ctx context.Context) (accounts []sdk.AccountI)
+}
+
+type BankKeeper interface {
+	SendCoins(ctx context.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
+}

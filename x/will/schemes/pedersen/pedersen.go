@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/bwesterb/go-ristretto"
+	// "github.com/dgraph-io/ristretto"
 )
 
 // The prime order of the base point is 2^252 + 27742317777372353535851937790883648493.

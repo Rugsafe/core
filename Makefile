@@ -15,16 +15,16 @@ DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(
 HTTPS_GIT := https://github.com/CosmWasm/wasmd.git
 
 
-W3LL_CHAIN_ID="w3ll-mainnet"
-W3LL_DENOM=uw3ll
-W3LL_NODE=http://localhost:26657
+WILLCHAIN_CHAIN_ID="willchain-mainnet"
+WILLCHAIN_DENOM=uwill
+WILLCHAIN_NODE=http://localhost:26657
 
-# W3LL_CHAIN_ID="w3ll-testnet"
-# W3LL_DENOM=uw3ll
-# W3LL_NODE=http://192.168.1.100:26657
+# WILLCHAIN_CHAIN_ID="willchain-testnet"
+# WILLCHAIN_DENOM=uwill
+# WILLCHAIN_NODE=http://192.168.1.100:26657
 
-W3LL_CHAIN_ID_ARGS=--chain-id=$(W3LL_CHAIN_ID)
-W3LL_NODE_ARGS=--node=$(W3LL_NODE)
+WILLCHAIN_CHAIN_ID_ARGS=--chain-id=$(WILLCHAIN_CHAIN_ID)
+WILLCHAIN_NODE_ARGS=--node=$(WILLCHAIN_NODE)
 
 export GO111MODULE = on
 
@@ -71,7 +71,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=wasm \
 		  -X github.com/cosmos/cosmos-sdk/version.AppName=wasmd \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X github.com/CosmWasm/wasmd/app.Bech32Prefix=w3ll \
+		  -X github.com/CosmWasm/wasmd/app.Bech32Prefix=will \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
 ifeq ($(WITH_CLEVELDB),yes)
@@ -245,7 +245,7 @@ alice_c:
 alice_d:
 	 ./build/wasmd keys delete alice 
 alice_balance:
-	./build/wasmd q bank balances w3ll1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz
+	./build/wasmd q bank balances will1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz
 will_test: will_cx
 	echo "Done with will tests"
 
@@ -254,21 +254,24 @@ will_test: will_cx
 
 
 # will
-ADDRESS=w3ll1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz
+ADDRESS=will1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz
 WID=77336c6c3170306b3867796761777a7067677a7766747637637634377a766767387a61756e35787563787a2d746573742077696c6c202d62656e65666963696172792d3235
 CID=109edf75-7c30-4988-8f51-38c58a884022
-# claim
+# schnorr claim
 SIGNATURE=7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06
 MESSAGE=message-2b-signed
 PUBKEY=2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c
+# pedersen claim
+
+# gnark claim
 
 will_create:
 	./build/wasmd tx will create "test will ${i}" "beneficiary" 25 \
-	--component-name "component_for_transfer" --component-args "transfer:w3ll1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,1" \
+	--component-name "component_for_transfer" --component-args "transfer:will1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,1" \
 	--component-name "component_for_schnorr_claim" --component-args "schnorr:${SIGNATURE},${PUBKEY},${MESSAGE}" \
 	--component-name "component_for_pedersen_claim" --component-args "pedersen:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" \
 	--component-name "component_for_gnark_claim" --component-args "gnark:verification_key_hex,public_inputs_hex,proof_hex" \
-	--from alice --chain-id w3ll-mainnet -y
+	--from alice --chain-id willchain-mainnet -y
 	sleep 1
 will_cx:
 	@for i in {1..20}; do \
@@ -284,25 +287,25 @@ will_list:
 # SCHNORR
 will_claim_schnorr:
 	
-	./build/wasmd tx will claim "${WID}" "${CID}" "schnorr" "${SIGNATURE}:${PUBKEY}:${MESSAGE}" --from alice --chain-id w3ll-chain -y
+	./build/wasmd tx will claim "${WID}" "${CID}" "schnorr" "${SIGNATURE}:${PUBKEY}:${MESSAGE}" --from alice --chain-id willchain-mainnet -y
 # will_claim_schnorr:
 # 	@echo "Claiming with Schnorr verification..."
 # 	@SIGNATURE="4aadcea21fe145eeb73a72a8eb3fac914c79c9c2efbf86e9ccc616bf94ede603"; \
 # 	MESSAGE="message-2b-signed"; \
 # 	PUBKEY="d214cbdf6be7646ef2a56c60bba6561dd2e19aea8e9d6f55d0923795a6edc107"; \
-# 	./build/wasmd tx will claim "$${WID}" "$${CID}" "schnorr" "$${SIGNATURE}:$${MESSAGE}:$${PUBKEY}" --from alice --chain-id w3ll-chain -y
+# 	./build/wasmd tx will claim "$${WID}" "$${CID}" "schnorr" "$${SIGNATURE}:$${MESSAGE}:$${PUBKEY}" --from alice --chain-id willchain-mainnet -y
 # PEDERSEN
 will_claim_pedersen:
 	COMMITMENT=0xabc
 	BLINDING_FACTOR=0000000000000000000000000000000000000000000000000000000000000000
 	VALUE=0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
-	./build/wasmd tx will claim "${WID}" "${CID}" "pedersen" "${COMMITMENT}:$(BLINDING_FACTOR):${VALUE}" --from alice --chain-id w3ll-chain -y
+	./build/wasmd tx will claim "${WID}" "${CID}" "pedersen" "${COMMITMENT}:$(BLINDING_FACTOR):${VALUE}" --from alice --chain-id willchain-mainnet -y
 
 # GNARK
 will_claim_gnark:
 	PROOF=0xabc
 	PUBLIC_INPUTS=0000000000000000000000000000000000000000000000000000000000000000
-	./build/wasmd tx will claim "${WID}" "${CID}" "gnark" "${PROOF}:${PUBLIC_INPUTS}" --from alice --chain-id w3ll-chain -y
+	./build/wasmd tx will claim "${WID}" "${CID}" "gnark" "${PROOF}:${PUBLIC_INPUTS}" --from alice --chain-id willchain-mainnet -y
 run:
 	bash run.sh
 
@@ -316,26 +319,26 @@ will_test_ibc:
 # deploy contracts
 DEV_WALLET=alice
 CODE_ID=1
-DEPLOYED_CONTRACT_ADDRESS=w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
+DEPLOYED_CONTRACT_ADDRESS=will14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
 # DEPLOYED_CONTRACT_ADDRESS=w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
 
 
 dc1:
-	./build/wasmd tx wasm store ./wasm_artifacts/simple_option.wasm --from $(DEV_WALLET) --gas auto --gas-adjustment 1.3 -y -b sync --output json $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS)
+	./build/wasmd tx wasm store ./wasm_artifacts/simple_option.wasm --from $(DEV_WALLET) --gas auto --gas-adjustment 1.3 -y -b sync --output json $(WILLCHAIN_NODE_ARGS) $(WILLCHAIN_CHAIN_ID_ARGS)
 dc2:
-	./build/wasmd tx wasm store ./wasm_artifacts/ibc_tutorial.wasm --from $(DEV_WALLET) --gas auto --gas-adjustment 1.3 -y -b sync --output json $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS)
+	./build/wasmd tx wasm store ./wasm_artifacts/ibc_tutorial.wasm --from $(DEV_WALLET) --gas auto --gas-adjustment 1.3 -y -b sync --output json $(WILLCHAIN_NODE_ARGS) $(WILLCHAIN_CHAIN_ID_ARGS)
 check:
 	./build/wasmd q wasm code-info $(CODE_ID)
 instantiate:
 	./build/wasmd tx wasm instantiate $(CODE_ID) \
 	"{}" \
-	--amount="1w3ll" --no-admin --label "test ibc" --from ${DEV_WALLET} --gas auto --gas-adjustment 1.3 -b sync -y $(W3LL_NODE_ARGS) $(W3LL_CHAIN_ID_ARGS)
+	--amount="1will" --no-admin --label "test ibc" --from ${DEV_WALLET} --gas auto --gas-adjustment 1.3 -b sync -y $(WILLCHAIN_NODE_ARGS) $(WILLCHAIN_CHAIN_ID_ARGS)
 contract_address:
-	./build/wasmd q wasm list-contract-by-code $(CODE_ID) --output json $(W3LL_NODE_ARGS)
-	CONTRACT_ADDRESS=$(shell ./build/wasmd q wasm list-contract-by-code $(CODE_ID) --output json $(W3LL_NODE_ARGS) ')
+	./build/wasmd q wasm list-contract-by-code $(CODE_ID) --output json $(WILLCHAIN_NODE_ARGS)
+	CONTRACT_ADDRESS=$(shell ./build/wasmd q wasm list-contract-by-code $(CODE_ID) --output json $(WILLCHAIN_NODE_ARGS) ')
 	echo $$CONTRACT_ADDRESS
 contract_info:
-	./build/wasmd q wasm contract $(DEPLOYED_CONTRACT_ADDRESS) --output json $(W3LL_NODE_ARGS)
+	./build/wasmd q wasm contract $(DEPLOYED_CONTRACT_ADDRESS) --output json $(WILLCHAIN_NODE_ARGS)
 
 
 # dev

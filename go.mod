@@ -27,6 +27,8 @@ require (
 	google.golang.org/genproto v0.0.0-20231120223509-83a465c0220f // indirect
 	google.golang.org/grpc v1.60.0
 	gopkg.in/yaml.v2 v2.4.0
+	github.com/bwesterb/go-ristretto v1.2.3
+
 )
 
 require (

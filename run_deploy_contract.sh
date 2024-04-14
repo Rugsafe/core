@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define necessary variables
-W3LL_CHAIN_ID="w3ll-mainnet"
+W3LL_CHAIN_ID="willchain-mainnet"
 W3LL_NODE=http://localhost:26657
 DEV_WALLET=alice
 

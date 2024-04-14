@@ -128,7 +128,7 @@ func parseComponentFromString(componentName, componentData string, sender string
 		if err != nil {
 			return nil, fmt.Errorf("invalid amount format for transfer component: %s", amountStr)
 		}
-		amountCoin := sdk.NewInt64Coin("w3ll", amount) // Ensure "w3ll" matches your denomination
+		amountCoin := sdk.NewInt64Coin("will", amount) // Ensure "will" matches your denomination
 
 		component.ComponentType = &types.ExecutionComponent_Transfer{
 			Transfer: &types.TransferComponent{
@@ -203,9 +203,9 @@ func ClaimCmd() *cobra.Command {
 		Short: "Submit a claim for a will",
 		Long: `Submit a claim for a will with specific data based on the claim type.
 Example:
-./build/wasmd tx will claim "will-id" "component-id" "schnorr" "signature:data" --from alice --chain-id w3ll-chain -y
-./build/wasmd tx will claim "will-id" "component-id" "pedersen" "commitment:blinding_factor:value" --from alice --chain-id w3ll-chain -y
-./build/wasmd tx will claim "will-id" "component-id" "gnark" "proof:public_inputs" --from alice --chain-id w3ll-chain -y`,
+./build/wasmd tx will claim "will-id" "component-id" "schnorr" "signature:data" --from alice --chain-id willchain-mainnet -y
+./build/wasmd tx will claim "will-id" "component-id" "pedersen" "commitment:blinding_factor:value" --from alice --chain-id willchain-mainnet -y
+./build/wasmd tx will claim "will-id" "component-id" "gnark" "proof:public_inputs" --from alice --chain-id willchain-mainnet -y`,
 		Args: cobra.ExactArgs(4), // Ensuring exactly 3 arguments
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)

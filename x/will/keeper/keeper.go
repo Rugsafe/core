@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"strconv"
 	"time"
 
@@ -15,6 +16,8 @@ import (
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 	"go.dedis.ch/kyber/v3/group/edwards25519"
 
+	"github.com/bwesterb/go-ristretto"
+
 	"cosmossdk.io/collections"
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/errors"
@@ -22,7 +25,9 @@ import (
 	storetypes "cosmossdk.io/store/types"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/CosmWasm/wasmd/x/will/schemes/pedersen"
 	"github.com/CosmWasm/wasmd/x/will/schemes/schnorr"
+
 	"github.com/CosmWasm/wasmd/x/will/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -380,103 +385,40 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 	fmt.Printf("CLAIMING WILL %s", msg.WillId)
 	fmt.Println(msg)
 
+	// TODO: the will component is in the will object here
+	// but we have the claim ID, so iterate over the will to fetch the actual component itself
+	// that matches the claim id
+	var componentIndex int = -1
+	for i, component := range will.Components {
+		if component.Id == msg.ComponentId {
+			componentIndex = i
+			break
+		}
+	}
+
+	if componentIndex == -1 {
+		fmt.Printf("component with ID %s not found in will ID %s\n", msg.ComponentId, msg.WillId)
+		return fmt.Errorf("component with ID %s not found in will ID %s", msg.ComponentId, msg.WillId)
+	}
+
+	// At this point, you have the index of the component being claimed.
+
+	// You can now check its status before proceeding with the claim.
+	if will.Components[componentIndex].Status != "active" {
+		fmt.Printf("component with ID %s is not active and cannot be claimed\n", msg.ComponentId)
+		return fmt.Errorf("component with ID %s is not active and cannot be claimed", msg.ComponentId)
+	}
+
 	// Process the claim based on its type
 	switch claim := msg.ClaimType.(type) {
 	case *types.MsgClaimRequest_SchnorrClaim:
 
 		// todo: invoke schno
 
-		// TODO: the will component is in the will object here
-		// but we have the claim ID, so iterate over the will to fetch the actual component itself
-		// that matches the claim id
-		var componentIndex int = -1
-		for i, component := range will.Components {
-			if component.Id == msg.ComponentId {
-				componentIndex = i
-				break
-			}
-		}
-
-		if componentIndex == -1 {
-			fmt.Printf("component with ID %s not found in will ID %s\n", msg.ComponentId, msg.WillId)
-			return fmt.Errorf("component with ID %s not found in will ID %s", msg.ComponentId, msg.WillId)
-		}
-
-		// At this point, you have the index of the component being claimed.
-
-		// You can now check its status before proceeding with the claim.
-		if will.Components[componentIndex].Status != "active" {
-			fmt.Printf("component with ID %s is not active and cannot be claimed\n", msg.ComponentId)
-			return fmt.Errorf("component with ID %s is not active and cannot be claimed", msg.ComponentId)
-		}
-
 		// Assuming the public key and signature are provided as byte slices in the claim
 		fmt.Println(claim)
-
-		// publicKeyBytes := claim.SchnorrClaim.PublicKey // The public key bytes
-		publicKeyBytes, _ := hex.DecodeString(string(claim.SchnorrClaim.PublicKey))
-		fmt.Printf("string claim.SchnorrClaim.PublicKey %s: \n", string(claim.SchnorrClaim.PublicKey))
-		fmt.Printf("claim.SchnorrClaim.PublicKey %s: \n", claim.SchnorrClaim.PublicKey)
-		fmt.Printf("publicKeyBytes %s: \n", publicKeyBytes)
-
-		// signatureBytes := claim.SchnorrClaim.Signature // The signature bytes
-		signatureBytes, _ := hex.DecodeString(string(claim.SchnorrClaim.Signature))
-		fmt.Printf("string claim.SchnorrClaim.Signature %s: \n", string(claim.SchnorrClaim.Signature))
-		fmt.Printf("claim.SchnorrClaim.Signature %s: \n", claim.SchnorrClaim.Signature)
-		fmt.Printf("Signature %s: \n", signatureBytes)
-
-		message := claim.SchnorrClaim.Message // The message as a byte slice
-		// message, _ := hex.DecodeString(string(claim.SchnorrClaim.Message))
-
-		curve := edwards25519.NewBlakeSHA256Ed25519()
-		// Convert the public key bytes to a kyber.Point
-		publicKeyPoint := curve.Point()
-		if err := publicKeyPoint.UnmarshalBinary(publicKeyBytes); err != nil {
-			fmt.Printf("failed to unmarshal public key: %v\n", err)
-			return fmt.Errorf("failed to unmarshal public key: %v", err)
-		}
-
-		// Assuming the signature consists of R and S components concatenated
-		// and that each component is of equal length
-		sigLen := len(signatureBytes) / 2
-		rBytes := signatureBytes[:sigLen]
-		sBytes := signatureBytes[sigLen:]
-
-		// Convert R and S bytes to kyber.Point and kyber.Scalar respectively
-		r := curve.Point()
-		if err := r.UnmarshalBinary(rBytes); err != nil {
-			fmt.Printf("failed to unmarshal R component: %v", err)
-			return fmt.Errorf("failed to unmarshal R component: %v", err)
-		}
-		s := curve.Scalar().SetBytes(sBytes)
-
-		// Hash the message to a scalar using your Schnorr Hash function
-		messageScalar := schnorr.Hash(string(message) + string(hex.EncodeToString(publicKeyBytes))) // Convert the message to a string if your Hash function expects a string
-
-		// Construct the Signature struct
-		schnorrSignature := schnorr.Signature{R: r, S: s}
-
-		// Verify the Schnorr signature
-		if !schnorr.Verify(messageScalar, schnorrSignature, publicKeyPoint) {
-			return fmt.Errorf("schnorr signature verification failed")
-			// panic(99)
-		}
-		// panic(99)
-
-		fmt.Println("Schnorr signature verified successfully.")
-		will.Components[componentIndex].Status = "claimed"
-
-		// store will update with
-		store := k.storeService.OpenKVStore(ctx)
-		concatValues := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
-		willID := hex.EncodeToString([]byte(concatValues))
-		key := types.GetWillKey(willID)
-		fmt.Println(fmt.Printf("BEGIN BLOCKER WILL EXECUTED: %s", willID))
-
-		willBz := k.cdc.MustMarshal(will)
-		storeErr := store.Set(key, willBz)
-		if storeErr != nil {
-			return errors.Wrapf(storeErr, "schnorr claim error: could not save will ID with updated component status")
+		if schnorrClaim := k.processSchnorrClaim(ctx, claim, will, componentIndex); schnorrClaim != nil {
+			return schnorrClaim
 		}
 
 		fmt.Println("Schnorr signature verified and saved now successfully.")
@@ -485,6 +427,11 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		// Process PedersenClaim
 		fmt.Printf("Processing Pedersen claim with commitment: %x, blinding factor: %x, and value: %x\n", claim.PedersenClaim.Commitment, claim.PedersenClaim.BlindingFactor, claim.PedersenClaim.Value)
 		// TODO
+		fmt.Println(claim)
+
+		if pedersenClaim := k.processPedersenClaim(ctx, will, claim); pedersenClaim != nil {
+			return pedersenClaim
+		}
 
 	case *types.MsgClaimRequest_GnarkClaim:
 		// Process GnarkClaim
@@ -498,6 +445,121 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 	}
 
 	// Assuming the claim has been validated successfully, you can then update the will's status or components accordingly
+	return nil
+}
+
+func (k Keeper) processSchnorrClaim(ctx context.Context, claim *types.MsgClaimRequest_SchnorrClaim, will *types.Will, componentIndex int) error {
+
+	// publicKeyBytes := claim.SchnorrClaim.PublicKey // The public key bytes
+	publicKeyBytes, _ := hex.DecodeString(string(claim.SchnorrClaim.PublicKey))
+	fmt.Printf("string claim.SchnorrClaim.PublicKey %s: \n", string(claim.SchnorrClaim.PublicKey))
+	fmt.Printf("claim.SchnorrClaim.PublicKey %s: \n", claim.SchnorrClaim.PublicKey)
+	fmt.Printf("publicKeyBytes %s: \n", publicKeyBytes)
+
+	// signatureBytes := claim.SchnorrClaim.Signature // The signature bytes
+	signatureBytes, _ := hex.DecodeString(string(claim.SchnorrClaim.Signature))
+	fmt.Printf("string claim.SchnorrClaim.Signature %s: \n", string(claim.SchnorrClaim.Signature))
+	fmt.Printf("claim.SchnorrClaim.Signature %s: \n", claim.SchnorrClaim.Signature)
+	fmt.Printf("Signature %s: \n", signatureBytes)
+
+	message := claim.SchnorrClaim.Message // The message as a byte slice
+	// message, _ := hex.DecodeString(string(claim.SchnorrClaim.Message))
+
+	curve := edwards25519.NewBlakeSHA256Ed25519()
+	// Convert the public key bytes to a kyber.Point
+	publicKeyPoint := curve.Point()
+	if err := publicKeyPoint.UnmarshalBinary(publicKeyBytes); err != nil {
+		fmt.Printf("failed to unmarshal public key: %v\n", err)
+		return fmt.Errorf("failed to unmarshal public key: %v", err)
+	}
+
+	// Assuming the signature consists of R and S components concatenated
+	// and that each component is of equal length
+	sigLen := len(signatureBytes) / 2
+	rBytes := signatureBytes[:sigLen]
+	sBytes := signatureBytes[sigLen:]
+
+	// Convert R and S bytes to kyber.Point and kyber.Scalar respectively
+	r := curve.Point()
+	if err := r.UnmarshalBinary(rBytes); err != nil {
+		fmt.Printf("failed to unmarshal R component: %v", err)
+		return fmt.Errorf("failed to unmarshal R component: %v", err)
+	}
+	s := curve.Scalar().SetBytes(sBytes)
+
+	// Hash the message to a scalar using your Schnorr Hash function
+	messageScalar := schnorr.Hash(string(message) + string(hex.EncodeToString(publicKeyBytes))) // Convert the message to a string if your Hash function expects a string
+
+	// Construct the Signature struct
+	schnorrSignature := schnorr.Signature{R: r, S: s}
+
+	// Verify the Schnorr signature
+	if !schnorr.Verify(messageScalar, schnorrSignature, publicKeyPoint) {
+		return fmt.Errorf("schnorr signature verification failed")
+		// panic(99)
+	}
+	// panic(99)
+
+	fmt.Println("Schnorr signature verified successfully.")
+	will.Components[componentIndex].Status = "claimed"
+
+	// store will update with
+	store := k.storeService.OpenKVStore(ctx)
+	concatValues := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
+	willID := hex.EncodeToString([]byte(concatValues))
+	key := types.GetWillKey(willID)
+	fmt.Println(fmt.Printf("BEGIN BLOCKER WILL EXECUTED: %s", willID))
+
+	willBz := k.cdc.MustMarshal(will)
+	storeErr := store.Set(key, willBz)
+	if storeErr != nil {
+		return errors.Wrapf(storeErr, "schnorr claim error: could not save will ID with updated component status")
+	}
+
+	return nil
+}
+
+func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, claim *types.MsgClaimRequest_PedersenClaim) error {
+	// Decode the commitment point H
+	var H ristretto.Point
+	if err := H.UnmarshalBinary(claim.PedersenClaim.Commitment); err != nil {
+		return fmt.Errorf("error unmarshalling commitment point: %v", err)
+	}
+
+	// Decode the blinding factor r
+	var r ristretto.Scalar
+	if err := r.UnmarshalBinary(claim.PedersenClaim.BlindingFactor); err != nil {
+		return fmt.Errorf("error unmarshalling blinding factor: %v", err)
+	}
+
+	// Decode the value x from the claim and set it to a Scalar
+	var x ristretto.Scalar
+	xValue := new(big.Int).SetBytes(claim.PedersenClaim.Value)
+	if !x.SetBigInt(xValue) {
+		return fmt.Errorf("error setting scalar value for x")
+	}
+
+	// Reconstruct the commitment from the claim
+	reconstructedCommitment := pedersen.CommitTo(&H, &r, &x)
+
+	// Retrieve the stored commitment for this will
+	storedCommitmentBytes, err := k.getStoredCommitment(ctx, will.ID) // Implement this function
+	if err != nil {
+		return fmt.Errorf("error retrieving stored commitment: %v", err)
+	}
+
+	var storedCommitment ristretto.Point
+	if err := storedCommitment.UnmarshalBinary(storedCommitmentBytes); err != nil {
+		return fmt.Errorf("error unmarshalling stored commitment: %v", err)
+	}
+
+	// Compare the reconstructed commitment with the stored commitment
+	if !reconstructedCommitment.Equals(&storedCommitment) {
+		return fmt.Errorf("commitment verification failed")
+	}
+
+	fmt.Println("Commitment verified successfully")
+	// Update will component status or perform other actions as necessary
 	return nil
 }
 

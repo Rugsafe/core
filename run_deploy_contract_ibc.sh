@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Define necessary variables
-W3LL_CHAIN_ID="w3ll-mainnet"
-W3LL_NODE=http://localhost:26657
+WILLCHAIN_CHAIN_ID="willchain-mainnet"
+WILLCHAIN_NODE=http://localhost:26657
 DEV_WALLET=alice
 
 # Path to your wasm file (update this accordingly)
@@ -10,7 +10,7 @@ WASM_FILE="./wasm_artifacts/ibc_tutorial.wasm"
 
 # Deploy the contract
 echo "Deploying IBC contract..."
-RES=$(./build/wasmd tx wasm store $WASM_FILE --from $DEV_WALLET --gas auto --gas-adjustment 1.3 -y -b sync --output json --chain-id="$W3LL_CHAIN_ID" --node="$W3LL_NODE")
+RES=$(./build/wasmd tx wasm store $WASM_FILE --from $DEV_WALLET --gas auto --gas-adjustment 1.3 -y -b sync --output json --chain-id="$WILLCHAIN_CHAIN_ID" --node="$WILLCHAIN_NODE")
 echo "$RES"
 
 # Extract the Code ID from the response
@@ -24,7 +24,7 @@ echo "Code ID: $CODE_ID"
 #instantiate
 ./build/wasmd tx wasm instantiate $(CODE_ID) \
 "{}" \
---amount="1w3ll" --no-admin --label "awesomwasm token" --from $DEV_WALLET --gas auto --gas-adjustment 1.3 -b block -y
+--amount="1wILL" --no-admin --label "awesomwasm token" --from $DEV_WALLET --gas auto --gas-adjustment 1.3 -b block -y
 
 # contract address
 ./build/wasmd q wasm list-contract-by-code $(CODE_ID) --output json | jq -r '.contracts[-1]'

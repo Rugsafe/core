@@ -40,20 +40,20 @@ import (
 func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	// func setupKeeper(t *testing.T) *keeper.Keeper {
 	// w3llApp, ctx := app.Setup(t)
-	w3llApp := app.Setup(t)
+	willchainApp := app.Setup(t)
 
 	//config for native denom
 	// cfg := sdk.GetConfig()
-	// cfg.SetBech32PrefixForAccount("w3ll", "w3llpub")
+	// cfg.SetBech32PrefixForAccount("will", "willpub")
 
-	mockedCodec := w3llApp.AppCodec()
+	mockedCodec := willchainApp.AppCodec()
 
 	// channelKeeper := w3llApp.IBCKeeper.ChannelKeeper
 	// channelKeeper := w3llApp.WillKeeper.ChannelKeeper
-	channelKeeper := w3llApp.GetIBCKeeper().ChannelKeeper
+	channelKeeper := willchainApp.GetIBCKeeper().ChannelKeeper
 	// scopedKeeper := w3llApp.ScopedIBCKeeper
 	// scopedKeeper := w3llApp.WillKeeper.ScopedKeeper
-	scopedKeeper := w3llApp.ScopedIBCKeeper
+	scopedKeeper := willchainApp.ScopedIBCKeeper
 	fmt.Println(channelKeeper)
 	fmt.Println(scopedKeeper)
 	// Initialize DB and store
@@ -100,14 +100,14 @@ func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 		storeservice,
 		nil,
 		channelKeeper,
-		w3llApp.GetIBCKeeper().PortKeeper,
-		w3llApp.ScopedWillKeeper,
-		w3llApp.ScopedIBCKeeper,
-		*w3llApp.CapabilityKeeper,
-		w3llApp.WasmKeeper,
-		w3llApp.GetBankKeeper(),
-		w3llApp.PermissionedWasmKeeper,
-		w3llApp.GetAccountKeeper(),
+		willchainApp.GetIBCKeeper().PortKeeper,
+		willchainApp.ScopedWillKeeper,
+		willchainApp.ScopedIBCKeeper,
+		*willchainApp.CapabilityKeeper,
+		willchainApp.WasmKeeper,
+		willchainApp.GetBankKeeper(),
+		willchainApp.PermissionedWasmKeeper,
+		willchainApp.GetAccountKeeper(),
 	)
 	return &k, ctx
 	// return &k
@@ -279,7 +279,7 @@ func setupWithFundedAccount(t *testing.T, ctx sdk.Context, kpr *keeper.Keeper, a
 */
 
 // func setupWithFundedAccount(t *testing.T, ctx sdk.Context, k *keeper.Keeper, addr sdk.AccAddress, coins sdk.Coins) {
-func setupWithFundedAccount(t *testing.T, ctx sdk.Context, k *keeper.Keeper, addr sdk.AccAddress, coins sdk.Coins) {
+func setupWithFundedAccount(t *testing.T, willchainApp *app.WasmApp, ctx sdk.Context, k *keeper.Keeper, addr sdk.AccAddress, coins sdk.Coins) {
 	t.Helper()
 
 	// Ensure the account exists
@@ -322,7 +322,9 @@ func setupWithFundedAccount(t *testing.T, ctx sdk.Context, k *keeper.Keeper, add
 	// fmt.Println(ctx)
 	fmt.Println("==================")
 
+	// fmt.Println(k.GetAccountKeeper().GetAllAccounts(ctx))
 	fmt.Println(k.GetAccountKeeper().GetAllAccounts(ctx))
+
 	account_num := k.GetAccountKeeper().NextAccountNumber(ctx)
 	fmt.Println("account_num: ", account_num)
 
@@ -348,10 +350,10 @@ ctx
 */
 // func TestExecuteTransfer(t *testing.T) {
 // 	// Setup the keeper and context
-// 	// w3llApp := app.Setup(t)
+// 	willchainApp := app.Setup(t)
 
 // 	kpr, ctx := setupKeeper(t)
-
+// 	// kpr := &w3llApp.WillKeeper
 // 	// ctx := w3llApp.NewUncachedContext(true, tmproto.Header{})
 
 // 	// Create test accounts
@@ -386,10 +388,14 @@ ctx
 // 	// Define a nominal fund amount for the "to" account
 // 	nominalFundAmount := sdk.NewCoins(sdk.NewInt64Coin("atom", 1))
 
+// 	/////////???????????/
+// 	// fmt.Println(w3llApp.AccountKeeper.GetAllAccounts(ctx))
+
+// 	// panic(1)
 // 	// Ensure the "to" account exists (funding not necessary but account must exist)
 // 	// setupWithFundedAccount(t, ctx, kpr, toAddr, sdk.NewCoins())
 // 	// setupWithFundedAccount(t, sdk.UnwrapSDKContext(ctx), kpr, toAddr, nominalFundAmount)
-// 	setupWithFundedAccount(t, ctx, kpr, toAddr, nominalFundAmount)
+// 	setupWithFundedAccount(t, willchainApp, ctx, kpr, toAddr, nominalFundAmount)
 // 	// setupWithFundedAccount(t, kpr, toAddr, nominalFundAmount)
 
 // 	// Prepare the transfer component

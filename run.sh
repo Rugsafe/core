@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default chain name
-CHAIN_NAME=${CHAINNAME:-"w3ll-mainnet"}
+CHAIN_NAME=${CHAINNAME:-"willchain-mainnet"}
 
 # Define paths
 HOME_DIR="./private/.${CHAIN_NAME}"
@@ -37,14 +37,14 @@ grep bond_denom ${HOME_DIR}/config/genesis.json
 
 # Add new account to genesis
 echo "step 5"
-./build/wasmd genesis add-genesis-account alice 111111111111stake --home ${HOME_DIR} --keyring-backend test
-./build/wasmd genesis add-genesis-account alice 900000000000w3ll --home ${HOME_DIR} --keyring-backend test --append
+./build/wasmd genesis add-genesis-account alice 987654111111stake --home ${HOME_DIR} --keyring-backend test
+./build/wasmd genesis add-genesis-account alice 988887999999uwill --home ${HOME_DIR} --keyring-backend test --append
 
 # Generate a genesis tx carrying a self delegation
 echo "step 6"
-./build/wasmd genesis gentx alice 222222222stake --home ${HOME_DIR} --keyring-backend test --chain-id ${CHAIN_NAME}
+./build/wasmd genesis gentx alice 1000999999stake --home ${HOME_DIR} --keyring-backend test --chain-id ${CHAIN_NAME}
 echo "step 7"
-# ./build/wasmd genesis gentx alice 700000000w3ll --home ${HOME_DIR} --keyring-backend test --chain-id ${CHAIN_NAME}
+# ./build/wasmd genesis gentx alice 700000000will --home ${HOME_DIR} --keyring-backend test --chain-id ${CHAIN_NAME}
 echo "step 8"
 ./build/wasmd genesis collect-gentxs --home ${HOME_DIR}
 

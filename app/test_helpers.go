@@ -264,7 +264,7 @@ func Setup(t *testing.T, opts ...wasmkeeper.Option) *WasmApp {
 		Address: acc.GetAddress().String(),
 		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdkmath.NewInt(100000000000000))),
 	}
-	chainID := "w3ll-mainnet"
+	chainID := "wilchain-mainnet"
 
 	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, chainID, opts, balance)
 	fmt.Printf("balance: %s", balance)
