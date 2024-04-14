@@ -252,22 +252,22 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 	// verify the will's claimable component's status is now claimed
 	require.Equal(t, will_for_status_check.Components[0].Status, "claimed")
 }
+
 func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 	kpr, ctx := setupKeeper(t)
 	creator := "creator-address"
 
-	// Create components for Pedersen commitment
-	// Create components for Pedersen commitment
+	// Generate a random value and blinding factor
 	var valueScalar, blindingFactorScalar ristretto.Scalar
-	valueBytes := []byte("some value") // Your value in bytes
-	valueScalar.SetBytes(valueBytes)   // Set the scalar value from bytes
-
+	valueScalar.Rand()          // Generate a random value for testing
 	blindingFactorScalar.Rand() // Generate a random blinding factor
 
+	// Generate a random curve point H
 	var H ristretto.Point
-	H.Rand() // Generate a random curve point
+	H.Rand()
 
-	commitmentPoint := pedersen.CommitTo(&H, &blindingFactorScalar, value)
+	// Create Pedersen commitment
+	commitmentPoint := pedersen.CommitTo(&H, &blindingFactorScalar, &valueScalar)
 
 	// Create a will with Pedersen commitment component
 	msg := &types.MsgCreateWillRequest{
@@ -286,7 +286,7 @@ func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 							Pedersen: &types.PedersenCommitment{
 								Commitment:     commitmentPoint.Bytes(),
 								BlindingFactor: blindingFactorScalar.Bytes(),
-								Value:          value.Bytes(),
+								Value:          valueScalar.Bytes(),
 							},
 						},
 					},
@@ -300,7 +300,10 @@ func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, will)
 
-	ctx = ctx.WithBlockHeight(3)
+	// ctx = ctx.WithBlockHeight(3)
+	// Simulate the passage of blocks up to the block height specified for the will's execution
+	ctx = sdk.UnwrapSDKContext(ctx).WithBlockHeight(2)
+	kpr.BeginBlocker(ctx) // Run the begin blocker to activate the will
 
 	// Claim the will with Pedersen commitment
 	claimMsg := &types.MsgClaimRequest{
@@ -311,13 +314,13 @@ func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 			PedersenClaim: &types.PedersenClaim{
 				Commitment:     commitmentPoint.Bytes(),
 				BlindingFactor: blindingFactorScalar.Bytes(),
-				Value:          value.Bytes(),
+				Value:          valueScalar.Bytes(),
 			},
 		},
 	}
 
 	// Run the begin blocker to process the will for claiming
-	kpr.BeginBlocker(ctx)
+	kpr.BeginBlocker(sdk.UnwrapSDKContext(ctx))
 	err = kpr.Claim(sdk.UnwrapSDKContext(ctx), claimMsg)
 	require.NoError(t, err)
 
@@ -325,7 +328,6 @@ func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 	updatedWill, err := kpr.GetWillByID(sdk.UnwrapSDKContext(ctx), will.ID)
 	require.NoError(t, err)
 	require.Equal(t, "claimed", updatedWill.Components[0].Status)
-
 }
 
 // */
