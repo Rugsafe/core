@@ -14,7 +14,8 @@ var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857
 // H - Random secondary point on the curve
 // r - Private key used as blinding factor
 // x - The value (number of tokens)
-func commitTo(H *ristretto.Point, r, x *ristretto.Scalar) ristretto.Point {
+// func commitTo(H *ristretto.Point, r, x *ristretto.Scalar) ristretto.Point {
+func CommitTo(H *ristretto.Point, r, x *ristretto.Scalar) ristretto.Point {
 	//ec.g.mul(r).add(H.mul(x));
 	var result, rPoint, transferPoint ristretto.Point
 	rPoint.ScalarMultBase(r)

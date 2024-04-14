@@ -34,7 +34,9 @@ import (
 
 	"github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/will/keeper"
+	"github.com/CosmWasm/wasmd/x/will/schemes/pedersen"
 	"github.com/CosmWasm/wasmd/x/will/types"
+	"github.com/bwesterb/go-ristretto"
 )
 
 func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
@@ -249,6 +251,81 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 
 	// verify the will's claimable component's status is now claimed
 	require.Equal(t, will_for_status_check.Components[0].Status, "claimed")
+}
+func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
+	kpr, ctx := setupKeeper(t)
+	creator := "creator-address"
+
+	// Create components for Pedersen commitment
+	// Create components for Pedersen commitment
+	var valueScalar, blindingFactorScalar ristretto.Scalar
+	valueBytes := []byte("some value") // Your value in bytes
+	valueScalar.SetBytes(valueBytes)   // Set the scalar value from bytes
+
+	blindingFactorScalar.Rand() // Generate a random blinding factor
+
+	var H ristretto.Point
+	H.Rand() // Generate a random curve point
+
+	commitmentPoint := pedersen.CommitTo(&H, &blindingFactorScalar, value)
+
+	// Create a will with Pedersen commitment component
+	msg := &types.MsgCreateWillRequest{
+		Creator:     creator,
+		Name:        "Test Will",
+		Beneficiary: "beneficiary-address",
+		Height:      2,
+		Components: []*types.ExecutionComponent{
+			{
+				Name:   "PedersenCommitmentComponent",
+				Id:     "component-id",
+				Status: "inactive",
+				ComponentType: &types.ExecutionComponent_Claim{
+					Claim: &types.ClaimComponent{
+						SchemeType: &types.ClaimComponent_Pedersen{
+							Pedersen: &types.PedersenCommitment{
+								Commitment:     commitmentPoint.Bytes(),
+								BlindingFactor: blindingFactorScalar.Bytes(),
+								Value:          value.Bytes(),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// Create the will and move context to the block height when the will is supposed to be claimed
+	will, err := kpr.CreateWill(sdk.UnwrapSDKContext(ctx), msg)
+	require.NoError(t, err)
+	require.NotNil(t, will)
+
+	ctx = ctx.WithBlockHeight(3)
+
+	// Claim the will with Pedersen commitment
+	claimMsg := &types.MsgClaimRequest{
+		WillId:      will.ID,
+		Claimer:     creator,
+		ComponentId: "component-id",
+		ClaimType: &types.MsgClaimRequest_PedersenClaim{
+			PedersenClaim: &types.PedersenClaim{
+				Commitment:     commitmentPoint.Bytes(),
+				BlindingFactor: blindingFactorScalar.Bytes(),
+				Value:          value.Bytes(),
+			},
+		},
+	}
+
+	// Run the begin blocker to process the will for claiming
+	kpr.BeginBlocker(ctx)
+	err = kpr.Claim(sdk.UnwrapSDKContext(ctx), claimMsg)
+	require.NoError(t, err)
+
+	// Fetch the will after the claim to check the status of the component
+	updatedWill, err := kpr.GetWillByID(sdk.UnwrapSDKContext(ctx), will.ID)
+	require.NoError(t, err)
+	require.Equal(t, "claimed", updatedWill.Components[0].Status)
+
 }
 
 // */

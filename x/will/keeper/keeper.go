@@ -349,7 +349,12 @@ func (k Keeper) ListWillsByAddress(ctx context.Context, address string) ([]*type
 	return wills, nil
 }
 
-// CLAIM
+/*
+@name Claim
+@description the function to make a claim on a will component
+@param ctx Context to pass context from the sdk
+@param msg MsgClaimRequest the message structure holding params for the claim request
+*/
 func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 	// Retrieve the will by ID to ensure it exists and to process the claim against it
 	fmt.Println("CLAIM FROM KEEPER: ")
@@ -402,7 +407,7 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 	}
 
 	// At this point, you have the index of the component being claimed.
-
+	var component *types.ExecutionComponent = will.Components[componentIndex]
 	// You can now check its status before proceeding with the claim.
 	if will.Components[componentIndex].Status != "active" {
 		fmt.Printf("component with ID %s is not active and cannot be claimed\n", msg.ComponentId)
@@ -417,6 +422,7 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 
 		// Assuming the public key and signature are provided as byte slices in the claim
 		fmt.Println(claim)
+		//TODO: pass in the component, not the component id lol
 		if schnorrClaim := k.processSchnorrClaim(ctx, claim, will, componentIndex); schnorrClaim != nil {
 			return schnorrClaim
 		}
@@ -429,7 +435,7 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		// TODO
 		fmt.Println(claim)
 
-		if pedersenClaim := k.processPedersenClaim(ctx, will, claim); pedersenClaim != nil {
+		if pedersenClaim := k.processPedersenClaim(ctx, will, component, claim); pedersenClaim != nil {
 			return pedersenClaim
 		}
 
@@ -519,50 +525,57 @@ func (k Keeper) processSchnorrClaim(ctx context.Context, claim *types.MsgClaimRe
 	return nil
 }
 
-func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, claim *types.MsgClaimRequest_PedersenClaim) error {
-	// Decode the commitment point H
+func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, component *types.ExecutionComponent, claim *types.MsgClaimRequest_PedersenClaim) error {
+	// Extract the Pedersen commitment from the component
+	pedersenCommitment := component.GetClaim().GetPedersen()
+
+	if pedersenCommitment == nil {
+		return errors.New("pedersen commitment not found in the component", 1, "PedersenCommitmentNotFound")
+	}
+
+	// Deserialize the commitment point and the blinding factor from the Pedersen commitment
+	var commitmentPoint, blindingFactor ristretto.Scalar
 	var H ristretto.Point
-	if err := H.UnmarshalBinary(claim.PedersenClaim.Commitment); err != nil {
-		return fmt.Errorf("error unmarshalling commitment point: %v", err)
-	}
 
-	// Decode the blinding factor r
-	var r ristretto.Scalar
-	if err := r.UnmarshalBinary(claim.PedersenClaim.BlindingFactor); err != nil {
-		return fmt.Errorf("error unmarshalling blinding factor: %v", err)
-	}
-
-	// Decode the value x from the claim and set it to a Scalar
-	var x ristretto.Scalar
-	xValue := new(big.Int).SetBytes(claim.PedersenClaim.Value)
-	if !x.SetBigInt(xValue) {
-		return fmt.Errorf("error setting scalar value for x")
-	}
-
-	// Reconstruct the commitment from the claim
-	reconstructedCommitment := pedersen.CommitTo(&H, &r, &x)
-
-	// Retrieve the stored commitment for this will
-	storedCommitmentBytes, err := k.getStoredCommitment(ctx, will.ID) // Implement this function
+	err := commitmentPoint.UnmarshalBinary(pedersenCommitment.Commitment)
 	if err != nil {
-		return fmt.Errorf("error retrieving stored commitment: %v", err)
+		return errors.Wrap(err, "error unmarshalling commitment point")
 	}
 
-	var storedCommitment ristretto.Point
-	if err := storedCommitment.UnmarshalBinary(storedCommitmentBytes); err != nil {
-		return fmt.Errorf("error unmarshalling stored commitment: %v", err)
+	err = blindingFactor.UnmarshalBinary(pedersenCommitment.BlindingFactor)
+	if err != nil {
+		return errors.Wrap(err, "error unmarshalling blinding factor")
 	}
 
-	// Compare the reconstructed commitment with the stored commitment
-	if !reconstructedCommitment.Equals(&storedCommitment) {
-		return fmt.Errorf("commitment verification failed")
+	H.UnmarshalBinary(pedersenCommitment.RandomFactor) // Assuming RandomFactor is H (secondary point on the curve)
+
+	// Reconstruct the commitment using the provided claim data
+	var claimedValue ristretto.Scalar
+	claimedValueBytes := new(big.Int).SetBytes(claim.PedersenClaim.Value)
+	claimedValue.SetBigInt(claimedValueBytes)
+
+	// Generate the commitment from the will's stored random factor and the claim's value
+	reconstructedCommitment := pedersen.CommitTo(&H, &blindingFactor, &claimedValue)
+
+	// Deserialize the commitment from the claim
+	var claimedCommitment ristretto.Point
+	err = claimedCommitment.UnmarshalBinary(claim.PedersenClaim.Commitment)
+	if err != nil {
+		return errors.Wrap(err, "error unmarshalling claimed commitment")
 	}
 
-	fmt.Println("Commitment verified successfully")
-	// Update will component status or perform other actions as necessary
+	// Verify that the reconstructed commitment matches the claimed commitment
+	if !reconstructedCommitment.Equals(&claimedCommitment) {
+		return errors.New("commitment verification failed", 5, "CommitmentVerificationFailed")
+	}
+
+	// Update the component's status to 'Claimed'
+	component.Status = "claimed" // Enum value as per your proto definitions
+
 	return nil
 }
 
+// ///////////////////////////////////// expirations
 // expiration
 func (k Keeper) SetWillExpiryIndex(ctx sdk.Context, expiryHeight int64, willID string) {
 	store := ctx.KVStore(k.storeKey)

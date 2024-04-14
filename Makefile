@@ -344,3 +344,11 @@ contract_info:
 # dev
 # mainnet - wasm.w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
 # testnet - wasm.w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
+
+# build warnings
+# 0xjovi@0xjovis-MacBook-Pro wasmd % go get github.com/CosmWasm/wasmd/x/will/keeper
+# go: module github.com/golang/protobuf is deprecated: Use the "google.golang.org/protobuf" module instead.
+# go: warning: github.com/cometbft/cometbft@v0.38.2: retracted by module author: superseeded by v0.38.3 because of ASA-2024-001
+# go: warning: github.com/cosmos/ibc-go/v8@v8.0.0: retracted by module author: contains ASA-2024-007 vulnerability
+# go: to switch to the latest unretracted version, run:
+#         go get <module>@latest
