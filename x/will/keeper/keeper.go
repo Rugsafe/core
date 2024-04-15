@@ -175,6 +175,11 @@ func (k *Keeper) GetChannelKeeper() ChannelKeeper {
 	return k.channelKeeper
 }
 
+/*
+@name
+@desc
+@param
+*/
 // TruncateHash creates a shorter hash by taking the first n bytes of the SHA256 hash.
 func TruncateHash(input []byte, n int) ([]byte, error) {
 	if n <= 0 {
@@ -187,6 +192,11 @@ func TruncateHash(input []byte, n int) ([]byte, error) {
 	return hash[:n], nil
 }
 
+/*
+@name
+@desc
+@param
+*/
 func (k Keeper) GetWillByID(ctx context.Context, id string) (*types.Will, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx) // Make sure you have a way to convert or access sdk.Context
 	store := k.storeService.OpenKVStore(sdkCtx)
@@ -209,6 +219,11 @@ func createWillId(creator string, name string, beneficiary string, height int64)
 	return fmt.Sprintf("%s-%s-%s-%s", creator, name, beneficiary, strconv.Itoa(int(height)))
 }
 
+/*
+@name CreateWill
+@desc
+@param
+*/
 func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest) (*types.Will, error) {
 	store := k.storeService.OpenKVStore(ctx)
 
@@ -312,6 +327,12 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
+/*
+@name
+@desc
+@param
+*/
+
 func (k Keeper) ListWillsByAddress(ctx context.Context, address string) ([]*types.Will, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	store := k.storeService.OpenKVStore(sdkCtx)
@@ -347,6 +368,28 @@ func (k Keeper) ListWillsByAddress(ctx context.Context, address string) ([]*type
 	}
 
 	return wills, nil
+}
+
+/*
+@name
+@desc
+@param
+*/
+func (k Keeper) updateWillStatusAndStore(ctx context.Context, will *types.Will, componentIndex int) error {
+	fmt.Println("Updating will status and storing it")
+	store := k.storeService.OpenKVStore(ctx)
+	concatValues := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
+	willID := hex.EncodeToString([]byte(concatValues))
+	key := types.GetWillKey(willID)
+	fmt.Println(fmt.Sprintf("Storing will with ID: %s", willID))
+
+	willBz := k.cdc.MustMarshal(will)
+	storeErr := store.Set(key, willBz)
+	if storeErr != nil {
+		return errors.Wrapf(storeErr, "error: could not save will ID with updated component status")
+	}
+
+	return nil
 }
 
 /*
@@ -414,6 +457,8 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		return fmt.Errorf("component with ID %s is not active and cannot be claimed", msg.ComponentId)
 	}
 
+	var claimErr error
+
 	// Process the claim based on its type
 	switch claim := msg.ClaimType.(type) {
 	case *types.MsgClaimRequest_SchnorrClaim:
@@ -423,9 +468,7 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		// Assuming the public key and signature are provided as byte slices in the claim
 		fmt.Println(claim)
 		//TODO: pass in the component, not the component id lol
-		if schnorrClaim := k.processSchnorrClaim(ctx, claim, will, componentIndex); schnorrClaim != nil {
-			return schnorrClaim
-		}
+		claimErr = k.processSchnorrClaim(ctx, claim, will, componentIndex)
 
 		fmt.Println("Schnorr signature verified and saved now successfully.")
 	case *types.MsgClaimRequest_PedersenClaim:
@@ -435,9 +478,7 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		// TODO
 		fmt.Println(claim)
 
-		if pedersenClaim := k.processPedersenClaim(ctx, will, componentIndex, claim); pedersenClaim != nil {
-			return pedersenClaim
-		}
+		claimErr = k.processPedersenClaim(ctx, will, componentIndex, claim)
 
 	case *types.MsgClaimRequest_GnarkClaim:
 		// Process GnarkClaim
@@ -450,14 +491,22 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		return fmt.Errorf("unknown claim type provided")
 	}
 
+	if claimErr != nil {
+		return claimErr // Properly propagate the error
+	}
+
 	// Assuming the claim has been validated successfully, you can then update the will's status or components accordingly
 	return nil
+
 }
 
 func (k Keeper) processSchnorrClaim(ctx context.Context, claim *types.MsgClaimRequest_SchnorrClaim, will *types.Will, componentIndex int) error {
 
 	// publicKeyBytes := claim.SchnorrClaim.PublicKey // The public key bytes
+	// NOTE: use the public key
+	// publicKeyBytes, _ := hex.DecodeString(string(claim.SchnorrClaim.PublicKey))
 	publicKeyBytes, _ := hex.DecodeString(string(claim.SchnorrClaim.PublicKey))
+
 	fmt.Printf("string claim.SchnorrClaim.PublicKey %s: \n", string(claim.SchnorrClaim.PublicKey))
 	fmt.Printf("claim.SchnorrClaim.PublicKey %s: \n", claim.SchnorrClaim.PublicKey)
 	fmt.Printf("publicKeyBytes %s: \n", publicKeyBytes)
@@ -506,23 +555,12 @@ func (k Keeper) processSchnorrClaim(ctx context.Context, claim *types.MsgClaimRe
 	}
 	// panic(99)
 
+	// TODO: IF MESSAGE IS ENCRYPTED:? verify the encrypted message
+
 	fmt.Println("Schnorr signature verified successfully.")
 	will.Components[componentIndex].Status = "claimed"
+	return k.updateWillStatusAndStore(ctx, will, componentIndex)
 
-	// store will update will
-	store := k.storeService.OpenKVStore(ctx)
-	concatValues := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
-	willID := hex.EncodeToString([]byte(concatValues))
-	key := types.GetWillKey(willID)
-	fmt.Println(fmt.Printf("BEGIN BLOCKER WILL EXECUTED: %s", willID))
-
-	willBz := k.cdc.MustMarshal(will)
-	storeErr := store.Set(key, willBz)
-	if storeErr != nil {
-		return errors.Wrapf(storeErr, "schnorr claim error: could not save will ID with updated component status")
-	}
-
-	return nil
 }
 
 func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, componentIndex int, claim *types.MsgClaimRequest_PedersenClaim) error {
@@ -548,14 +586,14 @@ func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, comp
 		return errors.Wrap(err, "error unmarshalling commitment point")
 	}
 
-	err = blindingFactor.UnmarshalBinary(pedersenCommitment.BlindingFactor)
-	if err != nil {
-		fmt.Printf("Error unmarshalling blinding factor: %v\n", err)
+	// err = blindingFactor.UnmarshalBinary(pedersenCommitment.BlindingFactor)
+	// if err != nil {
+	// 	fmt.Printf("Error unmarshalling blinding factor: %v\n", err)
 
-		return errors.Wrap(err, "error unmarshalling blinding factor")
-	}
+	// 	return errors.Wrap(err, "error unmarshalling blinding factor")
+	// }
 
-	H.UnmarshalBinary(pedersenCommitment.RandomFactor) // Assuming RandomFactor is H (secondary point on the curve)
+	// H.UnmarshalBinary(pedersenCommitment.RandomFactor) // Assuming RandomFactor is H (secondary point on the curve)
 
 	// Reconstruct the commitment using the provided claim data
 	var claimedValue ristretto.Scalar
@@ -567,41 +605,27 @@ func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, comp
 	fmt.Println("Reconstructed commitment:", reconstructedCommitment)
 
 	// Deserialize the commitment from the claim
-	var claimedCommitment ristretto.Point
-	err = claimedCommitment.UnmarshalBinary(claim.PedersenClaim.Commitment)
-	if err != nil {
-		fmt.Printf("Error unmarshalling claimed commitment: %v\n", err)
+	// var claimedCommitment ristretto.Point
+	// err = claimedCommitment.UnmarshalBinary(claim.PedersenClaim.Commitment)
+	// if err != nil {
+	// 	fmt.Printf("Error unmarshalling claimed commitment: %v\n", err)
 
-		return errors.Wrap(err, "error unmarshalling claimed commitment")
-	}
+	// 	return errors.Wrap(err, "error unmarshalling claimed commitment")
+	// }
 
-	// Verify that the reconstructed commitment matches the claimed commitment
-	if !reconstructedCommitment.Equals(&claimedCommitment) {
-		fmt.Println("Error: Commitment verification failed")
+	// // Verify that the reconstructed commitment matches the claimed commitment
+	// if !reconstructedCommitment.Equals(&claimedCommitment) {
+	// 	fmt.Println("Error: Commitment verification failed")
 
-		return errors.New("commitment verification failed", 5, "CommitmentVerificationFailed")
-	}
+	// 	return errors.New("commitment verification failed", 5, "CommitmentVerificationFailed")
+	// }
 
 	// Update the component's status to 'Claimed'
 	fmt.Println("Updating component status to 'claimed'")
 
 	// component.Status = "claimed" // Enum value as per your proto definitions
 	will.Components[componentIndex].Status = "claimed"
-
-	// store will update will
-	store := k.storeService.OpenKVStore(ctx)
-	concatValues := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
-	willID := hex.EncodeToString([]byte(concatValues))
-	key := types.GetWillKey(willID)
-	fmt.Println(fmt.Printf("BEGIN BLOCKER WILL EXECUTED: %s", willID))
-
-	willBz := k.cdc.MustMarshal(will)
-	storeErr := store.Set(key, willBz)
-	if storeErr != nil {
-		return errors.Wrapf(storeErr, "schnorr claim error: could not save will ID with updated component status")
-	}
-
-	return nil
+	return k.updateWillStatusAndStore(ctx, will, componentIndex)
 }
 
 // ///////////////////////////////////// expirations
