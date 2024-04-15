@@ -131,13 +131,17 @@ message SchnorrSignature {
 }
 
 // PedersenCommitment enables the use of a Pedersen commitment for claims.
+// message PedersenCommitment {
+//   bytes commitment = 1; // The commitment hash, representing the hidden value.
+//   bytes random_factor = 2; // The random factor used to generate the commitment,
+//                            // enhancing privacy.
+//   bytes value = 3; // The actual value being committed, revealed during claim.
+//   bytes blinding_factor =
+//       4; // The blinding factor used alongside the value for claim verification.
+// }
+
 message PedersenCommitment {
   bytes commitment = 1; // The commitment hash, representing the hidden value.
-  bytes random_factor = 2; // The random factor used to generate the commitment,
-                           // enhancing privacy.
-  bytes value = 3; // The actual value being committed, revealed during claim.
-  bytes blinding_factor =
-      4; // The blinding factor used alongside the value for claim verification.
 }
 
 // GnarkZkSnark is for claims using zero-knowledge succinct non-interactive

@@ -4,7 +4,6 @@ import (
 	"math/big"
 
 	"github.com/bwesterb/go-ristretto"
-	// "github.com/dgraph-io/ristretto"
 )
 
 // The prime order of the base point is 2^252 + 27742317777372353535851937790883648493.
@@ -16,7 +15,7 @@ var n25519, _ = new(big.Int).SetString("7237005577332262213973186563042994240857
 // x - The value (number of tokens)
 // func commitTo(H *ristretto.Point, r, x *ristretto.Scalar) ristretto.Point {
 func CommitTo(H *ristretto.Point, r, x *ristretto.Scalar) ristretto.Point {
-	//ec.g.mul(r).add(H.mul(x));
+	// ec.g.mul(r).add(H.mul(x));
 	var result, rPoint, transferPoint ristretto.Point
 	rPoint.ScalarMultBase(r)
 	transferPoint.ScalarMult(H, x)

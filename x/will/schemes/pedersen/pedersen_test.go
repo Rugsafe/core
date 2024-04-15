@@ -10,7 +10,6 @@ import (
 
 // Should commit to a sum of two values
 func TestCommitToSuccess(t *testing.T) {
-
 	var rX, rY, vX, vY ristretto.Scalar
 	rX.Rand()
 	H := generateH() // Secondary point on the Curve
@@ -33,7 +32,6 @@ func TestCommitToSuccess(t *testing.T) {
 
 // Should fail if not using the correct blinding factors
 func TestCommitToFails(t *testing.T) {
-
 	var rX, rY, vX, vY ristretto.Scalar
 	rX.Rand()
 	H := generateH() // Secondary point on the Curve

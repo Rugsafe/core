@@ -167,8 +167,10 @@ func parseComponentFromString(componentName, componentData string, sender string
 			Claim: &types.ClaimComponent{
 				SchemeType: &types.ClaimComponent_Pedersen{
 					Pedersen: &types.PedersenCommitment{
-						BlindingFactor: []byte(blinding_factor),
-						Value:          []byte(value),
+						// note: removed these from the cli
+						// BlindingFactor: []byte(blinding_factor),
+						// Value:          []byte(value),
+						Commitment: []byte(commitment),
 					},
 				},
 			},

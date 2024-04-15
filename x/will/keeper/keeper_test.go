@@ -1,11 +1,13 @@
 package keeper_test
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"testing"
 
 	// Import the tm-db package
 	// dbm "github.com/tendermint/tm-db" // Import the tm-db package
+	"github.com/bwesterb/go-ristretto"
 	dbm "github.com/cosmos/cosmos-db"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
@@ -36,7 +38,6 @@ import (
 	"github.com/CosmWasm/wasmd/x/will/keeper"
 	"github.com/CosmWasm/wasmd/x/will/schemes/pedersen"
 	"github.com/CosmWasm/wasmd/x/will/types"
-	"github.com/bwesterb/go-ristretto"
 )
 
 func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
@@ -183,7 +184,7 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 							Schnorr: &types.SchnorrSignature{
 								PublicKey: []byte(publicKeyHex),
 								// Signature: []byte(signatureHex),
-								Message:   message,
+								Message: message,
 							},
 						},
 					},
@@ -254,22 +255,21 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 }
 
 func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
-	kpr, ctx := setupKeeper(t)
+	kpr, ctx := setupKeeper(t) // Initialize your test environment
 	creator := "creator-address"
 
-	// Generate a random value and blinding factor
+	// Generate random scalars for value and blinding factor
 	var valueScalar, blindingFactorScalar ristretto.Scalar
-	valueScalar.Rand()          // Generate a random value for testing
-	blindingFactorScalar.Rand() // Generate a random blinding factor
+	valueScalar.Rand()
+	blindingFactorScalar.Rand()
 
-	// Generate a random curve point H
 	var H ristretto.Point
 	H.Rand()
 
-	// Create Pedersen commitment
-	commitmentPoint := pedersen.CommitTo(&H, &blindingFactorScalar, &valueScalar)
+	// Commit to the random value using the random blinding factor
+	originalCommitment := pedersen.CommitTo(&H, &blindingFactorScalar, &valueScalar)
 
-	// Create a will with Pedersen commitment component
+	// Create a will including the Pedersen commitment
 	msg := &types.MsgCreateWillRequest{
 		Creator:     creator,
 		Name:        "Test Will",
@@ -284,9 +284,7 @@ func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 					Claim: &types.ClaimComponent{
 						SchemeType: &types.ClaimComponent_Pedersen{
 							Pedersen: &types.PedersenCommitment{
-								Commitment: commitmentPoint.Bytes(),
-								// BlindingFactor: blindingFactorScalar.Bytes(),
-								// Value:          valueScalar.Bytes(),
+								Commitment: originalCommitment.Bytes(),
 							},
 						},
 					},
@@ -295,40 +293,278 @@ func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 		},
 	}
 
-	// Create the will and move context to the block height when the will is supposed to be claimed
 	will, err := kpr.CreateWill(sdk.UnwrapSDKContext(ctx), msg)
 	require.NoError(t, err)
 	require.NotNil(t, will)
 
-	// ctx = ctx.WithBlockHeight(3)
-	// Simulate the passage of blocks up to the block height specified for the will's execution
+	// Advance the block height to simulate time passage
 	ctx = sdk.UnwrapSDKContext(ctx).WithBlockHeight(2)
-	kpr.BeginBlocker(ctx) // Run the begin blocker to activate the will
+	kpr.BeginBlocker(ctx)
 
-	// Claim the will with Pedersen commitment
+	// Simulate a claim with the same commitment
 	claimMsg := &types.MsgClaimRequest{
 		WillId:      will.ID,
 		Claimer:     creator,
 		ComponentId: "component-id",
 		ClaimType: &types.MsgClaimRequest_PedersenClaim{
 			PedersenClaim: &types.PedersenClaim{
-				// Commitment:     commitmentPoint.Bytes(),
-				BlindingFactor: blindingFactorScalar.Bytes(),
-				Value:          valueScalar.Bytes(),
+				Commitment: originalCommitment.Bytes(),
 			},
 		},
 	}
 
-	// Run the begin blocker to process the will for claiming
-	kpr.BeginBlocker(sdk.UnwrapSDKContext(ctx))
 	err = kpr.Claim(sdk.UnwrapSDKContext(ctx), claimMsg)
 	require.NoError(t, err)
 
-	// Fetch the will after the claim to check the status of the component
 	updatedWill, err := kpr.GetWillByID(sdk.UnwrapSDKContext(ctx), will.ID)
 	require.NoError(t, err)
-\	require.Equal(t, "claimed", updatedWill.Components[0].Status)
+	require.Equal(t, "claimed", updatedWill.Components[0].Status)
 }
+
+// debugtging now
+// func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
+// 	kpr, ctx := setupKeeper(t)
+// 	creator := "creator-address"
+
+// 	// Generate a random value and blinding factor
+// 	var valueScalar, blindingFactorScalar, claimValueScalar ristretto.Scalar
+// 	valueScalar.Rand()          // Generate a random value for the original commitment
+// 	blindingFactorScalar.Rand() // Generate a random blinding factor
+// 	claimValueScalar.Rand()     // Generate a random value for the claim
+
+// 	// Generate a random curve point H
+// 	var H ristretto.Point
+// 	H.Rand()
+
+// 	// Create original Pedersen commitment
+// 	originalCommitmentPoint := pedersen.CommitTo(&H, &blindingFactorScalar, &valueScalar)
+
+// 	// Create claim Pedersen commitment (for testing, using a different or same scalar)
+// 	claimCommitmentPoint := pedersen.CommitTo(&H, &blindingFactorScalar, &claimValueScalar)
+
+// 	// Calculate the target commitment as if the original and claim commitments are combined correctly
+// 	targetCommitmentPoint := pedersen.CommitTo(&H, &blindingFactorScalar, valueScalar.Add(&valueScalar, &claimValueScalar))
+
+// 	// Create a will with Pedersen commitment component including a target commitment
+// 	msg := &types.MsgCreateWillRequest{
+// 		Creator:     creator,
+// 		Name:        "Test Will",
+// 		Beneficiary: "beneficiary-address",
+// 		Height:      2,
+// 		Components: []*types.ExecutionComponent{
+// 			{
+// 				Name:   "PedersenCommitmentComponent",
+// 				Id:     "component-id",
+// 				Status: "inactive",
+// 				ComponentType: &types.ExecutionComponent_Claim{
+// 					Claim: &types.ClaimComponent{
+// 						SchemeType: &types.ClaimComponent_Pedersen{
+// 							Pedersen: &types.PedersenCommitment{
+// 								Commitment:       originalCommitmentPoint.Bytes(),
+// 								TargetCommitment: targetCommitmentPoint.Bytes(),
+// 							},
+// 						},
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}
+
+// 	// Create the will
+// 	will, err := kpr.CreateWill(sdk.UnwrapSDKContext(ctx), msg)
+// 	require.NoError(t, err)
+// 	require.NotNil(t, will)
+
+// 	// Simulate passage of time
+// 	ctx = sdk.UnwrapSDKContext(ctx).WithBlockHeight(2)
+// 	kpr.BeginBlocker(ctx)
+
+// 	// Construct a claim with the claimed commitment
+// 	claimMsg := &types.MsgClaimRequest{
+// 		WillId:      will.ID,
+// 		Claimer:     creator,
+// 		ComponentId: "component-id",
+// 		ClaimType: &types.MsgClaimRequest_PedersenClaim{
+// 			PedersenClaim: &types.PedersenClaim{
+// 				Commitment: claimCommitmentPoint.Bytes(),
+// 			},
+// 		},
+// 	}
+
+// 	// Process the claim
+// 	err = kpr.Claim(sdk.UnwrapSDKContext(ctx), claimMsg)
+// 	require.NoError(t, err)
+
+// 	// Verify the component's status
+// 	updatedWill, err := kpr.GetWillByID(sdk.UnwrapSDKContext(ctx), will.ID)
+// 	require.NoError(t, err)
+// 	require.Equal(t, "claimed", updatedWill.Components[0].Status)
+// }
+
+// Converts a string to a scalar value using SHA256 hash.
+func stringToScalar(data string) ristretto.Scalar {
+	var scalar ristretto.Scalar
+	hash := sha256.Sum256([]byte(data)) // hash is a [32]byte array
+	fmt.Println("String to scaler: ", data, "and hash: ", hash)
+
+	bytes := scalar.SetBytes(&hash)
+	fmt.Println("bytes: ", bytes, "and scalar: ", scalar)
+	return scalar
+}
+
+// // Test with deterministic scalars derived from strings.
+// func TestKeeperClaimWithConstantPedersenCommitment(t *testing.T) {
+// 	kpr, ctx := setupKeeper(t) // setupKeeper needs to be defined according to your context setup.
+// 	creator := "creator-address"
+
+// 	// Define challenge and answer strings
+// 	challengeString := "challenge-string"
+// 	answerString := "answer-string"
+
+// 	// Convert strings to deterministic scalars
+// 	challengeScalar := stringToScalar(challengeString)
+// 	answerScalar := stringToScalar(answerString)
+// 	fmt.Println("Challenge: ", challengeScalar, " Answer: ", answerScalar)
+
+// 	// Create Pedersen commitment using these scalars
+// 	H := ristretto.Point{}
+// 	H.Rand() // Base point for commitment (publicly known and constant)
+
+// 	// Commitment from the creator (original commitment)
+// 	originalCommitment := pedersen.CommitTo(&H, &challengeScalar, &answerScalar)
+
+// 	// For simplicity, using the same challenge-answer pair for the claim
+// 	// In real scenarios, this might be a different pair or some operation based on the original
+// 	claimCommitment := pedersen.CommitTo(&H, &challengeScalar, &answerScalar)
+
+// 	// Create a will with Pedersen commitment component including a target commitment
+// 	msg := &types.MsgCreateWillRequest{
+// 		Creator:     creator,
+// 		Name:        "Test Will",
+// 		Beneficiary: "beneficiary-address",
+// 		Height:      2,
+// 		Components: []*types.ExecutionComponent{
+// 			{
+// 				Name:   "PedersenCommitmentComponent",
+// 				Id:     "component-id",
+// 				Status: "inactive",
+// 				ComponentType: &types.ExecutionComponent_Claim{
+// 					Claim: &types.ClaimComponent{
+// 						SchemeType: &types.ClaimComponent_Pedersen{
+// 							Pedersen: &types.PedersenCommitment{
+// 								Commitment: originalCommitment.Bytes(),
+// 								// You might want to include a target commitment if adding claims together
+// 							},
+// 						},
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}
+
+// 	// Simulated creation of the will
+// 	will, err := kpr.CreateWill(sdk.UnwrapSDKContext(ctx), msg)
+// 	require.NoError(t, err)
+// 	require.NotNil(t, will)
+
+// 	// Simulate the claiming process
+// 	claimMsg := &types.MsgClaimRequest{
+// 		WillId:      will.ID,
+// 		Claimer:     creator,
+// 		ComponentId: "component-id",
+// 		ClaimType: &types.MsgClaimRequest_PedersenClaim{
+// 			PedersenClaim: &types.PedersenClaim{
+// 				Commitment: claimCommitment.Bytes(),
+// 			},
+// 		},
+// 	}
+
+// 	// Process the claim
+// 	err = kpr.Claim(sdk.UnwrapSDKContext(ctx), claimMsg)
+// 	require.NoError(t, err)
+
+// 	// Verify the status of the commitment after processing the claim
+// 	updatedWill, err := kpr.GetWillByID(sdk.UnwrapSDKContext(ctx), will.ID)
+// 	require.NoError(t, err)
+// 	require.Equal(t, "claimed", updatedWill.Components[0].Status)
+// }
+
+// func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
+// 	kpr, ctx := setupKeeper(t)
+// 	creator := "creator-address"
+
+// 	// Generate a random value and blinding factor
+// 	var valueScalar, blindingFactorScalar ristretto.Scalar
+// 	valueScalar.Rand()          // Generate a random value for testing
+// 	blindingFactorScalar.Rand() // Generate a random blinding factor
+
+// 	// Generate a random curve point H
+// 	var H ristretto.Point
+// 	H.Rand()
+
+// 	// Create Pedersen commitment
+// 	commitmentPoint := pedersen.CommitTo(&H, &blindingFactorScalar, &valueScalar)
+
+// 	// Create a will with Pedersen commitment component
+// 	msg := &types.MsgCreateWillRequest{
+// 		Creator:     creator,
+// 		Name:        "Test Will",
+// 		Beneficiary: "beneficiary-address",
+// 		Height:      2,
+// 		Components: []*types.ExecutionComponent{
+// 			{
+// 				Name:   "PedersenCommitmentComponent",
+// 				Id:     "component-id",
+// 				Status: "inactive",
+// 				ComponentType: &types.ExecutionComponent_Claim{
+// 					Claim: &types.ClaimComponent{
+// 						SchemeType: &types.ClaimComponent_Pedersen{
+// 							Pedersen: &types.PedersenCommitment{
+// 								Commitment: commitmentPoint.Bytes(),
+// 								// BlindingFactor: blindingFactorScalar.Bytes(),
+// 								// Value:          valueScalar.Bytes(),
+// 							},
+// 						},
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}
+
+// 	// Create the will and move context to the block height when the will is supposed to be claimed
+// 	will, err := kpr.CreateWill(sdk.UnwrapSDKContext(ctx), msg)
+// 	require.NoError(t, err)
+// 	require.NotNil(t, will)
+
+// 	// ctx = ctx.WithBlockHeight(3)
+// 	// Simulate the passage of blocks up to the block height specified for the will's execution
+// 	ctx = sdk.UnwrapSDKContext(ctx).WithBlockHeight(2)
+// 	kpr.BeginBlocker(ctx) // Run the begin blocker to activate the will
+
+// 	// Claim the will with Pedersen commitment
+// 	claimMsg := &types.MsgClaimRequest{
+// 		WillId:      will.ID,
+// 		Claimer:     creator,
+// 		ComponentId: "component-id",
+// 		ClaimType: &types.MsgClaimRequest_PedersenClaim{
+// 			PedersenClaim: &types.PedersenClaim{
+// 				Commitment: commitmentPoint.Bytes(),
+// 				// BlindingFactor: blindingFactorScalar.Bytes(),
+// 				// Value:          valueScalar.Bytes(),
+// 			},
+// 		},
+// 	}
+
+// 	// Run the begin blocker to process the will for claiming
+// 	kpr.BeginBlocker(sdk.UnwrapSDKContext(ctx))
+// 	err = kpr.Claim(sdk.UnwrapSDKContext(ctx), claimMsg)
+// 	require.NoError(t, err)
+
+// 	// Fetch the will after the claim to check the status of the component
+// 	updatedWill, err := kpr.GetWillByID(sdk.UnwrapSDKContext(ctx), will.ID)
+// 	require.NoError(t, err)
+// 	require.Equal(t, "claimed", updatedWill.Components[0].Status)
+// }
 
 // func TestKeeperClaimWithStaticPedersenCommitment(t *testing.T) {
 // 	kpr, ctx := setupKeeper(t)

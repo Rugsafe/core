@@ -186,7 +186,7 @@ var maccPerms = map[string][]string{
 	icatypes.ModuleName:         nil,
 	wasmtypes.ModuleName:        {authtypes.Burner},
 	// TODO:
-	willtypes.ModuleName: {authtypes.Minter, authtypes.Burner, authtypes.Staking}, //nil
+	willtypes.ModuleName: {authtypes.Minter, authtypes.Burner, authtypes.Staking}, // nil
 }
 
 var (

@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"math/big"
 	"strconv"
 	"time"
 
@@ -16,24 +15,23 @@ import (
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 	"go.dedis.ch/kyber/v3/group/edwards25519"
 
-	"github.com/bwesterb/go-ristretto"
-
 	"cosmossdk.io/collections"
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/CosmWasm/wasmd/x/will/schemes/pedersen"
-	"github.com/CosmWasm/wasmd/x/will/schemes/schnorr"
-
-	"github.com/CosmWasm/wasmd/x/will/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/CosmWasm/wasmd/x/will/schemes/schnorr"
+	"github.com/CosmWasm/wasmd/x/will/types"
+
+	"github.com/bwesterb/go-ristretto"
 )
 
 type IKeeper interface {
@@ -467,7 +465,7 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 
 		// Assuming the public key and signature are provided as byte slices in the claim
 		fmt.Println(claim)
-		//TODO: pass in the component, not the component id lol
+		// TODO: pass in the component, not the component id lol
 		claimErr = k.processSchnorrClaim(ctx, claim, will, componentIndex)
 
 		fmt.Println("Schnorr signature verified and saved now successfully.")
@@ -497,11 +495,9 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 
 	// Assuming the claim has been validated successfully, you can then update the will's status or components accordingly
 	return nil
-
 }
 
 func (k Keeper) processSchnorrClaim(ctx context.Context, claim *types.MsgClaimRequest_SchnorrClaim, will *types.Will, componentIndex int) error {
-
 	// publicKeyBytes := claim.SchnorrClaim.PublicKey // The public key bytes
 	// NOTE: use the public key
 	// publicKeyBytes, _ := hex.DecodeString(string(claim.SchnorrClaim.PublicKey))
@@ -555,78 +551,198 @@ func (k Keeper) processSchnorrClaim(ctx context.Context, claim *types.MsgClaimRe
 	}
 	// panic(99)
 
-	// TODO: IF MESSAGE IS ENCRYPTED:? verify the encrypted message
+	// TODO: IF MESSAGE IS ENCRYPTED:?
+	// verify the encrypted message matches one stored in will
 
 	fmt.Println("Schnorr signature verified successfully.")
 	will.Components[componentIndex].Status = "claimed"
 	return k.updateWillStatusAndStore(ctx, will, componentIndex)
-
 }
+
+var curve = edwards25519.NewBlakeSHA256Ed25519() // Ensure 'curve' is accessible globally within the package
 
 func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, componentIndex int, claim *types.MsgClaimRequest_PedersenClaim) error {
 	fmt.Println("Starting processPedersenClaim")
 
 	// Extract the Pedersen commitment from the component
-	pedersenCommitment := will.Components[componentIndex].GetClaim().GetPedersen()
+	storedCommitment := will.Components[componentIndex].GetClaim().GetPedersen()
 
-	if pedersenCommitment == nil {
-		fmt.Println("Error: Pedersen commitment not found in the component")
-
-		return errors.New("pedersen commitment not found in the component", 1, "PedersenCommitmentNotFound")
+	if storedCommitment == nil {
+		return fmt.Errorf("Error: Pedersen commitment not found in the component")
 	}
 
-	// Deserialize the commitment point and the blinding factor from the Pedersen commitment
-	var commitmentPoint, blindingFactor ristretto.Scalar
-	var H ristretto.Point
-
-	err := commitmentPoint.UnmarshalBinary(pedersenCommitment.Commitment)
+	fmt.Println("1: ", storedCommitment.Commitment)
+	// Deserialize the stored commitment and target commitment
+	storedCommitmentPoint, err := deserializeCommitment(storedCommitment.Commitment)
 	if err != nil {
-		fmt.Printf("Error unmarshalling commitment point: %v\n", err)
-
-		return errors.Wrap(err, "error unmarshalling commitment point")
+		return fmt.Errorf("failed to deserialize stored commitment: %v", err)
 	}
 
-	// err = blindingFactor.UnmarshalBinary(pedersenCommitment.BlindingFactor)
-	// if err != nil {
-	// 	fmt.Printf("Error unmarshalling blinding factor: %v\n", err)
+	fmt.Println("2")
+	claimCommitmentPoint, err := deserializeCommitment(claim.PedersenClaim.Commitment)
+	if err != nil {
+		return fmt.Errorf("failed to deserialize claimed commitment: %v", err)
+	}
 
-	// 	return errors.Wrap(err, "error unmarshalling blinding factor")
-	// }
+	fmt.Println("3")
+	targetCommitmentPoint, err := deserializeCommitment(storedCommitment.TargetCommitment)
+	if err != nil {
+		return fmt.Errorf("failed to deserialize target commitment: %v", err)
+	}
 
-	// H.UnmarshalBinary(pedersenCommitment.RandomFactor) // Assuming RandomFactor is H (secondary point on the curve)
+	// Add commitments
+	resultCommitment := addCommitments(storedCommitmentPoint, claimCommitmentPoint)
 
-	// Reconstruct the commitment using the provided claim data
-	var claimedValue ristretto.Scalar
-	claimedValueBytes := new(big.Int).SetBytes(claim.PedersenClaim.Value)
-	claimedValue.SetBigInt(claimedValueBytes)
+	// Check if the result matches the target
+	if !resultCommitment.Equals(&targetCommitmentPoint) {
+		return fmt.Errorf("commitment verification failed")
+	}
 
-	// Generate the commitment from the will's stored random factor and the claim's value
-	reconstructedCommitment := pedersen.CommitTo(&H, &blindingFactor, &claimedValue)
-	fmt.Println("Reconstructed commitment:", reconstructedCommitment)
-
-	// Deserialize the commitment from the claim
-	// var claimedCommitment ristretto.Point
-	// err = claimedCommitment.UnmarshalBinary(claim.PedersenClaim.Commitment)
-	// if err != nil {
-	// 	fmt.Printf("Error unmarshalling claimed commitment: %v\n", err)
-
-	// 	return errors.Wrap(err, "error unmarshalling claimed commitment")
-	// }
-
-	// // Verify that the reconstructed commitment matches the claimed commitment
-	// if !reconstructedCommitment.Equals(&claimedCommitment) {
-	// 	fmt.Println("Error: Commitment verification failed")
-
-	// 	return errors.New("commitment verification failed", 5, "CommitmentVerificationFailed")
-	// }
-
-	// Update the component's status to 'Claimed'
-	fmt.Println("Updating component status to 'claimed'")
-
-	// component.Status = "claimed" // Enum value as per your proto definitions
+	fmt.Println("Commitment verified successfully.")
 	will.Components[componentIndex].Status = "claimed"
 	return k.updateWillStatusAndStore(ctx, will, componentIndex)
 }
+
+// Placeholder for deserializing a commitment into a curve point
+// func deserializeCommitment(data []byte) (kyber.Point, error) {
+// 	if len(data) != curve.Point().MarshalSize() {
+// 		return nil, fmt.Errorf("invalid data length: got %d, want %d", len(data), curve.Point().MarshalSize())
+// 	}
+
+//		point := curve.Point()
+//		if err := point.UnmarshalBinary(data); err != nil {
+//			return nil, fmt.Errorf("failed to unmarshal curve point: %v", err)
+//		}
+//		return point, nil
+//	}
+//
+// Deserialize a commitment into a curve point.
+// func deserializeCommitment(data []byte) (ristretto.Point, error) {
+// 	var point ristretto.Point
+// 	if err := point.UnmarshalBinary(data); err != nil {
+// 		return point, fmt.Errorf("failed to unmarshal point: %v", err)
+// 	}
+// 	if !point.IsValid() {
+// 		return point, fmt.Errorf("invalid point")
+// 	}
+// 	return point, nil
+// }
+
+// // Placeholder for adding two commitments
+// func addCommitments(a, b kyber.Point) kyber.Point {
+// 	result := curve.Point().Add(a, b)
+// 	return result
+// }
+
+func addCommitments(a, b ristretto.Point) ristretto.Point {
+	var result ristretto.Point
+	result.Add(&a, &b) // Add points
+	return result
+}
+
+// Deserialize a commitment from bytes to a ristretto.Point
+func deserializeCommitment(data []byte) (ristretto.Point, error) {
+	var point ristretto.Point
+	err := point.UnmarshalBinary(data)
+	if err != nil {
+		return ristretto.Point{}, err // return an empty point on error
+	}
+	return point, nil
+}
+
+// func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, componentIndex int, claim *types.MsgClaimRequest_PedersenClaim) error {
+// 	fmt.Println("Starting processPedersenClaim")
+
+// 	// Extract the Pedersen commitment from the component
+// 	storedCommitment := will.Components[componentIndex].GetClaim().GetPedersen()
+// 	fmt.Println(storedCommitment)
+
+// 	if storedCommitment == nil {
+// 		return fmt.Errorf("Error: Pedersen commitment not found in the component")
+// 	}
+
+// 	// Verify that the commitment in the claim matches the target when added to the stored commitment
+// 	claimedCommitment := claim.PedersenClaim.Commitment // Assuming this is the raw bytes of the commitment
+// 	fmt.Println(claimedCommitment)
+// 	// targetCommitment := storedCommitment.TargetCommitment // This should be set when creating the will
+
+// 	// Simulate commitment addition and check
+// 	// This is a placeholder; you should implement actual Pedersen commitment addition and verification logic
+// 	// if !isValidCommitmentAddition(claimedCommitment, storedCommitment.Commitment, targetCommitment) {
+// 	// 	return fmt.Errorf("commitment verification failed")
+// 	// }
+
+// 	fmt.Println("Commitment verified successfully.")
+// 	will.Components[componentIndex].Status = "claimed"
+// 	return k.updateWillStatusAndStore(ctx, will, componentIndex)
+// }
+
+///////////////////////////////////////
+
+// func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, componentIndex int, claim *types.MsgClaimRequest_PedersenClaim) error {
+// 	fmt.Println("Starting processPedersenClaim")
+
+// 	// Extract the Pedersen commitment from the component
+// 	pedersenCommitment := will.Components[componentIndex].GetClaim().GetPedersen()
+
+// 	if pedersenCommitment == nil {
+// 		fmt.Println("Error: Pedersen commitment not found in the component")
+
+// 		return errors.New("pedersen commitment not found in the component", 1, "PedersenCommitmentNotFound")
+// 	}
+
+// 	// Deserialize the commitment point and the blinding factor from the Pedersen commitment
+// 	var commitmentPoint, blindingFactor ristretto.Scalar
+// 	var H ristretto.Point
+
+// 	err := commitmentPoint.UnmarshalBinary(pedersenCommitment.Commitment)
+// 	if err != nil {
+// 		fmt.Printf("Error unmarshalling commitment point: %v\n", err)
+
+// 		return errors.Wrap(err, "error unmarshalling commitment point")
+// 	}
+
+// 	// err = blindingFactor.UnmarshalBinary(pedersenCommitment.BlindingFactor)
+// 	// if err != nil {
+// 	// 	fmt.Printf("Error unmarshalling blinding factor: %v\n", err)
+
+// 	// 	return errors.Wrap(err, "error unmarshalling blinding factor")
+// 	// }
+
+// 	// H.UnmarshalBinary(pedersenCommitment.RandomFactor) // Assuming RandomFactor is H (secondary point on the curve)
+
+// 	// Reconstruct the commitment using the provided claim data
+// 	var claimedValue ristretto.Scalar
+// 	claimedValueBytes := new(big.Int).SetBytes(claim.PedersenClaim.Value)
+// 	claimedValue.SetBigInt(claimedValueBytes)
+
+// 	// Generate the commitment from the will's stored random factor and the claim's value
+// 	reconstructedCommitment := pedersen.CommitTo(&H, &blindingFactor, &claimedValue)
+// 	fmt.Println("Reconstructed commitment:", reconstructedCommitment)
+
+// 	// Deserialize the commitment from the claim
+// 	// var claimedCommitment ristretto.Point
+// 	// err = claimedCommitment.UnmarshalBinary(claim.PedersenClaim.Commitment)
+// 	// if err != nil {
+// 	// 	fmt.Printf("Error unmarshalling claimed commitment: %v\n", err)
+
+// 	// 	return errors.Wrap(err, "error unmarshalling claimed commitment")
+// 	// }
+
+// 	// // Verify that the reconstructed commitment matches the claimed commitment
+// 	// if !reconstructedCommitment.Equals(&claimedCommitment) {
+// 	// 	fmt.Println("Error: Commitment verification failed")
+
+// 	// 	return errors.New("commitment verification failed", 5, "CommitmentVerificationFailed")
+// 	// }
+
+// 	// Update the component's status to 'Claimed'
+// 	fmt.Println("Updating component status to 'claimed'")
+
+// 	// component.Status = "claimed" // Enum value as per your proto definitions
+// 	will.Components[componentIndex].Status = "claimed"
+// 	return k.updateWillStatusAndStore(ctx, will, componentIndex)
+// }
 
 // ///////////////////////////////////// expirations
 // expiration
