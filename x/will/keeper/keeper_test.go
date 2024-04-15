@@ -284,7 +284,8 @@ func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 					Claim: &types.ClaimComponent{
 						SchemeType: &types.ClaimComponent_Pedersen{
 							Pedersen: &types.PedersenCommitment{
-								Commitment: originalCommitment.Bytes(),
+								Commitment:       originalCommitment.Bytes(),
+								TargetCommitment: originalCommitment.Bytes(),
 							},
 						},
 					},
