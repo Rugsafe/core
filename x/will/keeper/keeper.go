@@ -573,13 +573,13 @@ func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, comp
 
 	fmt.Println("1: ", storedCommitment.Commitment)
 	// Deserialize the stored commitment and target commitment
-	storedCommitmentPoint, err := deserializeCommitment(storedCommitment.Commitment)
+	storedCommitmentPoint, err := k.DeserializeCommitment(storedCommitment.Commitment)
 	if err != nil {
 		return fmt.Errorf("failed to deserialize stored commitment: %v", err)
 	}
 
 	fmt.Println("2")
-	claimCommitmentPoint, err := deserializeCommitment(claim.PedersenClaim.Commitment)
+	claimCommitmentPoint, err := k.DeserializeCommitment(claim.PedersenClaim.Commitment)
 	if err != nil {
 		return fmt.Errorf("failed to deserialize claimed commitment: %v", err)
 	}
