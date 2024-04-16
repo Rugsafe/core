@@ -269,6 +269,8 @@ func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 	// Commit to the random value using the random blinding factor
 	originalCommitment := pedersen.CommitTo(&H, &blindingFactorScalar, &valueScalar)
 
+	addedCommitment := kpr.AddCommitments(originalCommitment, originalCommitment)
+
 	// Create a will including the Pedersen commitment
 	msg := &types.MsgCreateWillRequest{
 		Creator:     creator,
@@ -285,7 +287,7 @@ func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 						SchemeType: &types.ClaimComponent_Pedersen{
 							Pedersen: &types.PedersenCommitment{
 								Commitment:       originalCommitment.Bytes(),
-								TargetCommitment: originalCommitment.Bytes(),
+								TargetCommitment: addedCommitment.Bytes(),
 							},
 						},
 					},

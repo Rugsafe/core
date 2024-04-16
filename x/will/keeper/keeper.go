@@ -585,13 +585,13 @@ func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, comp
 	}
 
 	fmt.Println("3")
-	targetCommitmentPoint, err := deserializeCommitment(storedCommitment.TargetCommitment)
+	targetCommitmentPoint, err := k.DeserializeCommitment(storedCommitment.TargetCommitment)
 	if err != nil {
 		return fmt.Errorf("failed to deserialize target commitment: %v", err)
 	}
 
 	// Add commitments
-	resultCommitment := addCommitments(storedCommitmentPoint, claimCommitmentPoint)
+	resultCommitment := k.AddCommitments(storedCommitmentPoint, claimCommitmentPoint)
 	fmt.Println(storedCommitmentPoint)
 	fmt.Println(claimCommitmentPoint)
 	fmt.Println(targetCommitmentPoint)
@@ -637,14 +637,14 @@ func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, comp
 // 	return result
 // }
 
-func addCommitments(a, b ristretto.Point) ristretto.Point {
+func (k Keeper) AddCommitments(a, b ristretto.Point) ristretto.Point {
 	var result ristretto.Point
 	result.Add(&a, &b) // Add points
 	return result
 }
 
 // Deserialize a commitment from bytes to a ristretto.Point
-func deserializeCommitment(data []byte) (ristretto.Point, error) {
+func (k Keeper) DeserializeCommitment(data []byte) (ristretto.Point, error) {
 	var point ristretto.Point
 	err := point.UnmarshalBinary(data)
 	if err != nil {
