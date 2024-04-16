@@ -592,7 +592,10 @@ func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, comp
 
 	// Add commitments
 	resultCommitment := addCommitments(storedCommitmentPoint, claimCommitmentPoint)
-
+	fmt.Println(storedCommitmentPoint)
+	fmt.Println(claimCommitmentPoint)
+	fmt.Println(targetCommitmentPoint)
+	fmt.Println(resultCommitment)
 	// Check if the result matches the target
 	if !resultCommitment.Equals(&targetCommitmentPoint) {
 		return fmt.Errorf("commitment verification failed")
