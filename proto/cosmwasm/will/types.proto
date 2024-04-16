@@ -46,6 +46,8 @@ message ClaimComponent {
     GnarkZkSnark gnark = 4; // Represents a zk-SNARK scheme using Gnark.
   }
 
+  // TODO: have a specific access level on each component (Anybody, Specific Address)
+
   // types of outputs
   oneof output_type {
     // output for simple native transfer
