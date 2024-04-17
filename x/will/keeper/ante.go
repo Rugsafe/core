@@ -26,10 +26,14 @@ func NewWillDecorator(w Keeper) WillDecorator {
 func (wd WillDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	// loop through all the messages and check if the message type is allowed
 	fmt.Println("ANTE HANDLER TX")
-	fmt.Println(tx)
+	// fmt.Println(tx.Signature)
 	msgv2, _ := tx.GetMsgsV2()
 	fmt.Println(msgv2)
+	fmt.Println(ctx.TxBytes())
+	// signers := tx.GetSigners()
+	fmt.Println("=====================")
 	for _, msg := range tx.GetMsgs() {
+		// for _, msg := range msgv2 {
 		// address, _ := sdk.AccAddressFromBech32(msg)
 		fmt.Println("WILL ANTE HANDLER")
 		fmt.Println(msg)

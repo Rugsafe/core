@@ -120,15 +120,15 @@ func parseComponentFromString(componentName, componentData string, sender string
 	switch componentType {
 	case "transfer":
 		dataParts := strings.Split(params, ",")
-		if len(dataParts) != 2 {
+		if len(dataParts) != 3 {
 			return nil, fmt.Errorf("invalid transfer component params, expected 'to,amount'")
 		}
-		to, amountStr := dataParts[0], dataParts[1]
+		to, amountStr, denom := dataParts[0], dataParts[1], dataParts[2]
 		amount, err := strconv.ParseInt(amountStr, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("invalid amount format for transfer component: %s", amountStr)
 		}
-		amountCoin := sdk.NewInt64Coin("will", amount) // Ensure "will" matches your denomination
+		amountCoin := sdk.NewInt64Coin(denom, amount) // Ensure "will" matches your denomination
 
 		component.ComponentType = &types.ExecutionComponent_Transfer{
 			Transfer: &types.TransferComponent{

@@ -245,7 +245,7 @@ alice_c:
 alice_d:
 	 ./build/wasmd keys delete alice 
 alice_balance:
-	./build/wasmd q bank balances will1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz
+	./build/wasmd q bank balances will1p0k8gygawzpggzwftv7cv47zvgg8zaun7h2v28 $(WILLCHAIN_NODE_ARGS)
 will_test: will_cx
 	echo "Done with will tests"
 
@@ -254,7 +254,7 @@ will_test: will_cx
 
 
 # will
-ADDRESS=will1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz
+ADDRESS=will1p0k8gygawzpggzwftv7cv47zvgg8zaun7h2v28
 WID=77336c6c3170306b3867796761777a7067677a7766747637637634377a766767387a61756e35787563787a2d746573742077696c6c202d62656e65666963696172792d3235
 CID=109edf75-7c30-4988-8f51-38c58a884022
 # schnorr claim
@@ -266,12 +266,12 @@ PUBKEY=2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c
 # gnark claim
 
 will_create:
-	./build/wasmd tx will create "test will ${i}" "beneficiary" 25 \
-	--component-name "component_for_transfer" --component-args "transfer:will1c9kguyfzev4l3z82gp36cgdd2yyweagvsmh64h,1" \
+	./build/wasmd tx will create "test will ${i}" "beneficiary" 10 \
+	--component-name "component_for_transfer" --component-args "transfer:will156mw28alhpenp4lknweat6432dux34uydx590v,1,uwill" \
 	--component-name "component_for_schnorr_claim" --component-args "schnorr:${SIGNATURE},${PUBKEY},${MESSAGE}" \
 	--component-name "component_for_pedersen_claim" --component-args "pedersen:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" \
 	--component-name "component_for_gnark_claim" --component-args "gnark:verification_key_hex,public_inputs_hex,proof_hex" \
-	--from alice --chain-id willchain-mainnet -y
+	--from alice --chain-id willchain-mainnet -y $(WILLCHAIN_NODE_ARGS) 
 	sleep 1
 will_cx:
 	@for i in {1..20}; do \
@@ -280,9 +280,9 @@ will_cx:
 	done
 
 will_get:
-	./build/wasmd query will get "${WID}"
+	./build/wasmd query will get "${WID}" $(WILLCHAIN_NODE_ARGS) 
 will_list:
-	./build/wasmd query will list ${ADDRESS}
+	./build/wasmd query will list ${ADDRESS} $(WILLCHAIN_NODE_ARGS) 
 
 # SCHNORR
 will_claim_schnorr:
@@ -332,7 +332,7 @@ check:
 instantiate:
 	./build/wasmd tx wasm instantiate $(CODE_ID) \
 	"{}" \
-	--amount="1will" --no-admin --label "test ibc" --from ${DEV_WALLET} --gas auto --gas-adjustment 1.3 -b sync -y $(WILLCHAIN_NODE_ARGS) $(WILLCHAIN_CHAIN_ID_ARGS)
+	--amount="1uwill" --no-admin --label "test ibc" --from ${DEV_WALLET} --gas auto --gas-adjustment 1.3 -b sync -y $(WILLCHAIN_NODE_ARGS) $(WILLCHAIN_CHAIN_ID_ARGS)
 contract_address:
 	./build/wasmd q wasm list-contract-by-code $(CODE_ID) --output json $(WILLCHAIN_NODE_ARGS)
 	CONTRACT_ADDRESS=$(shell ./build/wasmd q wasm list-contract-by-code $(CODE_ID) --output json $(WILLCHAIN_NODE_ARGS) ')

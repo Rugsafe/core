@@ -1087,8 +1087,9 @@ func (k Keeper) SetPort(ctx sdk.Context, portID string) {
 	store.Set(types.PortKey, []byte(portID))
 }
 
-// ante
+// anteprotoreflect.ProtoMessage
 func (k Keeper) VerifyWillAddress(ctx sdk.Context, msg sdk.Msg) (bool, error) {
+	// func (k Keeper) VerifyWillAddress(ctx sdk.Context, msg anteprotoreflect.ProtoMessage) (bool, error) {
 	fmt.Println("INSIDE WILL VERIFY ADDRESS")
 	return true, nil
 }
