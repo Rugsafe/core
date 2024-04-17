@@ -3,6 +3,7 @@ package cosmwasm.will;
 
 import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
+import "amino/amino.proto";
 
 option go_package = "github.com/CosmWasm/wasmd/x/will/types";
 option (gogoproto.goproto_getters_all) = false;
@@ -37,8 +38,31 @@ message TransferComponent {
       4; // The amount and type of asset to transfer.
 }
 
+// claim access public type
+message ClaimAccessPublic {}
+
+
+// claim access private type
+message ClaimAccessPrivate {
+  // set of address to allow claim
+  repeated string addresses = 1 [ (gogoproto.customname) = "Addresses" ];
+}
+
+// claim access control
+message ClaimAccessControl {
+  // type of access
+  oneof AccessType {
+    // public access
+    ClaimAccessPublic public = 1;
+    // private access
+    ClaimAccessPrivate private = 2;
+  }
+}
+
 // ClaimComponent is designed for actions requiring a claim with proof.
 message ClaimComponent {
+  ClaimAccessControl access = 1
+      [ (gogoproto.nullable) = false, (amino.dont_omitempty) = true ];
   // scheme_type allows for different cryptographic schemes for claims.
   oneof scheme_type {
     PedersenCommitment pedersen = 2; // Represents a Pedersen commitment scheme.
@@ -46,18 +70,19 @@ message ClaimComponent {
     GnarkZkSnark gnark = 4; // Represents a zk-SNARK scheme using Gnark.
   }
 
-  // TODO: have a specific access level on each component (Anybody, Specific Address)
+  // TODO: have a specific access level on each component (Anybody, Specific
+  // Address)
 
   // types of outputs
   oneof output_type {
     // output for simple native transfer
-    OutputTransfer transfer = 8;
+    OutputTransfer transfer = 5;
     // output for native-to-contract call
-    OutputContractCall contract_call = 9;
+    OutputContractCall contract_call = 6;
     // output for ibc contract call
-    IBCContractCall ibc_contract_call = 10;
+    IBCContractCall ibc_contract_call = 7;
     // output for ibc send
-    IBCSend ibc_send = 11;
+    IBCSend ibc_send = 8;
   }
 }
 
@@ -134,12 +159,14 @@ message SchnorrSignature {
 
 // PedersenCommitment enables the use of a Pedersen commitment for claims.
 // message PedersenCommitment {
-//   bytes commitment = 1; // The commitment hash, representing the hidden value.
-//   bytes random_factor = 2; // The random factor used to generate the commitment,
+//   bytes commitment = 1; // The commitment hash, representing the hidden
+//   value. bytes random_factor = 2; // The random factor used to generate the
+//   commitment,
 //                            // enhancing privacy.
-//   bytes value = 3; // The actual value being committed, revealed during claim.
-//   bytes blinding_factor =
-//       4; // The blinding factor used alongside the value for claim verification.
+//   bytes value = 3; // The actual value being committed, revealed during
+//   claim. bytes blinding_factor =
+//       4; // The blinding factor used alongside the value for claim
+//       verification.
 // }
 
 message PedersenCommitment {

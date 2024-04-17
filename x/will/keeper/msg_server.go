@@ -24,6 +24,8 @@ func (m msgServer) CreateWill(
 	msg *types.MsgCreateWillRequest,
 ) (*types.MsgCreateWillResponse, error) {
 	fmt.Println("Inside msg_server, CreateWill")
+	// signer := sdk.AccAddress(ctx.Signers()[0].Bytes()).String()
+
 	will, err := m.keeper.CreateWill(ctx, msg)
 	if err != nil {
 		return nil, errors.Wrap(err, "upon creating will")

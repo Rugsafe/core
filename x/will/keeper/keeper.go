@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/bwesterb/go-ristretto"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck
@@ -30,8 +31,9 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmd/x/will/schemes/schnorr"
 	"github.com/CosmWasm/wasmd/x/will/types"
-
-	"github.com/bwesterb/go-ristretto"
+	// "github.com/bwesterb/go-ristretto"
+	// "github.com/ethereum/go-ethereum/crypto/ecies"
+	// "github.com/tendermint/tendermint/crypto/secp256k1"
 )
 
 type IKeeper interface {
@@ -397,8 +399,9 @@ func (k Keeper) updateWillStatusAndStore(ctx context.Context, will *types.Will, 
 @param msg MsgClaimRequest the message structure holding params for the claim request
 */
 func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
+
 	// Retrieve the will by ID to ensure it exists and to process the claim against it
-	fmt.Println("CLAIM FROM KEEPER: ")
+	fmt.Println("CLAIM FROM KEEPER: ", msg.Claimer)
 	fmt.Println(msg)
 	will, err := k.GetWillByID(ctx, msg.WillId)
 	fmt.Println("THE WILL TO CLAIM")
@@ -605,6 +608,21 @@ func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, comp
 	will.Components[componentIndex].Status = "claimed"
 	return k.updateWillStatusAndStore(ctx, will, componentIndex)
 }
+
+// func EncryptWithPublicKey(cosmosPub secp256k1.PubKey, message []byte) ([]byte, error) {
+// 	// Convert Cosmos SDK PubKey to ECDSA Public Key
+// 	pub := &ecdsa.PublicKey{
+// 		Curve: elliptic.P256(), // make sure to use the correct curve
+// 		X:     new(big.Int).SetBytes(cosmosPub.XBytes()),
+// 		Y:     new(big.Int).SetBytes(cosmosPub.YBytes()),
+// 	}
+
+// 	// Import public key to ECIES
+// 	pubECIES := ecies.ImportECDSAPublic(pub)
+
+// 	// Encrypt using ECIES
+// 	return ecies.Encrypt(rand.Reader, pubECIES, message, nil, nil)
+// }
 
 // Placeholder for deserializing a commitment into a curve point
 // func deserializeCommitment(data []byte) (kyber.Point, error) {
@@ -1067,4 +1085,10 @@ func (k Keeper) SetPort(ctx sdk.Context, portID string) {
 	// store := ctx.KVStore(k.storeKey)
 	store := k.storeService.OpenKVStore(ctx)
 	store.Set(types.PortKey, []byte(portID))
+}
+
+// ante
+func (k Keeper) VerifyWillAddress(ctx sdk.Context, msg sdk.Msg) (bool, error) {
+	fmt.Println("INSIDE WILL VERIFY ADDRESS")
+	return true, nil
 }

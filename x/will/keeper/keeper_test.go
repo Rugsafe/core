@@ -338,21 +338,20 @@ func stringToScalar(data string) ristretto.Scalar {
 // // Test with deterministic scalars derived from strings.
 func TestKeeperClaimWithConstantPedersenCommitment(t *testing.T) {
 	kpr, ctx := setupKeeper(t) // setupKeeper needs to be defined according to your context setup.
-	creator := "creator-address"
+	creator := "will1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz"
 
 	// Define challenge and answer strings
-	challengeString := "challenge-string"
-	answerString := "answer-string"
+	challengeString := "foo"
+	answerString := "bar"
 
 	// Convert strings to deterministic scalars
 	challengeScalar := stringToScalar(challengeString)
 	answerScalar := stringToScalar(answerString)
 	fmt.Println("Challenge: ", challengeScalar, " Answer: ", answerScalar)
 
-	var blindingFactorOriginal, blindingFactorClaim, blindingFactorExtra ristretto.Scalar
+	var blindingFactorOriginal, blindingFactorClaim ristretto.Scalar
 	blindingFactorOriginal.Rand()
 	blindingFactorClaim.Rand()
-	blindingFactorExtra.Rand()
 
 	// Create Pedersen commitment using these scalars
 	H := ristretto.Point{}
@@ -365,6 +364,7 @@ func TestKeeperClaimWithConstantPedersenCommitment(t *testing.T) {
 	// In real scenarios, this might be a different pair or some operation based on the original
 	claimCommitment := pedersen.CommitTo(&H, &blindingFactorClaim, &answerScalar)
 
+	// will creator would have to add them ahead of time? or encrypt the blinding factor?
 	addedCommitment := kpr.AddCommitments(originalCommitment, claimCommitment)
 
 	// Create a will with Pedersen commitment component including a target commitment
@@ -423,6 +423,21 @@ func TestKeeperClaimWithConstantPedersenCommitment(t *testing.T) {
 	require.Equal(t, "claimed", updatedWill.Components[0].Status)
 }
 
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
+///////////////////////////////////////////
 ///////////////////////////////////////////
 
 // */
