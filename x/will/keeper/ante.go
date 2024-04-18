@@ -56,6 +56,7 @@ func convertBytesToAddresses(signersBytes [][]byte) []string {
 	return addresses
 }
 
+// TODO: consolidate into jsut using msg or msgv2
 func (wd WillDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	fmt.Println("ANTE HANDLER TX")
 	msgs := tx.GetMsgs()
