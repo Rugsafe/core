@@ -17,7 +17,7 @@ jobs:
       run: make build
 
     - name: Kill Tmux Session
-      run: tmux kill-session -t will-chain-protocol || true
+      run: tmux kill-session -t willchain-protocol || true
 
     - name: Run Explorer
-      run: tmux new -d -s will-chain-protocol 'sh -c "make run"';
+      run: tmux new -d -s willchain-protocol 'sh -c "make run"';
