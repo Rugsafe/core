@@ -6,6 +6,7 @@ import (
 
 	// willkeeper "github.com/CosmWasm/wasmd/x/will/keeper"
 
+	"github.com/CosmWasm/wasmd/x/will/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -57,40 +58,38 @@ func convertBytesToAddresses(signersBytes [][]byte) []string {
 
 func (wd WillDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	fmt.Println("ANTE HANDLER TX")
-	msgs, err := tx.GetMsgsV2()
-	if err != nil {
-		return ctx, err
-	}
+	msgs := tx.GetMsgs()
+	msgsV2, _ := tx.GetMsgsV2()
+	fmt.Println(msgs)
+	fmt.Println(msgsV2)
+	fmt.Println("===========")
+	// if err != nil {
+	// 	return ctx, err
+	// }
 
-	for _, msg := range msgs {
-		fmt.Println("WILL ANTE HANDLER")
-		message := msg.ProtoReflect()
+	for i, msg := range msgs {
+		switch msg := msg.(type) {
+		case *types.MsgCreateWillRequest:
+			fmt.Println("Processing MsgCreateWillRequest")
+			creator := msg.Creator
+			fmt.Println("Creator:", creator)
 
-		// Find the field descriptor for the "Creator" field
-		fd := message.Descriptor().Fields().ByName("creator")
-		if fd == nil {
-			fmt.Println("Creator field not found")
-			continue
-		}
+			// Continue with your existing logic
+			signers, err := wd.txConfig.SigningContext().GetSigners(msgsV2[i])
+			if err != nil {
+				return ctx, err
+			}
+			signerAddressStr, err := wd.txConfig.SigningContext().AddressCodec().BytesToString(signers[0])
+			if err != nil {
+				return ctx, err
+			}
+			fmt.Println("Signer Address:", signerAddressStr)
 
-		// Get the value of the "Creator" field
-		creator := message.Get(fd).String()
-		fmt.Println("Creator:", creator)
-
-		// Assuming you want to do something with the Creator value, such as checking against signers
-		signers, err := wd.txConfig.SigningContext().GetSigners(msg)
-		if err != nil {
-			return ctx, err
-		}
-		signerAddressStr, err := wd.txConfig.SigningContext().AddressCodec().BytesToString(signers[0])
-		if err != nil {
-			return ctx, err
-		}
-		fmt.Println("Signer Address:", signerAddressStr)
-
-		if creator != signerAddressStr {
-			fmt.Println("Signer address does not match the creator address")
-			return ctx, sdkerrors.ErrAppConfig.Wrapf("Signer address does not match the creator address")
+			if creator != signerAddressStr {
+				return ctx, sdkerrors.ErrAppConfig.Wrapf("signer address does not match the creator address")
+			}
+		default:
+			fmt.Println("Received message is not of type MsgCreateWillRequest, skipping specific checks.")
 		}
 	}
 

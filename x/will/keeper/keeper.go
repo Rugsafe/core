@@ -1053,14 +1053,14 @@ func (k *Keeper) hasCapability(ctx sdk.Context, portID string) bool {
 	return ok
 }
 
-// dev for visibility
-func (k *Keeper) HasCapability(ctx sdk.Context, portID string) bool {
-	var portPath string = host.PortPath(portID)
-	fmt.Println("portpath 2: %s", portPath)
+// // dev for visibility
+// func (k *Keeper) HasCapability(ctx sdk.Context, portID string) bool {
+// 	var portPath string = host.PortPath(portID)
+// 	fmt.Println("portpath 2: %s", portPath)
 
-	_, ok := k.scopedKeeper.GetCapability(ctx, host.PortPath(portID))
-	return ok
-}
+// 	_, ok := k.scopedKeeper.GetCapability(ctx, host.PortPath(portID))
+// 	return ok
+// }
 
 // BindPort defines a wrapper function for the ort Keeper's function in
 // order to expose it to module's InitGenesis function
