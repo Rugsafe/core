@@ -8,8 +8,11 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
-	"github.com/cosmos/cosmos-sdk/crypto/types"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	// "google.golang.org/protobuf/reflect/protoreflect"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type Will interface {
@@ -31,7 +34,7 @@ func NewWillDecorator(w Keeper, txc client.TxConfig) WillDecorator {
 func convertBytesToAddresses(signersBytes [][]byte) []string {
 	var addresses []string
 	for _, bytes := range signersBytes {
-		var pubKey types.PubKey
+		var pubKey cryptotypes.PubKey
 		fmt.Println("len(bytes): ", len(bytes))
 		switch len(bytes) {
 		// case 32: // Assuming ed25519 key
@@ -53,40 +56,42 @@ func convertBytesToAddresses(signersBytes [][]byte) []string {
 }
 
 func (wd WillDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	// loop through all the messages and check if the message type is allowed
 	fmt.Println("ANTE HANDLER TX")
-	// fmt.Println(tx.Signature)
-	msgv2, _ := tx.GetMsgsV2()
-	fmt.Println(msgv2)
-	fmt.Println(ctx.TxBytes())
-	// signers := tx.GetSigners()
-	fmt.Println("=====================")
-	// for _, msg := range tx.GetMsgs() {
-	for _, msg := range msgv2 {
-		// address, _ := sdk.AccAddressFromBech32(msg)
+	msgs, err := tx.GetMsgsV2()
+	if err != nil {
+		return ctx, err
+	}
+
+	for _, msg := range msgs {
 		fmt.Println("WILL ANTE HANDLER")
-		fmt.Println(msg)
-		fmt.Println(ctx)
-		ctx.TxBytes()
-		tx := wd.txConfig.TxDecoder()
-		fmt.Println("TX")
-		fmt.Println(tx)
-		fmt.Println(wd.txConfig.TxJSONDecoder())
-		signer, _ := wd.txConfig.SigningContext().GetSigners(msg)
-		fmt.Println("signer")
-		fmt.Println(signer[0])
-		fmt.Println(convertBytesToAddresses(signer))
-		fmt.Println("signer string")
-		fmt.Println(wd.txConfig.SigningContext().AddressCodec().BytesToString(signer[0]))
+		message := msg.ProtoReflect()
 
-		// isAllowed, err := wd.willKeeper.VerifyWillAddress(ctx, msg)
-		// if err != nil {
-		// 	return ctx, err
-		// }
+		// Find the field descriptor for the "Creator" field
+		fd := message.Descriptor().Fields().ByName("creator")
+		if fd == nil {
+			fmt.Println("Creator field not found")
+			continue
+		}
 
-		// if !isAllowed {
-		// 	return ctx, errors.New("tx type not allowed")
-		// }
+		// Get the value of the "Creator" field
+		creator := message.Get(fd).String()
+		fmt.Println("Creator:", creator)
+
+		// Assuming you want to do something with the Creator value, such as checking against signers
+		signers, err := wd.txConfig.SigningContext().GetSigners(msg)
+		if err != nil {
+			return ctx, err
+		}
+		signerAddressStr, err := wd.txConfig.SigningContext().AddressCodec().BytesToString(signers[0])
+		if err != nil {
+			return ctx, err
+		}
+		fmt.Println("Signer Address:", signerAddressStr)
+
+		if creator != signerAddressStr {
+			fmt.Println("Signer address does not match the creator address")
+			return ctx, sdkerrors.ErrAppConfig.Wrapf("Signer address does not match the creator address")
+		}
 	}
 
 	return next(ctx, tx, simulate)
