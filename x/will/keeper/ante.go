@@ -4,16 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	// willkeeper "github.com/CosmWasm/wasmd/x/will/keeper"
-
-	"github.com/CosmWasm/wasmd/x/will/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	// "google.golang.org/protobuf/reflect/protoreflect"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	"github.com/CosmWasm/wasmd/x/will/types"
 )
 
 type Will interface {
@@ -56,7 +54,7 @@ func convertBytesToAddresses(signersBytes [][]byte) []string {
 	return addresses
 }
 
-// TODO: consolidate into jsut using msg or msgv2
+// TODO: consolidate into just using msg or msgv2
 func (wd WillDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	fmt.Println("ANTE HANDLER TX")
 	msgs := tx.GetMsgs()

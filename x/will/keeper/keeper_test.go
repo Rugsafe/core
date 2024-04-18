@@ -8,12 +8,10 @@ import (
 	// Import the tm-db package
 	// dbm "github.com/tendermint/tm-db" // Import the tm-db package
 	"github.com/bwesterb/go-ristretto"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-
-	// _proto "github.com/cosmos/gogoproto/proto"
-
 	// "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -22,17 +20,13 @@ import (
 	// corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	corestore "cosmossdk.io/store"
-
 	// corestoretypes "cosmossdk.io/core/store"
 	storemetrics "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-
-	// codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 
 	"github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/x/will/keeper"
@@ -45,7 +39,7 @@ func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	// w3llApp, ctx := app.Setup(t)
 	willchainApp := app.Setup(t)
 
-	//config for native denom
+	// config for native denom
 	// cfg := sdk.GetConfig()
 	// cfg.SetBech32PrefixForAccount("will", "willpub")
 
@@ -76,7 +70,7 @@ func setupKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	ms.MountStoreWithDB(ibcStoreKey, storetypes.StoreTypeIAVL, memDB)         // Mount the IBC store
 	ms.MountStoreWithDB(ibcExportedStoreKey, storetypes.StoreTypeIAVL, memDB) // Mount the IBC store
 
-	//dev
+	// dev
 	bankStoreKey := storetypes.NewKVStoreKey("acc")
 	ms.MountStoreWithDB(bankStoreKey, storetypes.StoreTypeIAVL, memDB)
 	bankStoreKey2 := storetypes.NewKVStoreKey("bank")

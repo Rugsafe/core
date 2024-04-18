@@ -36,7 +36,7 @@ func GetTxCmd() *cobra.Command {
 
 func CreateWillCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create [name] [beneficiary] [height]",
+		Use:   "create [name] [beneficiary] [height] [components]",
 		Short: "Create a Will",
 		Args:  cobra.MinimumNArgs(3), // Expecting at least 3 arguments
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -61,16 +61,36 @@ func CreateWillCmd() *cobra.Command {
 				return fmt.Errorf("failed to parse component arguments: %w", err)
 			}
 
+			outputs, err := cmd.Flags().GetStringArray("component-output-type")
+			if err != nil {
+				return fmt.Errorf("failed to parse component arguments: %w", err)
+			}
+
+			outputsArgs, err := cmd.Flags().GetStringArray("component-output-args")
+			if err != nil {
+				return fmt.Errorf("failed to parse component arguments: %w", err)
+			}
+
 			if len(componentNames) != len(componentArgs) {
 				return fmt.Errorf("mismatch between component names and arguments count")
+			}
+
+			if len(componentNames) != len(outputs) {
+				return fmt.Errorf("mismatch between component names and outputs count")
+			}
+
+			if len(outputs) != len(outputsArgs) {
+				return fmt.Errorf("mismatch between component outputs and output args count")
 			}
 
 			var sender string = clientCtx.GetFromAddress().String()
 			var components []*types.ExecutionComponent
 			for i, componentName := range componentNames {
 				componentArg := componentArgs[i]
+				output := outputs[i]
+				outputArgs := outputsArgs[i]
 				// component, err := parseComponent(componentName, componentArg)
-				component, err := parseComponentFromString(componentName, componentArg, sender)
+				component, err := parseComponentFromString(componentName, componentArg, output, outputArgs, sender)
 				if err != nil {
 					return fmt.Errorf("failed to parse component: %w", err)
 				}
@@ -93,6 +113,8 @@ func CreateWillCmd() *cobra.Command {
 
 	cmd.Flags().StringArray("component-name", []string{}, "Names of the components. Use multiple --component-name flags for multiple components.")
 	cmd.Flags().StringArray("component-args", []string{}, "Arguments for the components. Use multiple --component-args flags for multiple components. Must match the order of --component-name flags.")
+	cmd.Flags().StringArray("component-output-type", []string{}, "Arguments for the outputs of each component. Use multiple --component-output-type flags for multiple component output. Must match the order of --component-output-type flags.")
+	cmd.Flags().StringArray("component-output-args", []string{}, "Arguments for the arguments of each component output. Use multiple --component-output-args flags for multiple components. Must match the order of --component-output-args flags.")
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
@@ -102,12 +124,17 @@ func generateUniqueComponentID() string {
 	return uuid.New().String()
 }
 
-func parseComponentFromString(componentName, componentData string, sender string) (*types.ExecutionComponent, error) {
+func parseComponentFromString(componentName string, componentData string, outputType string, outputArgs string, sender string) (*types.ExecutionComponent, error) {
 	// The componentName is already separated, now just need to parse componentData
 	typeParts := strings.SplitN(componentData, ":", 2)
-	if len(typeParts) != 2 {
-		return nil, fmt.Errorf("invalid component data format, expected 'componentType:componentParams'")
-	}
+	// if len(typeParts) != 2 {
+	// 	return nil, fmt.Errorf("invalid component data format, expected 'componentType:componentParams'")
+	// }
+
+	fmt.Println("TYPE PARTS: ", typeParts)
+
+	outputParts := strings.SplitN(outputArgs, ":", 2)
+	fmt.Println("OUTPUT PARTS: ", outputParts)
 
 	componentType, params := typeParts[0], typeParts[1]
 	componentID := generateUniqueComponentID() // Function to generate a unique ID for each component
@@ -117,6 +144,10 @@ func parseComponentFromString(componentName, componentData string, sender string
 	component.Id = componentID
 	component.Status = "inactive"
 
+	outputParams := outputParts[0]
+	fmt.Println("outputType: ", outputType)
+	fmt.Println("outputParams: ", outputParams)
+	// panic(99)
 	switch componentType {
 	case "transfer":
 		dataParts := strings.Split(params, ",")
@@ -132,7 +163,7 @@ func parseComponentFromString(componentName, componentData string, sender string
 
 		component.ComponentType = &types.ExecutionComponent_Transfer{
 			Transfer: &types.TransferComponent{
-				From:   sender,
+				// From:   sender,
 				To:     to,
 				Amount: &amountCoin,
 			},

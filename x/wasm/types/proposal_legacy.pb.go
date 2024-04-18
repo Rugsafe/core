@@ -170,7 +170,7 @@ type InstantiateContract2Proposal struct {
 	Title string `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
 	// Description is a human readable text
 	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	// RunAs is the address that is passed to the contract's environment as sender
+	// RunAs is the address that is passed to the contract's enviroment as sender
 	RunAs string `protobuf:"bytes,3,opt,name=run_as,json=runAs,proto3" json:"run_as,omitempty"`
 	// Admin is an optional address that can execute migrations
 	Admin string `protobuf:"bytes,4,opt,name=admin,proto3" json:"admin,omitempty"`

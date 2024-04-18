@@ -31,16 +31,14 @@ message ExecutionComponent {
 
 // TransferComponent is used for direct asset transfers.
 message TransferComponent {
-  string from = 1;  // source address for the asset transfer
-  string to = 2;    // Destination address for the asset transfer.
-  string denom = 3; // denom to send
+  string to = 1;    // Destination address for the asset transfer.
+  string denom = 2; // denom to send
   cosmos.base.v1beta1.Coin amount =
-      4; // The amount and type of asset to transfer.
+      3; // The amount and type of asset to transfer.
 }
 
 // claim access public type
 message ClaimAccessPublic {}
-
 
 // claim access private type
 message ClaimAccessPrivate {
@@ -51,7 +49,7 @@ message ClaimAccessPrivate {
 // claim access control
 message ClaimAccessControl {
   // type of access
-  oneof AccessType {
+  oneof access_type {
     // public access
     ClaimAccessPublic public = 1;
     // private access
@@ -63,7 +61,7 @@ message ClaimAccessControl {
 message ClaimComponent {
   ClaimAccessControl access = 1
       [ (gogoproto.nullable) = false, (amino.dont_omitempty) = true ];
-  // scheme_type allows for different cryptographic schemes for claims.
+  // access for private or public calls
   oneof scheme_type {
     PedersenCommitment pedersen = 2; // Represents a Pedersen commitment scheme.
     SchnorrSignature schnorr = 3;    // Represents a Schnorr signature scheme.
@@ -80,9 +78,11 @@ message ClaimComponent {
     // output for native-to-contract call
     OutputContractCall contract_call = 6;
     // output for ibc contract call
-    IBCContractCall ibc_contract_call = 7;
+    OutputIBCContractCall ibc_contract_call = 7;
     // output for ibc send
-    IBCSend ibc_send = 8;
+    OutputIBCSend ibc_send = 8;
+    // emit event
+    OutputEmit emit = 9;
   }
 }
 
@@ -169,8 +169,10 @@ message SchnorrSignature {
 //       verification.
 // }
 
+// PedersenCommitment enables the use of a Pedersen commitment for claims.
 message PedersenCommitment {
   bytes commitment = 1; // The commitment hash, representing the hidden value.
+  bytes target_commitment = 2; // The target comitment hash
 }
 
 // GnarkZkSnark is for claims using zero-knowledge succinct non-interactive

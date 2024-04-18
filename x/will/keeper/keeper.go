@@ -31,9 +31,6 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	"github.com/CosmWasm/wasmd/x/will/schemes/schnorr"
 	"github.com/CosmWasm/wasmd/x/will/types"
-	// "github.com/bwesterb/go-ristretto"
-	// "github.com/ethereum/go-ethereum/crypto/ecies"
-	// "github.com/tendermint/tendermint/crypto/secp256k1"
 )
 
 type IKeeper interface {
@@ -399,7 +396,6 @@ func (k Keeper) updateWillStatusAndStore(ctx context.Context, will *types.Will, 
 @param msg MsgClaimRequest the message structure holding params for the claim request
 */
 func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
-
 	// Retrieve the will by ID to ensure it exists and to process the claim against it
 	fmt.Println("CLAIM FROM KEEPER: ", msg.Claimer)
 	fmt.Println(msg)
@@ -944,10 +940,11 @@ func (k *Keeper) ExecuteTransfer(ctx sdk.Context, component *types.ExecutionComp
 	// Parse addresses
 	// fromAddr, err := sdk.AccAddressFromBech32(transferComponent.Transfer.From)
 
-	fmt.Println(transferComponent.Transfer.From)
+	// fmt.Println(transferComponent.Transfer.From)
+	fmt.Println(will.Creator)
 	fmt.Println(transferComponent.Transfer.To)
 
-	fromAddr, err := sdk.AccAddressFromBech32(transferComponent.Transfer.From)
+	fromAddr, err := sdk.AccAddressFromBech32(will.Creator)
 	if err != nil {
 		return fmt.Errorf("parsing from address failed: %w", err)
 	}
@@ -974,7 +971,7 @@ func (k *Keeper) ExecuteTransfer(ctx sdk.Context, component *types.ExecutionComp
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(component.Name,
 			sdk.NewAttribute("will_id", will.ID),
-			sdk.NewAttribute("from", component.GetTransfer().From),
+			sdk.NewAttribute("from", will.Creator),
 			sdk.NewAttribute("to", component.GetTransfer().To),
 			sdk.NewAttribute("amount", coins.String()),
 		),
