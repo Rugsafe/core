@@ -15,7 +15,7 @@ DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(
 HTTPS_GIT := https://github.com/CosmWasm/wasmd.git
 
 
-WILLCHAIN_CHAIN_ID="willchain-mainnet"
+# WILLCHAIN_CHAIN_ID="willchain-mainnet"
 WILLCHAIN_DENOM=uwill
 WILLCHAIN_NODE=http://localhost:26657
 

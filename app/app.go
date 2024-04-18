@@ -1017,6 +1017,9 @@ func (app *WasmApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*abci.Respons
 }
 
 func (app *WasmApp) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtypes.WasmConfig, txCounterStoreKey *storetypes.KVStoreKey) {
+	fmt.Println("========INSIDE setAnteHandler==========")
+	// signers, _ := txConfig.SigningContext().GetSigners()
+
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{
@@ -1025,6 +1028,7 @@ func (app *WasmApp) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtype
 				SignModeHandler: txConfig.SignModeHandler(),
 				FeegrantKeeper:  app.FeeGrantKeeper,
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
+				// SignersContext:  txConfig.SigningContext().GetSigners(),
 			},
 			IBCKeeper:             app.IBCKeeper,
 			WasmConfig:            &wasmConfig,
@@ -1033,6 +1037,7 @@ func (app *WasmApp) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtype
 			CircuitKeeper:         &app.CircuitKeeper,
 			WillKeeper:            &app.WillKeeper,
 		},
+		txConfig,
 	)
 	if err != nil {
 		panic(fmt.Errorf("failed to create AnteHandler: %s", err))

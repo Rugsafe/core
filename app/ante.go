@@ -10,6 +10,7 @@ import (
 	circuitante "cosmossdk.io/x/circuit/ante"
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 
@@ -32,7 +33,7 @@ type HandlerOptions struct {
 }
 
 // NewAnteHandler constructor
-func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
+func NewAnteHandler(options HandlerOptions, txc client.TxConfig) (sdk.AnteHandler, error) {
 	if options.AccountKeeper == nil {
 		return nil, errors.New("account keeper is required for ante builder")
 	}
@@ -73,7 +74,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
-		willkeeper.NewWillDecorator(*options.WillKeeper),
+		willkeeper.NewWillDecorator(*options.WillKeeper, txc),
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
