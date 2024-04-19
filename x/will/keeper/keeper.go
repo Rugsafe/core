@@ -856,6 +856,8 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				component.Status = "active"
 				// fmt.Printf("Claim component found, evidence: %s\n", c.Claim.Evidence)
 
+				// TODO:
+				// DONT EXECUTE HandleOutput()
 			case *types.ExecutionComponent_Contract:
 
 				_, err := k.ExecuteContract(ctx, c)
@@ -867,6 +869,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				// Update the status based on the execution result.
 				component.Status = "executed"
 				// Handle other component outputs if necessary.
+				// HandleOutput()
 
 			case *types.ExecutionComponent_IbcMsg:
 				// send an IBC message
@@ -878,6 +881,8 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				k.SendIBCMessage(sdk.UnwrapSDKContext(ctx), channelID, portID, data)
 				// change status depending on result
 				component.Status = "executed"
+
+				// HandleOutput()
 
 			default:
 				fmt.Println("Unknown component type found")

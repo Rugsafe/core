@@ -17,11 +17,11 @@ HTTPS_GIT := https://github.com/CosmWasm/wasmd.git
 
 # WILLCHAIN_CHAIN_ID="willchain-mainnet"
 WILLCHAIN_DENOM=uwill
-# WILLCHAIN_NODE=http://localhost:26657
+WILLCHAIN_NODE=http://localhost:26657
 
 # WILLCHAIN_CHAIN_ID="willchain-testnet"
 # WILLCHAIN_DENOM=uwill
-WILLCHAIN_NODE=http://192.168.1.100:26657
+# WILLCHAIN_NODE=http://192.168.1.100:26657
 
 WILLCHAIN_CHAIN_ID_ARGS=--chain-id=$(WILLCHAIN_CHAIN_ID)
 WILLCHAIN_NODE_ARGS=--node=$(WILLCHAIN_NODE)
@@ -265,12 +265,14 @@ PUBKEY=2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c
 
 # gnark claim
 
+# contract payload
+HEX_PAYLOAD := $(shell printf '{"foo":"bar"}' | xxd -p | tr -d '\n')
 will_create:
-	./build/wasmd tx will create "test will ${i}" "beneficiary" 9000 \
-	--component-name "component_for_transfer" --component-args "transfer:will156mw28alhpenp4lknweat6432dux34uydx590v,1000000000,uwill" --component-output-type "emit" --component-output-args "transferred tokens" \
+	./build/wasmd tx will create "test will ${i}" "beneficiary" 20 \
+	--component-name "component_for_transfer" --component-args "transfer:will156mw28alhpenp4lknweat6432dux34uydx590v,1000000000,uwill" --component-output-type "emit" --component-output-args "transferred_the_tokens" \
 	--component-name "component_for_schnorr_claim" --component-args "schnorr:${SIGNATURE},${PUBKEY},${MESSAGE}" --component-output-type "transfer" --component-output-args "will156mw28alhpenp4lknweat6432dux34uydx590v,1000000000,uwill" \
-	--component-name "component_for_pedersen_claim" --component-args "pedersen:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" --component-output-type "contract_call" --component-output-args "{}" \
-	--component-name "component_for_gnark_claim" --component-args "gnark:verification_key_hex,public_inputs_hex,proof_hex" --component-output-type "ibc_send" --component-output-args "channel-0:uwill:will156mw28alhpenp4lknweat6432dux34uydx590v:123" \
+	--component-name "component_for_pedersen_claim" --component-args "pedersen:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" --component-output-type "contract_call" --component-output-args "0xcontract_address,${HEX_PAYLOAD}" \
+	--component-name "component_for_gnark_claim" --component-args "gnark:verification_key_hex,public_inputs_hex,proof_hex" --component-output-type "ibc_send" --component-output-args "channel-0,uwill,will156mw28alhpenp4lknweat6432dux34uydx590v,123" \
 	--from alice --chain-id willchain-mainnet -y $(WILLCHAIN_NODE_ARGS) 
 	sleep 1
 will_cx:

@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -123,8 +125,124 @@ func CreateWillCmd() *cobra.Command {
 func generateUniqueComponentID() string {
 	return uuid.New().String()
 }
+func getOutput(outputType string, outputParams []string) (*types.ComponentOutput, error) {
+	switch outputType {
+	case "emit":
+		return &types.ComponentOutput{
+			OutputType: &types.ComponentOutput_OutputEmit{
+				OutputEmit: &types.OutputEmit{
+					Message: outputParams[0],
+				},
+			},
+		}, nil
+	case "transfer":
+		if len(outputParams) != 3 {
+			return nil, fmt.Errorf("expected 'address,amount,denom' for transfer, got: %s", outputParams)
+		}
+		amount, err := strconv.ParseInt(outputParams[1], 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid amount format: %v", err)
+		}
+		coinAmount := sdk.NewInt64Coin(outputParams[2], amount)
+		return &types.ComponentOutput{
+			OutputType: &types.ComponentOutput_OutputTransfer{
+				OutputTransfer: &types.OutputTransfer{
+					Address: outputParams[0],
+					Denom:   outputParams[2],
+					Amount:  &coinAmount,
+				},
+			},
+		}, nil
+	case "contract_call":
+		if len(outputParams) != 2 {
+			return nil, fmt.Errorf("expected 'address,JSON_payload' for contract_call, got: %s", outputParams)
+		}
+		address := outputParams[0]
+		hexPayload := outputParams[1]
+		fmt.Println("hexPayload: ", hexPayload)
+		// Decode the hex string to bytes
+		payloadBytes, err := hex.DecodeString(hexPayload)
+		fmt.Println("payloadBytes: ", payloadBytes)
+		if err != nil {
+			fmt.Println("JSON HEX ERROR: ", err)
+			return nil, fmt.Errorf("failed to decode hex payload: %v", err)
+		}
+
+		// Convert bytes to string assuming it's a JSON string
+		jsonPayload := string(payloadBytes)
+		fmt.Println("Contract Call Output, Address: ", address)
+		fmt.Println("Contract Call Output, jsonPayload: ", jsonPayload)
+
+		// Optionally validate that jsonPayload is valid JSON
+		var js map[string]interface{}
+		if err := json.Unmarshal([]byte(jsonPayload), &js); err != nil {
+			fmt.Println("JSON PAYLOAD ERROR: ", err)
+			return nil, fmt.Errorf("invalid JSON payload: %v", err)
+		}
+		fmt.Println(js)
+		fmt.Println("AFTER JSON PAYLOAD VALIDATION")
+
+		// If the JSON is valid, you can proceed to use it as a payload
+		return &types.ComponentOutput{
+			OutputType: &types.ComponentOutput_OutputContractCall{
+				OutputContractCall: &types.OutputContractCall{
+					Address: address,
+					Payload: payloadBytes, // Use the decoded JSON bytes.
+				},
+			},
+		}, nil
+
+	case "ibc_send":
+		// Assuming outputParams format is "channel,address,denom,amount"
+		if len(outputParams) != 4 {
+			return nil, fmt.Errorf("expected 'channel,address,denom,amount' for ibc_send, got: %s", outputParams)
+		}
+		amount, err := strconv.ParseInt(outputParams[3], 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid amount format for IBC send: %v", err)
+		}
+		coinAmount := sdk.NewInt64Coin(outputParams[2], amount)
+		return &types.ComponentOutput{
+			OutputType: &types.ComponentOutput_OutputIbcSend{
+				OutputIbcSend: &types.OutputIBCSend{
+					Channel: outputParams[0],
+					Address: outputParams[1],
+					Denom:   outputParams[2],
+					Amount:  &coinAmount,
+				},
+			},
+		}, nil
+	case "ibc_contract_call":
+		// Assuming outputParams format is "channel,address,payload"
+		if len(outputParams) != 3 {
+			return nil, fmt.Errorf("expected 'channel,address,payload' for ibc_contract_call, got: %s", outputParams)
+		}
+		payload, err := hex.DecodeString(outputParams[2])
+		if err != nil {
+			return nil, fmt.Errorf("invalid hex payload for IBC contract call: %v", err)
+		}
+		return &types.ComponentOutput{
+			OutputType: &types.ComponentOutput_OutputIbcContractCall{
+				OutputIbcContractCall: &types.OutputIBCContractCall{
+					Channel: outputParams[0],
+					Address: outputParams[1],
+					Payload: payload,
+				},
+			},
+		}, nil
+	default:
+		return nil, fmt.Errorf("unsupported output type: %s", outputType)
+	}
+}
 
 func parseComponentFromString(componentName string, componentData string, outputType string, outputArgs string, sender string) (*types.ExecutionComponent, error) {
+
+	defer func() {
+		if recovery := recover(); recovery != nil {
+			fmt.Println("Recovered from panic:", recovery)
+		}
+	}()
+
 	// The componentName is already separated, now just need to parse componentData
 	typeParts := strings.SplitN(componentData, ":", 2)
 	// if len(typeParts) != 2 {
@@ -132,9 +250,6 @@ func parseComponentFromString(componentName string, componentData string, output
 	// }
 
 	fmt.Println("TYPE PARTS: ", typeParts)
-
-	outputParts := strings.SplitN(outputArgs, ":", 2)
-	fmt.Println("OUTPUT PARTS: ", outputParts)
 
 	componentType, params := typeParts[0], typeParts[1]
 	componentID := generateUniqueComponentID() // Function to generate a unique ID for each component
@@ -144,9 +259,25 @@ func parseComponentFromString(componentName string, componentData string, output
 	component.Id = componentID
 	component.Status = "inactive"
 
-	outputParams := outputParts[0]
+	// outputs
+	fmt.Println("outputArgs: ", outputArgs)
+	// outputParts := strings.SplitN(outputArgs, ",", 2)
+	outputParts := strings.Split(outputArgs, ",")
+	fmt.Println("OUTPUT PARTS: ", outputParts)
+	outputParams := outputParts
 	fmt.Println("outputType: ", outputType)
 	fmt.Println("outputParams: ", outputParams)
+	fmt.Println("outputParams[0]: ", outputParams[0])
+	if len(outputParams) > 1 {
+		fmt.Println("outputParams[1]: ", outputParams[1])
+	}
+	var outputError error
+	component.OutputType, outputError = getOutput(outputType, outputParams)
+
+	if outputError != nil {
+		return nil, fmt.Errorf("")
+	}
+
 	// panic(99)
 	switch componentType {
 	case "transfer":
@@ -160,6 +291,8 @@ func parseComponentFromString(componentName string, componentData string, output
 			return nil, fmt.Errorf("invalid amount format for transfer component: %s", amountStr)
 		}
 		amountCoin := sdk.NewInt64Coin(denom, amount) // Ensure "will" matches your denomination
+
+		// output := getOutput()
 
 		component.ComponentType = &types.ExecutionComponent_Transfer{
 			Transfer: &types.TransferComponent{
