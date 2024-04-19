@@ -950,17 +950,15 @@ func (k Keeper) OutputHandler(ctx sdk.Context, component *types.ExecutionCompone
 		return nil
 
 	case *types.ComponentOutput_OutputContractCall:
-		contractAddr, err := sdk.AccAddressFromBech32(output.OutputContractCall.Address)
-		if err != nil {
-			return err
+		// Correctly extract the Contract type component before executing
+		contractComponent, ok := component.ComponentType.(*types.ExecutionComponent_Contract)
+		if !ok {
+			return fmt.Errorf("component is not a Contract component")
 		}
-		fmt.Println("contractAddr: ", contractAddr)
-		// Check and correct this method according to the available API
-		// This might need changing based on your specific setup and available methods
-		// if _, err := k.wasmKeeper.Execute(...); err != nil {
-		//     return fmt.Errorf("failed to call contract: %v", err)
-		// }
-		return fmt.Errorf("contract execution method not implemented")
+		if _, err := k.ExecuteContract(ctx, contractComponent); err != nil {
+			return fmt.Errorf("failed to call contract: %v", err)
+		}
+		return nil
 
 	case *types.ComponentOutput_OutputIbcSend:
 		// Adjust to match the correct parameters and method definition

@@ -17,11 +17,11 @@ HTTPS_GIT := https://github.com/CosmWasm/wasmd.git
 
 # WILLCHAIN_CHAIN_ID="willchain-mainnet"
 WILLCHAIN_DENOM=uwill
-WILLCHAIN_NODE=http://localhost:26657
+# WILLCHAIN_NODE=http://localhost:26657
 
 # WILLCHAIN_CHAIN_ID="willchain-testnet"
 # WILLCHAIN_DENOM=uwill
-# WILLCHAIN_NODE=http://192.168.1.100:26657
+WILLCHAIN_NODE=http://192.168.1.100:26657
 
 WILLCHAIN_CHAIN_ID_ARGS=--chain-id=$(WILLCHAIN_CHAIN_ID)
 WILLCHAIN_NODE_ARGS=--node=$(WILLCHAIN_NODE)
@@ -268,7 +268,7 @@ PUBKEY=2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c
 # contract payload
 HEX_PAYLOAD := $(shell printf '{"foo":"bar"}' | xxd -p | tr -d '\n')
 will_create:
-	./build/wasmd tx will create "test will ${i}" "beneficiary" 20 \
+	./build/wasmd tx will create "test will ${i}" "beneficiary" 30 \
 	--component-name "component_for_transfer" --component-args "transfer:will156mw28alhpenp4lknweat6432dux34uydx590v,1000000000,uwill" --component-output-type "emit" --component-output-args "transferred_the_tokens" \
 	--component-name "component_for_schnorr_claim" --component-args "schnorr:${SIGNATURE},${PUBKEY},${MESSAGE}" --component-output-type "transfer" --component-output-args "will156mw28alhpenp4lknweat6432dux34uydx590v,1000000000,uwill" \
 	--component-name "component_for_pedersen_claim" --component-args "pedersen:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" --component-output-type "contract_call" --component-output-args "0xcontract_address,${HEX_PAYLOAD}" \
