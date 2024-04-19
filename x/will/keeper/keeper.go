@@ -844,11 +844,16 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				fmt.Printf("Transfer component found, to: %s, amount: %s\n", c.Transfer.To, c.Transfer.Amount.String())
 
 				// TODO: actually execute the token send
-				k.ExecuteTransfer(ctx, component, *will)
+				transferErr := k.ExecuteTransfer(ctx, component, *will)
+				if transferErr != nil {
+					continue
+				}
+
 				// update status to executed
 				component.Status = "executed"
 
 				// HandleOutput()
+				k.OutputHandler(ctx, component, *will)
 
 			case *types.ExecutionComponent_Claim:
 				fmt.Printf("Claim component found, evidence")
@@ -869,7 +874,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				// Update the status based on the execution result.
 				component.Status = "executed"
 				// Handle other component outputs if necessary.
-				// HandleOutput()
+				k.OutputHandler(ctx, component, *will)
 
 			case *types.ExecutionComponent_IbcMsg:
 				// send an IBC message
@@ -882,7 +887,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				// change status depending on result
 				component.Status = "executed"
 
-				// HandleOutput()
+				k.OutputHandler(ctx, component, *will)
 
 			default:
 				fmt.Println("Unknown component type found")
@@ -919,6 +924,60 @@ func (k *Keeper) EndBlocker(ctx sdk.Context) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
 	fmt.Println("INSIDE END BLOCKER FOR WILL MODULE")
 	return nil
+}
+
+// OutputHandler processes the output based on the component's output type and executes corresponding actions.
+// OutputHandler processes the output based on the component's output type and executes corresponding actions.
+func (k Keeper) OutputHandler(ctx sdk.Context, component *types.ExecutionComponent, will types.Will) error {
+	// Assuming OutputType is correctly configured to be used as a type switch
+	switch output := component.OutputType.OutputType.(type) {
+	case *types.ComponentOutput_OutputTransfer:
+		toAddr, err := sdk.AccAddressFromBech32(output.OutputTransfer.Address)
+		if err != nil {
+			return err
+		}
+		coins := sdk.NewCoins(*output.OutputTransfer.Amount)
+		if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, toAddr, coins); err != nil {
+			return fmt.Errorf("failed to send coins: %v", err)
+		}
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent("transfer",
+				sdk.NewAttribute("from_module", types.ModuleName),
+				sdk.NewAttribute("to", output.OutputTransfer.Address),
+				sdk.NewAttribute("amount", output.OutputTransfer.Amount.String()),
+			),
+		)
+		return nil
+
+	case *types.ComponentOutput_OutputContractCall:
+		contractAddr, err := sdk.AccAddressFromBech32(output.OutputContractCall.Address)
+		if err != nil {
+			return err
+		}
+		fmt.Println("contractAddr: ", contractAddr)
+		// Check and correct this method according to the available API
+		// This might need changing based on your specific setup and available methods
+		// if _, err := k.wasmKeeper.Execute(...); err != nil {
+		//     return fmt.Errorf("failed to call contract: %v", err)
+		// }
+		return fmt.Errorf("contract execution method not implemented")
+
+	case *types.ComponentOutput_OutputIbcSend:
+		// Adjust to match the correct parameters and method definition
+		data := []byte(output.OutputIbcSend.Denom) // Simplistic assumption; adjust as needed!
+		return k.SendIBCMessage(ctx, output.OutputIbcSend.Channel, types.ModuleName, data)
+
+	case *types.ComponentOutput_OutputEmit:
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent("emit_message",
+				sdk.NewAttribute("message", output.OutputEmit.Message),
+			),
+		)
+		return nil
+
+	default:
+		return fmt.Errorf("unsupported output type: %T", output)
+	}
 }
 
 // TODO: early claiming (im not a fan of this)
