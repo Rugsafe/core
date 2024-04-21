@@ -37,15 +37,15 @@ message ComponentOutput {
   // types of outputs
   oneof output_type {
     // output for simple native transfer
-    OutputTransfer output_transfer = 8;
+    OutputTransfer output_transfer = 1;
     // output for native-to-contract call
-    OutputContractCall output_contract_call = 9;
+    OutputContractCall output_contract_call = 2;
     // output for ibc contract call
-    OutputIBCContractCall output_ibc_contract_call = 10;
+    OutputIBCContractCall output_ibc_contract_call = 3;
     // output for ibc send
-    OutputIBCSend output_ibc_send = 11;
+    OutputIBCSend output_ibc_send = 4;
     // emit event
-    OutputEmit output_emit = 12;
+    OutputEmit output_emit = 5;
   }
 }
 // TransferComponent is used for direct asset transfers.

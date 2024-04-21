@@ -773,6 +773,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				// update status to executed
 				component.Status = "executed"
 
+				// TODO: should we do outputs on execution components, or only claims?
 				// HandleOutput()
 				k.OutputHandler(ctx, component, *will)
 

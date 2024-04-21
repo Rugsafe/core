@@ -19,5 +19,5 @@ jobs:
     - name: Kill Tmux Session
       run: tmux kill-session -t willchain-protocol || true
 
-    - name: Run Explorer
-      run: tmux new -d -s willchain-protocol 'sh -c "make run"';
+    - name: Run protocol
+      run: tmux new -d -s willchain-protocol 'sh -c "CHAINNAME=w3ll-testnet make run"';

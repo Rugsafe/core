@@ -12,7 +12,6 @@ import (
 	dbm "github.com/cosmos/cosmos-db"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-
 	// "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -22,7 +21,6 @@ import (
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
 	corestore "cosmossdk.io/store"
-
 	// corestoretypes "cosmossdk.io/core/store"
 	storemetrics "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
@@ -276,6 +274,7 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 	kpr, ctx := setupKeeper(t) // Initialize your test environment
 	creator := "creator-address"
+	beneficiary := "will156mw28alhpenp4lknweat6432dux34uydx590v"
 
 	// Generate random scalars for value and blinding factor
 	var valueScalar, blindingFactorScalar ristretto.Scalar
@@ -303,6 +302,13 @@ func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 				Status: "inactive",
 				ComponentType: &types.ExecutionComponent_Claim{
 					Claim: &types.ClaimComponent{
+						Access: types.ClaimAccessControl{
+							AccessType: &types.ClaimAccessControl_Private{
+								Private: &types.ClaimAccessPrivate{
+									Addresses: []string{beneficiary},
+								},
+							},
+						},
 						SchemeType: &types.ClaimComponent_Pedersen{
 							Pedersen: &types.PedersenCommitment{
 								Commitment:       originalCommitment.Bytes(),
@@ -358,7 +364,7 @@ func stringToScalar(data string) ristretto.Scalar {
 func TestKeeperClaimWithConstantPedersenCommitment(t *testing.T) {
 	kpr, ctx := setupKeeper(t) // setupKeeper needs to be defined according to your context setup.
 	creator := "will1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz"
-
+	beneficiary := "will156mw28alhpenp4lknweat6432dux34uydx590v"
 	// Define challenge and answer strings
 	challengeString := "foo"
 	answerString := "bar"
@@ -399,6 +405,13 @@ func TestKeeperClaimWithConstantPedersenCommitment(t *testing.T) {
 				Status: "inactive",
 				ComponentType: &types.ExecutionComponent_Claim{
 					Claim: &types.ClaimComponent{
+						Access: types.ClaimAccessControl{
+							AccessType: &types.ClaimAccessControl_Private{
+								Private: &types.ClaimAccessPrivate{
+									Addresses: []string{beneficiary},
+								},
+							},
+						},
 						SchemeType: &types.ClaimComponent_Pedersen{
 							Pedersen: &types.PedersenCommitment{
 								Commitment:       originalCommitment.Bytes(),

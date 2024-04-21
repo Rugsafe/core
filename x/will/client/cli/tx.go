@@ -125,6 +125,7 @@ func CreateWillCmd() *cobra.Command {
 func generateUniqueComponentID() string {
 	return uuid.New().String()
 }
+
 func getOutput(outputType string, outputParams []string) (*types.ComponentOutput, error) {
 	switch outputType {
 	case "emit":
@@ -236,7 +237,6 @@ func getOutput(outputType string, outputParams []string) (*types.ComponentOutput
 }
 
 func parseComponentFromString(componentName string, componentData string, outputType string, outputArgs string, sender string) (*types.ExecutionComponent, error) {
-
 	defer func() {
 		if recovery := recover(); recovery != nil {
 			fmt.Println("Recovered from panic:", recovery)
