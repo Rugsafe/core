@@ -501,6 +501,8 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		fmt.Printf("Processing Gnark claim with proof: %x and public inputs: %x\n", claim.GnarkClaim.Proof, claim.GnarkClaim.PublicInputs)
 		// TODO
 
+		k.OutputHandler(sdk.UnwrapSDKContext(ctx), will.Components[componentIndex], *will)
+
 	default:
 		// Handle unknown claim type
 		fmt.Println("unknown claim type provided")

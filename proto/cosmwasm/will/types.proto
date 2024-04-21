@@ -48,6 +48,7 @@ message ComponentOutput {
     OutputEmit output_emit = 5;
   }
 }
+
 // TransferComponent is used for direct asset transfers.
 message TransferComponent {
   string to = 1;    // Destination address for the asset transfer.
