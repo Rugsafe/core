@@ -241,6 +241,8 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 	// TODO: verify components, as this is already done in client/cli/tx.go
 	// verifyComponents(msg.components)
 
+	// TODO: ENSURE EACH COMPONENT HAS AN OUTPUT TYPE AND AN ACCESS TYPE
+
 	// Construct the will object
 	will := types.Will{
 		ID:          idString,
@@ -454,6 +456,12 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		return fmt.Errorf("component with ID %s is not active and cannot be claimed", msg.ComponentId)
 	}
 
+	// check access handler to ensure users can only access it with the proper access
+	if accessErr := k.AccessHandler(ctx, will.Components[componentIndex], *will, msg); accessErr != nil {
+		fmt.Printf("component with ID %s, Access Errored: %s\n", msg.ComponentId, accessErr)
+		return fmt.Errorf("component with ID %s, Access Errored: %s", msg.ComponentId, accessErr)
+	}
+
 	var claimErr error
 
 	// Process the claim based on its type
@@ -466,8 +474,13 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		fmt.Println(claim)
 		// TODO: pass in the component, not the component id lol
 		claimErr = k.processSchnorrClaim(ctx, claim, will, componentIndex)
+		if claimErr != nil {
+			return fmt.Errorf("component with ID %s processSchnorrClaim FAILED and cannot be claimed: %s", msg.ComponentId, claimErr)
+		}
 
 		fmt.Println("Schnorr signature verified and saved now successfully.")
+		k.OutputHandler(sdk.UnwrapSDKContext(ctx), will.Components[componentIndex], *will)
+
 	case *types.MsgClaimRequest_PedersenClaim:
 
 		// Process PedersenClaim
@@ -476,6 +489,12 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 		fmt.Println(claim)
 
 		claimErr = k.processPedersenClaim(ctx, will, componentIndex, claim)
+		if claimErr != nil {
+			return fmt.Errorf("component with ID %s processPedersenClaim FAILED and cannot be claimed: %s", msg.ComponentId, claimErr)
+		}
+
+		fmt.Println("Pedersen commitments verified and saved now successfully.")
+		k.OutputHandler(sdk.UnwrapSDKContext(ctx), will.Components[componentIndex], *will)
 
 	case *types.MsgClaimRequest_GnarkClaim:
 		// Process GnarkClaim
@@ -496,6 +515,11 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 	return nil
 }
 
+/*
+@name
+@desc
+@param
+*/
 func (k Keeper) processSchnorrClaim(ctx context.Context, claim *types.MsgClaimRequest_SchnorrClaim, will *types.Will, componentIndex int) error {
 	// publicKeyBytes := claim.SchnorrClaim.PublicKey // The public key bytes
 	// NOTE: use the public key
@@ -558,8 +582,11 @@ func (k Keeper) processSchnorrClaim(ctx context.Context, claim *types.MsgClaimRe
 	return k.updateWillStatusAndStore(ctx, will, componentIndex)
 }
 
-var curve = edwards25519.NewBlakeSHA256Ed25519() // Ensure 'curve' is accessible globally within the package
-
+/*
+@name
+@desc
+@param
+*/
 func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, componentIndex int, claim *types.MsgClaimRequest_PedersenClaim) error {
 	fmt.Println("Starting processPedersenClaim")
 
@@ -605,6 +632,11 @@ func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, comp
 	return k.updateWillStatusAndStore(ctx, will, componentIndex)
 }
 
+/*
+@name
+@desc
+@param
+*/
 // func EncryptWithPublicKey(cosmosPub secp256k1.PubKey, message []byte) ([]byte, error) {
 // 	// Convert Cosmos SDK PubKey to ECDSA Public Key
 // 	pub := &ecdsa.PublicKey{
@@ -620,37 +652,11 @@ func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, comp
 // 	return ecies.Encrypt(rand.Reader, pubECIES, message, nil, nil)
 // }
 
-// Placeholder for deserializing a commitment into a curve point
-// func deserializeCommitment(data []byte) (kyber.Point, error) {
-// 	if len(data) != curve.Point().MarshalSize() {
-// 		return nil, fmt.Errorf("invalid data length: got %d, want %d", len(data), curve.Point().MarshalSize())
-// 	}
-
-//		point := curve.Point()
-//		if err := point.UnmarshalBinary(data); err != nil {
-//			return nil, fmt.Errorf("failed to unmarshal curve point: %v", err)
-//		}
-//		return point, nil
-//	}
-//
-// Deserialize a commitment into a curve point.
-// func deserializeCommitment(data []byte) (ristretto.Point, error) {
-// 	var point ristretto.Point
-// 	if err := point.UnmarshalBinary(data); err != nil {
-// 		return point, fmt.Errorf("failed to unmarshal point: %v", err)
-// 	}
-// 	if !point.IsValid() {
-// 		return point, fmt.Errorf("invalid point")
-// 	}
-// 	return point, nil
-// }
-
-// // Placeholder for adding two commitments
-// func addCommitments(a, b kyber.Point) kyber.Point {
-// 	result := curve.Point().Add(a, b)
-// 	return result
-// }
-
+/*
+@name
+@desc
+@param
+*/
 func (k Keeper) AddCommitments(a, b ristretto.Point) ristretto.Point {
 	var result ristretto.Point
 	result.Add(&a, &b) // Add points
@@ -667,100 +673,6 @@ func (k Keeper) DeserializeCommitment(data []byte) (ristretto.Point, error) {
 	return point, nil
 }
 
-// func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, componentIndex int, claim *types.MsgClaimRequest_PedersenClaim) error {
-// 	fmt.Println("Starting processPedersenClaim")
-
-// 	// Extract the Pedersen commitment from the component
-// 	storedCommitment := will.Components[componentIndex].GetClaim().GetPedersen()
-// 	fmt.Println(storedCommitment)
-
-// 	if storedCommitment == nil {
-// 		return fmt.Errorf("Error: Pedersen commitment not found in the component")
-// 	}
-
-// 	// Verify that the commitment in the claim matches the target when added to the stored commitment
-// 	claimedCommitment := claim.PedersenClaim.Commitment // Assuming this is the raw bytes of the commitment
-// 	fmt.Println(claimedCommitment)
-// 	// targetCommitment := storedCommitment.TargetCommitment // This should be set when creating the will
-
-// 	// Simulate commitment addition and check
-// 	// This is a placeholder; you should implement actual Pedersen commitment addition and verification logic
-// 	// if !isValidCommitmentAddition(claimedCommitment, storedCommitment.Commitment, targetCommitment) {
-// 	// 	return fmt.Errorf("commitment verification failed")
-// 	// }
-
-// 	fmt.Println("Commitment verified successfully.")
-// 	will.Components[componentIndex].Status = "claimed"
-// 	return k.updateWillStatusAndStore(ctx, will, componentIndex)
-// }
-
-///////////////////////////////////////
-
-// func (k Keeper) processPedersenClaim(ctx context.Context, will *types.Will, componentIndex int, claim *types.MsgClaimRequest_PedersenClaim) error {
-// 	fmt.Println("Starting processPedersenClaim")
-
-// 	// Extract the Pedersen commitment from the component
-// 	pedersenCommitment := will.Components[componentIndex].GetClaim().GetPedersen()
-
-// 	if pedersenCommitment == nil {
-// 		fmt.Println("Error: Pedersen commitment not found in the component")
-
-// 		return errors.New("pedersen commitment not found in the component", 1, "PedersenCommitmentNotFound")
-// 	}
-
-// 	// Deserialize the commitment point and the blinding factor from the Pedersen commitment
-// 	var commitmentPoint, blindingFactor ristretto.Scalar
-// 	var H ristretto.Point
-
-// 	err := commitmentPoint.UnmarshalBinary(pedersenCommitment.Commitment)
-// 	if err != nil {
-// 		fmt.Printf("Error unmarshalling commitment point: %v\n", err)
-
-// 		return errors.Wrap(err, "error unmarshalling commitment point")
-// 	}
-
-// 	// err = blindingFactor.UnmarshalBinary(pedersenCommitment.BlindingFactor)
-// 	// if err != nil {
-// 	// 	fmt.Printf("Error unmarshalling blinding factor: %v\n", err)
-
-// 	// 	return errors.Wrap(err, "error unmarshalling blinding factor")
-// 	// }
-
-// 	// H.UnmarshalBinary(pedersenCommitment.RandomFactor) // Assuming RandomFactor is H (secondary point on the curve)
-
-// 	// Reconstruct the commitment using the provided claim data
-// 	var claimedValue ristretto.Scalar
-// 	claimedValueBytes := new(big.Int).SetBytes(claim.PedersenClaim.Value)
-// 	claimedValue.SetBigInt(claimedValueBytes)
-
-// 	// Generate the commitment from the will's stored random factor and the claim's value
-// 	reconstructedCommitment := pedersen.CommitTo(&H, &blindingFactor, &claimedValue)
-// 	fmt.Println("Reconstructed commitment:", reconstructedCommitment)
-
-// 	// Deserialize the commitment from the claim
-// 	// var claimedCommitment ristretto.Point
-// 	// err = claimedCommitment.UnmarshalBinary(claim.PedersenClaim.Commitment)
-// 	// if err != nil {
-// 	// 	fmt.Printf("Error unmarshalling claimed commitment: %v\n", err)
-
-// 	// 	return errors.Wrap(err, "error unmarshalling claimed commitment")
-// 	// }
-
-// 	// // Verify that the reconstructed commitment matches the claimed commitment
-// 	// if !reconstructedCommitment.Equals(&claimedCommitment) {
-// 	// 	fmt.Println("Error: Commitment verification failed")
-
-// 	// 	return errors.New("commitment verification failed", 5, "CommitmentVerificationFailed")
-// 	// }
-
-// 	// Update the component's status to 'Claimed'
-// 	fmt.Println("Updating component status to 'claimed'")
-
-// 	// component.Status = "claimed" // Enum value as per your proto definitions
-// 	will.Components[componentIndex].Status = "claimed"
-// 	return k.updateWillStatusAndStore(ctx, will, componentIndex)
-// }
-
 // ///////////////////////////////////// expirations
 // expiration
 func (k Keeper) SetWillExpiryIndex(ctx sdk.Context, expiryHeight int64, willID string) {
@@ -769,6 +681,11 @@ func (k Keeper) SetWillExpiryIndex(ctx sdk.Context, expiryHeight int64, willID s
 	store.Set(expiryKey, []byte(willID))
 }
 
+/*
+@name
+@desc
+@param
+*/
 func (k Keeper) GetWillsByExpiry(ctx sdk.Context, expiryHeight int64) ([]*types.Will, error) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := storetypes.KVStorePrefixIterator(store, []byte(fmt.Sprintf("expiry:%d:", expiryHeight)))
@@ -786,7 +703,11 @@ func (k Keeper) GetWillsByExpiry(ctx sdk.Context, expiryHeight int64) ([]*types.
 	return wills, nil
 }
 
-// BEGIN BLOCKER
+/*
+@name
+@desc
+@param
+*/
 func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
@@ -926,10 +847,15 @@ func (k *Keeper) EndBlocker(ctx sdk.Context) error {
 	return nil
 }
 
-// OutputHandler processes the output based on the component's output type and executes corresponding actions.
-// OutputHandler processes the output based on the component's output type and executes corresponding actions.
+/*
+@name OutputHandler
+@desc OutputHandler processes the output based on the component's output type and executes corresponding actions.
+@param
+*/
 func (k Keeper) OutputHandler(ctx sdk.Context, component *types.ExecutionComponent, will types.Will) error {
 	// Assuming OutputType is correctly configured to be used as a type switch
+	fmt.Println("Output Handler:")
+	fmt.Println(component)
 	switch output := component.OutputType.OutputType.(type) {
 	case *types.ComponentOutput_OutputTransfer:
 		toAddr, err := sdk.AccAddressFromBech32(output.OutputTransfer.Address)
@@ -975,6 +901,39 @@ func (k Keeper) OutputHandler(ctx sdk.Context, component *types.ExecutionCompone
 
 	default:
 		return fmt.Errorf("unsupported output type: %T", output)
+	}
+}
+
+// AccessHandler checks if the signer has the right to submit a claim based on the component's access settings.
+func (k Keeper) AccessHandler(ctx context.Context, component *types.ExecutionComponent, will types.Will, msg *types.MsgClaimRequest) error {
+	// Type assertion to make sure we're working with a claim component
+	claimComponent, ok := component.ComponentType.(*types.ExecutionComponent_Claim)
+	if !ok {
+		return fmt.Errorf("access control is only applicable to claim components")
+	}
+
+	access := claimComponent.Claim.Access
+
+	switch acc := access.AccessType.(type) {
+	case *types.ClaimAccessControl_Public:
+		// If it's public, anyone can claim, so do nothing here
+		fmt.Println("AccessHandler: Component access is public")
+
+		return nil
+	case *types.ClaimAccessControl_Private:
+		// If private, check if the signer is in the allowed list
+		for _, addr := range acc.Private.Addresses {
+			if msg.Claimer == addr {
+				fmt.Println("AccessHandler: Claimer is Authorized")
+				return nil // Signer is authorized
+			}
+		}
+
+		fmt.Println("AccessHandler: Claimer is NOT AUTHORIZED")
+
+		return fmt.Errorf("signer %s is not authorized to claim this component", msg.Claimer)
+	default:
+		return fmt.Errorf("unsupported access type")
 	}
 }
 
@@ -1042,8 +1001,7 @@ func (k *Keeper) ExecuteTransfer(ctx sdk.Context, component *types.ExecutionComp
 	return nil
 }
 
-////////////////////////////// EXECUTE CONTRACT
-
+// //////////////////////////// EXECUTE CONTRACT
 // function to invoke contract during will execution, or claim
 func (k Keeper) ExecuteContract(ctx sdk.Context, c *types.ExecutionComponent_Contract) ([]byte, error) {
 	// Prepare the message you want to send to the contract. You might need to serialize it if it's not already in []byte form.
@@ -1059,6 +1017,7 @@ func (k Keeper) ExecuteContract(ctx sdk.Context, c *types.ExecutionComponent_Con
 	contractAddr, err := sdk.AccAddressFromBech32(c.Contract.Address)
 	if err != nil {
 		// handle error
+		return nil, fmt.Errorf("failed to send coins: %w", err)
 	}
 
 	callerAddr := sdk.AccAddress{} // Determine how you get or set the caller address.

@@ -12,6 +12,7 @@ import (
 	dbm "github.com/cosmos/cosmos-db"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+
 	// "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,7 +20,9 @@ import (
 	// "cosmossdk.io/core/store"
 	// corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 	corestore "cosmossdk.io/store"
+
 	// corestoretypes "cosmossdk.io/core/store"
 	storemetrics "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
@@ -171,14 +174,36 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 			{
 				Name:   "SchnorrSignatureComponent",
 				Id:     "abc",
-				Status: "inactive", // TODO: should be set by keeper upon createWill
-				ComponentType: &types.ExecutionComponent_Claim{
+				Status: "inactive", // This is set to a default value but should be handled by the keeper
+				ComponentType: &types.ExecutionComponent_Claim{ // Correctly initializing the union type
 					Claim: &types.ClaimComponent{
-						SchemeType: &types.ClaimComponent_Schnorr{
+						Access: types.ClaimAccessControl{
+							AccessType: &types.ClaimAccessControl_Private{
+								Private: &types.ClaimAccessPrivate{
+									Addresses: []string{
+										"creator-address",
+										"creator-addressB",
+									},
+								},
+							},
+						},
+						SchemeType: &types.ClaimComponent_Schnorr{ // Correctly initializing the union type
 							Schnorr: &types.SchnorrSignature{
 								PublicKey: []byte(publicKeyHex),
 								// Signature: []byte(signatureHex),
 								Message: message,
+							},
+						},
+					},
+				},
+				OutputType: &types.ComponentOutput{ // Correctly initializing the union type
+					OutputType: &types.ComponentOutput_OutputTransfer{
+						OutputTransfer: &types.OutputTransfer{
+							Address: "0xabc",
+							Denom:   "uwill",
+							Amount: &sdk.Coin{ // Proper Coin type initialization
+								Denom:  "uwill",
+								Amount: math.NewInt(100), // Amount as string if cosmos.Coin expects it
 							},
 						},
 					},
@@ -378,6 +403,18 @@ func TestKeeperClaimWithConstantPedersenCommitment(t *testing.T) {
 							Pedersen: &types.PedersenCommitment{
 								Commitment:       originalCommitment.Bytes(),
 								TargetCommitment: addedCommitment.Bytes(),
+							},
+						},
+					},
+				},
+				OutputType: &types.ComponentOutput{ // Correctly initializing the union type
+					OutputType: &types.ComponentOutput_OutputTransfer{
+						OutputTransfer: &types.OutputTransfer{
+							Address: "0xabc",
+							Denom:   "uwill",
+							Amount: &sdk.Coin{ // Proper Coin type initialization
+								Denom:  "uwill",
+								Amount: math.NewInt(100), // Amount as string if cosmos.Coin expects it
 							},
 						},
 					},
