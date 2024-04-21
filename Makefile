@@ -16,11 +16,11 @@ HTTPS_GIT := https://github.com/CosmWasm/wasmd.git
 
 
 # WILLCHAIN_CHAIN_ID="willchain-mainnet"
-WILLCHAIN_DENOM=uwill
+# WILLCHAIN_DENOM=uwill
 # WILLCHAIN_NODE=http://localhost:26657
 
-# WILLCHAIN_CHAIN_ID="willchain-testnet"
-# WILLCHAIN_DENOM=uwill
+WILLCHAIN_CHAIN_ID="willchain-testnet"
+WILLCHAIN_DENOM=uwill
 WILLCHAIN_NODE=http://192.168.1.100:26657
 
 WILLCHAIN_CHAIN_ID_ARGS=--chain-id=$(WILLCHAIN_CHAIN_ID)
