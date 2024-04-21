@@ -777,7 +777,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 
 				// TODO: should we do outputs on execution components, or only claims?
 				// HandleOutput()
-				k.OutputHandler(ctx, component, *will)
+				// k.OutputHandler(ctx, component, *will)
 
 			case *types.ExecutionComponent_Claim:
 				fmt.Printf("Claim component found, evidence")
@@ -798,7 +798,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				// Update the status based on the execution result.
 				component.Status = "executed"
 				// Handle other component outputs if necessary.
-				k.OutputHandler(ctx, component, *will)
+				// k.OutputHandler(ctx, component, *will)
 
 			case *types.ExecutionComponent_IbcMsg:
 				// send an IBC message
@@ -811,7 +811,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				// change status depending on result
 				component.Status = "executed"
 
-				k.OutputHandler(ctx, component, *will)
+				// k.OutputHandler(ctx, component, *will)
 
 			default:
 				fmt.Println("Unknown component type found")

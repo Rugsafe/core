@@ -4,10 +4,9 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master]
+    branches: [ master ]
 
 jobs:
-
   deploy:
     runs-on: self-hosted
     steps:
@@ -16,8 +15,13 @@ jobs:
     - name: Build Protocol
       run: make build
 
-    - name: Kill Tmux Session
-      run: tmux kill-session -t willchain-protocol || true
+    - name: Kill Tmux Session and Processes
+      run: |
+        tmux send-keys -t willchain-protocol C-c
+        sleep 5  # Give some time for the processes to terminate gracefully
+        tmux kill-session -t willchain-protocol || true
+        fuser -k 26657/tcp || true  # Force kill any process still using the port
 
     - name: Run protocol
-      run: tmux new -d -s willchain-protocol 'sh -c "CHAINNAME=willchain-testnet make run"';
+      run: |
+        tmux new -d -s willchain-protocol 'sh -c "CHAINNAME=willchain-testnet make run"'
