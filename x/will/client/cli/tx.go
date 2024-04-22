@@ -236,6 +236,27 @@ func getOutput(outputType string, outputParams []string) (*types.ComponentOutput
 	}
 }
 
+// Assuming ClaimAccessControl is properly defined in your types package.
+// Adjust parseAccess function to handle the `private` access properly, matching your data structure
+func parseAccess(accessType string, accessDetails []string) types.ClaimAccessControl {
+	fmt.Println("parseAccess accessType: ", accessType)
+	fmt.Println("parseAccess accessDetails: ", accessDetails)
+
+	switch accessType {
+	case "public":
+		return types.ClaimAccessControl{AccessType: &types.ClaimAccessControl_Public{}}
+	case "private":
+		return types.ClaimAccessControl{
+			AccessType: &types.ClaimAccessControl_Private{
+				Private: &types.ClaimAccessPrivate{
+					Addresses: accessDetails,
+				},
+			},
+		}
+	}
+	return types.ClaimAccessControl{AccessType: &types.ClaimAccessControl_Public{}} // Default case
+}
+
 func parseComponentFromString(componentName string, componentData string, outputType string, outputArgs string, sender string) (*types.ExecutionComponent, error) {
 	defer func() {
 		if recovery := recover(); recovery != nil {
@@ -243,43 +264,42 @@ func parseComponentFromString(componentName string, componentData string, output
 		}
 	}()
 
-	// The componentName is already separated, now just need to parse componentData
 	typeParts := strings.SplitN(componentData, ":", 2)
-	// if len(typeParts) != 2 {
-	// 	return nil, fmt.Errorf("invalid component data format, expected 'componentType:componentParams'")
-	// }
+	if len(typeParts) != 2 {
+		return nil, fmt.Errorf("invalid component data format, expected 'componentType:componentParams'")
+	}
 
-	fmt.Println("TYPE PARTS: ", typeParts)
-
-	componentType, params := typeParts[0], typeParts[1]
+	rawComponentType, params := typeParts[0], typeParts[1]
 	componentID := generateUniqueComponentID() // Function to generate a unique ID for each component
+
+	// var accessType string
+	var accessDetails []string
+
+	// Separate component type and access modifier if any
+	if strings.Contains(rawComponentType, "-") {
+		accessParts := strings.SplitN(rawComponentType, "-", 2)
+		fmt.Println("accessParts: ", accessParts)
+		rawComponentType = accessParts[0]
+		fmt.Println("rawComponentType: ", rawComponentType)
+		accessDetails = strings.Split(accessParts[1], "-")
+		fmt.Println("accessDetails: ", accessDetails)
+	} else {
+		// accessType = "public"
+	}
+
+	outputParams := strings.Split(outputArgs, ",")
+	output, err := getOutput(outputType, outputParams)
+	if err != nil {
+		return nil, err
+	}
 
 	var component types.ExecutionComponent
 	component.Name = componentName
 	component.Id = componentID
 	component.Status = "inactive"
-
-	// outputs
-	fmt.Println("outputArgs: ", outputArgs)
-	// outputParts := strings.SplitN(outputArgs, ",", 2)
-	outputParts := strings.Split(outputArgs, ",")
-	fmt.Println("OUTPUT PARTS: ", outputParts)
-	outputParams := outputParts
-	fmt.Println("outputType: ", outputType)
-	fmt.Println("outputParams: ", outputParams)
-	fmt.Println("outputParams[0]: ", outputParams[0])
-	if len(outputParams) > 1 {
-		fmt.Println("outputParams[1]: ", outputParams[1])
-	}
-	var outputError error
-	component.OutputType, outputError = getOutput(outputType, outputParams)
-
-	if outputError != nil {
-		return nil, fmt.Errorf("")
-	}
-
+	component.OutputType = output
 	// panic(99)
-	switch componentType {
+	switch rawComponentType {
 	case "transfer":
 		dataParts := strings.Split(params, ",")
 		if len(dataParts) != 3 {
@@ -303,6 +323,18 @@ func parseComponentFromString(componentName string, componentData string, output
 		}
 
 	case "schnorr":
+		accessParts := strings.Split(rawComponentType, "-")
+		fmt.Println("access parts: ", accessParts)
+		// accessType := accessParts[1]
+		// var addresses = make([]string, 0)
+
+		// if len(accessParts) > 2 && accessType == "private" {
+		// 	for _, accessPart := range accessParts[1:] {
+		// 		fmt.Println("Iterating over access parts")
+		// 		addresses = append(addresses, accessPart)
+		// 	}
+		// }
+
 		dataParts := strings.Split(params, ",")
 		if len(dataParts) != 3 {
 			return nil, fmt.Errorf("invalid schnorr component params, expected 'public key, signature, message'")
@@ -311,6 +343,7 @@ func parseComponentFromString(componentName string, componentData string, output
 		fmt.Println("INSIDE parseComponentFromString for schnorr: ", public_key, signature, message)
 		component.ComponentType = &types.ExecutionComponent_Claim{
 			Claim: &types.ClaimComponent{
+				Access: parseAccess(accessDetails[0], accessDetails[1:]),
 				SchemeType: &types.ClaimComponent_Schnorr{
 					Schnorr: &types.SchnorrSignature{
 						PublicKey: []byte(public_key),
@@ -321,6 +354,8 @@ func parseComponentFromString(componentName string, componentData string, output
 			},
 		}
 	case "pedersen":
+		accessParts := strings.Split(rawComponentType, "-")
+		fmt.Println("access parts: ", accessParts)
 		dataParts := strings.Split(params, ",")
 		if len(dataParts) != 4 {
 			return nil, fmt.Errorf("invalid pedersen component params, expected 'commitment,random factor, value, blinding factor'")
@@ -329,6 +364,7 @@ func parseComponentFromString(componentName string, componentData string, output
 		fmt.Println("INSIDE parseComponentFromString for pedersen: ", commitment, random_factor, value, blinding_factor)
 		component.ComponentType = &types.ExecutionComponent_Claim{
 			Claim: &types.ClaimComponent{
+				Access: parseAccess(accessDetails[0], accessDetails[1:]),
 				SchemeType: &types.ClaimComponent_Pedersen{
 					Pedersen: &types.PedersenCommitment{
 						// note: removed these from the cli
@@ -340,6 +376,8 @@ func parseComponentFromString(componentName string, componentData string, output
 			},
 		}
 	case "gnark":
+		accessParts := strings.Split(rawComponentType, "-")
+		fmt.Println("access parts: ", accessParts)
 		dataParts := strings.Split(params, ",")
 		if len(dataParts) != 3 {
 			return nil, fmt.Errorf("invalid gnark component params, expected 'verification key, public inputs, proof'")
@@ -348,6 +386,7 @@ func parseComponentFromString(componentName string, componentData string, output
 		fmt.Println("INSIDE parseComponentFromString for pedersen: ", verification_key, public_inputs, proof)
 		component.ComponentType = &types.ExecutionComponent_Claim{
 			Claim: &types.ClaimComponent{
+				Access: parseAccess(accessDetails[0], accessDetails[1:]),
 				SchemeType: &types.ClaimComponent_Gnark{
 					Gnark: &types.GnarkZkSnark{
 						VerificationKey: []byte(verification_key),
@@ -356,7 +395,7 @@ func parseComponentFromString(componentName string, componentData string, output
 				},
 			},
 		}
-	case "ibc_call":
+	case "ibc_msg":
 		dataParts := strings.Split(params, ",")
 		fmt.Println("Number of ibc send params: ", len(dataParts))
 		if len(dataParts) != 3 {
@@ -395,7 +434,7 @@ func parseComponentFromString(componentName string, componentData string, output
 			},
 		}
 	default:
-		return nil, fmt.Errorf("unsupported component type: %s", componentType)
+		return nil, fmt.Errorf("unsupported component type: %s", rawComponentType)
 	}
 
 	return &component, nil

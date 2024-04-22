@@ -275,7 +275,7 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 
 func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 	kpr, ctx := setupKeeper(t) // Initialize your test environment
-	creator := "will156mw28alhpenp4lknweat6432dux34uydx590v"
+	creator := "will1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz"
 	// beneficiary := "will156mw28alhpenp4lknweat6432dux34uydx590v"
 	beneficiary := "will156mw28alhpenp4lknweat6432dux34uydx590v"
 
@@ -296,7 +296,7 @@ func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 	msg := &types.MsgCreateWillRequest{
 		Creator:     creator,
 		Name:        "Test Will",
-		Beneficiary: "beneficiary-address",
+		Beneficiary: "will1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz",
 		Height:      2,
 		Components: []*types.ExecutionComponent{
 			{
@@ -347,7 +347,7 @@ func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 	// Simulate a claim with the same commitment
 	claimMsg := &types.MsgClaimRequest{
 		WillId:      will.ID,
-		Claimer:     creator,
+		Claimer:     beneficiary,
 		ComponentId: "component-id",
 		ClaimType: &types.MsgClaimRequest_PedersenClaim{
 			PedersenClaim: &types.PedersenClaim{
@@ -380,9 +380,10 @@ func TestKeeperClaimWithConstantPedersenCommitment(t *testing.T) {
 	kpr, ctx := setupKeeper(t) // setupKeeper needs to be defined according to your context setup.
 	creator := "will1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz"
 	// beneficiary := "will156mw28alhpenp4lknweat6432dux34uydx590v"
-	beneficiary := "will1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz"
+	beneficiary := "will156mw28alhpenp4lknweat6432dux34uydx590v"
 
 	// Define challenge and answer strings
+	// probably need to limit this. becase there are strings outsie of the 32/64 integer bounds/range
 	challengeString := "foo"
 	answerString := "bar"
 
@@ -413,7 +414,7 @@ func TestKeeperClaimWithConstantPedersenCommitment(t *testing.T) {
 	msg := &types.MsgCreateWillRequest{
 		Creator:     creator,
 		Name:        "Test Will",
-		Beneficiary: "beneficiary-address",
+		Beneficiary: beneficiary,
 		Height:      2,
 		Components: []*types.ExecutionComponent{
 			{
@@ -465,7 +466,7 @@ func TestKeeperClaimWithConstantPedersenCommitment(t *testing.T) {
 	// Simulate the claiming process
 	claimMsg := &types.MsgClaimRequest{
 		WillId:      will.ID,
-		Claimer:     creator,
+		Claimer:     beneficiary,
 		ComponentId: "component-id",
 		ClaimType: &types.MsgClaimRequest_PedersenClaim{
 			PedersenClaim: &types.PedersenClaim{

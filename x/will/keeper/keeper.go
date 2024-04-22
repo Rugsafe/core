@@ -861,6 +861,7 @@ func (k Keeper) OutputHandler(ctx sdk.Context, component *types.ExecutionCompone
 	// Assuming OutputType is correctly configured to be used as a type switch
 	fmt.Println("Output Handler:")
 	fmt.Println(component)
+	// todo if output is nil
 	switch output := component.OutputType.OutputType.(type) {
 	case *types.ComponentOutput_OutputTransfer:
 		toAddr, err := sdk.AccAddressFromBech32(output.OutputTransfer.Address)

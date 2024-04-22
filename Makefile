@@ -268,12 +268,12 @@ PUBKEY=2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c
 # contract payload
 HEX_PAYLOAD := $(shell printf '{"foo":"bar"}' | xxd -p | tr -d '\n')
 will_create:
-	./build/wasmd tx will create "test will ${i}" "beneficiary" 275 \
-	--component-name "component_for_transfer" --component-args "transfer:will156mw28alhpenp4lknweat6432dux34uydx590v,1000000000,uwill" --component-output-type "emit" --component-output-args "transferred_the_tokens" \
-	--component-name "component_for_schnorr_claim" --component-args "schnorr:${SIGNATURE},${PUBKEY},${MESSAGE}" --component-output-type "transfer" --component-output-args "will156mw28alhpenp4lknweat6432dux34uydx590v,1000000000,uwill" \
-	--component-name "component_for_pedersen_claim" --component-args "pedersen:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" --component-output-type "ibc_send" --component-output-args "channel-0,uwill,will156mw28alhpenp4lknweat6432dux34uydx590v,123" \
-	--component-name "component_for_gnark_claim" --component-args "gnark:verification_key_hex,public_inputs_hex,proof_hex" --component-output-type "contract_call" --component-output-args "0xcontract_address,${HEX_PAYLOAD}" \
-	--component-name "component_for_ibc_send" --component-args "ibc_call:channel-0,wasm.will14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s8dkg8g,msg1234" --component-output-type "emit" --component-output-args "sent ibc coins" \
+	./build/wasmd tx will create "test will ${i}" "will156mw28alhpenp4lknweat6432dux34uydx590v" 275 \
+	--component-name "component_for_transfer_with_emit_output" --component-args "transfer:will156mw28alhpenp4lknweat6432dux34uydx590v,987654321,uwill" --component-output-type "emit" --component-output-args "transferred_the_tokens" \
+	--component-name "component_for_schnorr_claim_with_transfer_output" --component-args "schnorr-private-will156mw28alhpenp4lknweat6432dux34uydx590v:${SIGNATURE},${PUBKEY},${MESSAGE}" --component-output-type "transfer" --component-output-args "will156mw28alhpenp4lknweat6432dux34uydx590v,1000000000,uwill"  \
+	--component-name "component_for_pedersen_claim_with_ibc_send_output" --component-args "pedersen-private-will156mw28alhpenp4lknweat6432dux34uydx590v:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" --component-output-type "ibc_send" --component-output-args "channel-0,uwill,will156mw28alhpenp4lknweat6432dux34uydx590v,123" \
+	--component-name "component_for_gnark_claim_with_contract_call_output" --component-args "gnark-private-will156mw28alhpenp4lknweat6432dux34uydx590v:verification_key_hex,public_inputs_hex,proof_hex" --component-output-type "contract_call" --component-output-args "0xcontract_address,${HEX_PAYLOAD}" \
+	--component-name "component_for_ibc_msg_with_emit_output" --component-args "ibc_msg:channel-0,wasm.will14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s8dkg8g,msg1234" --component-output-type "emit" --component-output-args "sent ibc message" \
 	--from alice --chain-id willchain-mainnet -y $(WILLCHAIN_NODE_ARGS) 
 	sleep 1
 will_cx:
