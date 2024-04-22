@@ -356,6 +356,44 @@ func parseComponentFromString(componentName string, componentData string, output
 				},
 			},
 		}
+	case "ibc_call":
+		dataParts := strings.Split(params, ",")
+		fmt.Println("Number of ibc send params: ", len(dataParts))
+		if len(dataParts) != 3 {
+			return nil, fmt.Errorf("invalid IBC send params, expected 'channel, port_id, data'")
+		}
+		channel, port_id, data := dataParts[0], dataParts[1], dataParts[2]
+
+		component.ComponentType = &types.ExecutionComponent_IbcMsg{
+			IbcMsg: &types.IBCMsgComponent{
+				Channel: string(channel),
+				PortId:  string(port_id),
+				Data:    []byte(data),
+			},
+		}
+	case "ibc_send":
+		dataParts := strings.Split(params, ",")
+
+		fmt.Println("Number of ibc send params: ", len(dataParts))
+		if len(dataParts) != 4 {
+			return nil, fmt.Errorf("invalid IBC send params, expected 'channel, address, denom, amount'")
+		}
+		channel, address, portId, denom, amountStr := dataParts[0], dataParts[1], dataParts[2], dataParts[3], dataParts[4]
+		amount, err := strconv.ParseInt(string(amountStr), 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid amount format for IBC send: %v", err)
+		}
+		coinAmount := sdk.NewInt64Coin(string(denom), amount)
+
+		component.ComponentType = &types.ExecutionComponent_IbcSend{
+			IbcSend: &types.IBCSendComponent{
+				Channel: string(channel),
+				Address: string(address),
+				PortId:  string(portId),
+				Denom:   string(denom),
+				Amount:  &coinAmount,
+			},
+		}
 	default:
 		return nil, fmt.Errorf("unsupported component type: %s", componentType)
 	}

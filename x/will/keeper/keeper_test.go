@@ -12,6 +12,7 @@ import (
 	dbm "github.com/cosmos/cosmos-db"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+
 	// "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,6 +22,7 @@ import (
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
 	corestore "cosmossdk.io/store"
+
 	// corestoretypes "cosmossdk.io/core/store"
 	storemetrics "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
@@ -273,7 +275,8 @@ func TestKeeperClaimWithSchnorrSignature(t *testing.T) {
 
 func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 	kpr, ctx := setupKeeper(t) // Initialize your test environment
-	creator := "creator-address"
+	creator := "will156mw28alhpenp4lknweat6432dux34uydx590v"
+	// beneficiary := "will156mw28alhpenp4lknweat6432dux34uydx590v"
 	beneficiary := "will156mw28alhpenp4lknweat6432dux34uydx590v"
 
 	// Generate random scalars for value and blinding factor
@@ -313,6 +316,18 @@ func TestKeeperClaimWithPedersenCommitment(t *testing.T) {
 							Pedersen: &types.PedersenCommitment{
 								Commitment:       originalCommitment.Bytes(),
 								TargetCommitment: addedCommitment.Bytes(),
+							},
+						},
+					},
+				},
+				OutputType: &types.ComponentOutput{ // Correctly initializing the union type
+					OutputType: &types.ComponentOutput_OutputTransfer{
+						OutputTransfer: &types.OutputTransfer{
+							Address: "will156mw28alhpenp4lknweat6432dux34uydx590v",
+							Denom:   "uwill",
+							Amount: &sdk.Coin{ // Proper Coin type initialization
+								Denom:  "uwill",
+								Amount: math.NewInt(100), // Amount as string if cosmos.Coin expects it
 							},
 						},
 					},
@@ -364,7 +379,9 @@ func stringToScalar(data string) ristretto.Scalar {
 func TestKeeperClaimWithConstantPedersenCommitment(t *testing.T) {
 	kpr, ctx := setupKeeper(t) // setupKeeper needs to be defined according to your context setup.
 	creator := "will1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz"
-	beneficiary := "will156mw28alhpenp4lknweat6432dux34uydx590v"
+	// beneficiary := "will156mw28alhpenp4lknweat6432dux34uydx590v"
+	beneficiary := "will1p0k8gygawzpggzwftv7cv47zvgg8zaun5xucxz"
+
 	// Define challenge and answer strings
 	challengeString := "foo"
 	answerString := "bar"

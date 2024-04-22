@@ -273,6 +273,7 @@ will_create:
 	--component-name "component_for_schnorr_claim" --component-args "schnorr:${SIGNATURE},${PUBKEY},${MESSAGE}" --component-output-type "transfer" --component-output-args "will156mw28alhpenp4lknweat6432dux34uydx590v,1000000000,uwill" \
 	--component-name "component_for_pedersen_claim" --component-args "pedersen:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" --component-output-type "ibc_send" --component-output-args "channel-0,uwill,will156mw28alhpenp4lknweat6432dux34uydx590v,123" \
 	--component-name "component_for_gnark_claim" --component-args "gnark:verification_key_hex,public_inputs_hex,proof_hex" --component-output-type "contract_call" --component-output-args "0xcontract_address,${HEX_PAYLOAD}" \
+	--component-name "component_for_ibc_send" --component-args "ibc_call:channel-0,wasm.will14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s8dkg8g,msg1234" --component-output-type "emit" --component-output-args "sent ibc coins" \
 	--from alice --chain-id willchain-mainnet -y $(WILLCHAIN_NODE_ARGS) 
 	sleep 1
 will_cx:

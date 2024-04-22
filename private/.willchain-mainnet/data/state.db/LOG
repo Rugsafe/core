@@ -4,3 +4,10 @@
 19:26:16.194820 version@stat F·[] S·0B[] Sc·[]
 19:26:16.212549 db@janitor F·2 G·0
 19:26:16.212582 db@open done T·19.305709ms
+20:47:06.670164 memdb@flush N·4692 S·3MiB
+20:47:06.835880 memdb@flush created L0@3 N·4692 S·929KiB "abc..y:1,v7":"val..:99,v489"
+20:47:06.835956 version@stat F·[1] S·929KiB[929KiB] Sc·[0.25]
+20:47:06.852981 memdb@flush committed F·1 T·182.525ms
+20:47:06.870000 journal@remove removed @1
+23:56:13.187124 db@close closing
+23:56:13.188635 db@close done T·471.167µs

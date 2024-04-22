@@ -804,14 +804,16 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				// send an IBC message
 				// TODO: DEV TESTING FOR SENDIBCMESSAGE
 				// HandleOutput()
-				channelID := "channel-0"
-				portID := "wasm.w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn"
-				data := []byte("testData")
-				k.SendIBCMessage(sdk.UnwrapSDKContext(ctx), channelID, portID, data)
+
+				k.SendIBCMessage(sdk.UnwrapSDKContext(ctx), component, *will)
 				// change status depending on result
 				component.Status = "executed"
 
 				// k.OutputHandler(ctx, component, *will)
+
+			case *types.ExecutionComponent_IbcSend:
+				// change status depending on result
+				component.Status = "executed"
 
 			default:
 				fmt.Println("Unknown component type found")
@@ -891,8 +893,8 @@ func (k Keeper) OutputHandler(ctx sdk.Context, component *types.ExecutionCompone
 
 	case *types.ComponentOutput_OutputIbcSend:
 		// Adjust to match the correct parameters and method definition
-		data := []byte(output.OutputIbcSend.Denom) // Simplistic assumption; adjust as needed!
-		return k.SendIBCMessage(ctx, output.OutputIbcSend.Channel, types.ModuleName, data)
+		// data := []byte(output.OutputIbcSend.Denom) // Simplistic assumption; adjust as needed!
+		return k.SendIBCMessage(ctx, component, will)
 
 	case *types.ComponentOutput_OutputEmit:
 		ctx.EventManager().EmitEvent(
@@ -1035,34 +1037,31 @@ func (k Keeper) ExecutePrivateTransfer(ctx sdk.Context, component *types.Executi
 //////////////////////////////////////////////// IBC
 
 // SendIBCMessage sends an IBC message from the specified port and channel with the given data
-func (k *Keeper) SendIBCMessage(ctx sdk.Context, channelID, portID string, data []byte) error {
-	// Retrieve the next sequence send for the channel
+func (k *Keeper) SendIBCMessage(ctx sdk.Context, component *types.ExecutionComponent, will types.Will) error {
 	fmt.Println("SendIBCMessage 1")
+	var channelID, portID string
+	var data []byte
+
+	channelID = component.GetIbcMsg().Channel
+	portID = component.GetIbcMsg().PortId
+	data = component.GetIbcMsg().Data // Assuming Data is a field in IbcContractCall
+
 	sequence, found := k.GetChannelKeeper().GetNextSequenceSend(ctx, portID, channelID)
 	if !found {
-		fmt.Println("SendIBCMessage 2")
-		return errors.New("sequence not found for channel", 1, "k.channelKeeper.GetNextSequenceSend ran out")
+		return fmt.Errorf("sequence not found for channel")
 	}
 
-	// Define packet timeout (adjust as needed)
-	fmt.Println("SendIBCMessage 3")
-	timeoutHeight := clienttypes.NewHeight(0, 10000)                      // Use appropriate timeout height
-	timeoutTimestamp := uint64(ctx.BlockTime().UnixNano()) + 100000000000 // 100 seconds; adjust as needed
+	timeoutHeight := clienttypes.NewHeight(0, 10000)
+	timeoutTimestamp := uint64(ctx.BlockTime().UnixNano()) + 100000000000
 
-	// Construct the packet
 	packet := channeltypes.NewPacket(data, sequence, portID, channelID, "destPort", "destChannel", timeoutHeight, timeoutTimestamp)
 
-	fmt.Println("SendIBCMessage 4")
-	// Retrieve the capability for the port and channel
 	channelCap, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(portID, channelID))
 	if !ok {
-		fmt.Println("SendIBCMessage 5")
-		return errors.New("channel capability not found: ", 1, "k.scopedKeeper.GetCapability ran out")
+		return fmt.Errorf("channel capability not found")
 	}
 
-	// Send the packet
 	_, err := k.GetChannelKeeper().SendPacket(ctx, channelCap, portID, channelID, timeoutHeight, timeoutTimestamp, packet.GetData())
-	fmt.Println("SendIBCMessage 6")
 	return err
 }
 

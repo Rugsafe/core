@@ -26,10 +26,11 @@ message ExecutionComponent {
     ContractComponent contract =
         6; // Future use: Represents an interaction with a smart contract.
     IBCMsgComponent ibc_msg = 7; // future use: for ibc message
+    // ibc send
+    IBCSendComponent ibc_send = 8;
   }
-
   // output type
-  ComponentOutput output_type = 8;
+  ComponentOutput output_type = 9;
 }
 
 // component output
@@ -89,6 +90,49 @@ message ClaimComponent {
   }
 }
 
+// contract component
+message ContractComponent {
+  // contract address
+  string address = 1;
+  // data to be passed to the contract
+  bytes data = 2;
+}
+
+// ibc msg component
+// message IBCMsgComponent {
+//   // ibc message type
+//   oneof ibc_msg_type {
+//     // output for ibc contract call
+//     IBCContractCall ibc_contract_call = 1;
+//     // output for ibc send
+//     IBCSend ibc_send = 2;
+//   }
+// }
+
+// for ibc output message, we could make this be contract, or IBC send...
+message IBCMsgComponent {
+  // channel to be passed in the packet
+  string channel = 1;
+  // port id
+  string port_id = 2;
+  // data to be passed in the packet
+  bytes data = 3;
+}
+
+// output for ibc send
+message IBCSendComponent {
+  // contract address
+  string address = 1;
+  // channel to be passed in the packet
+  string channel = 2;
+  // port id
+  string port_id = 3;
+  // data to be passed in the packet
+  string denom = 4;
+  // amount to send over IBC
+  cosmos.base.v1beta1.Coin amount = 5;
+}
+
 // types of outputs for components
 message OutputTransfer {
   // recipient
@@ -133,51 +177,6 @@ message OutputIBCSend {
 message OutputEmit {
   // event
   string message = 1;
-}
-
-// contract component
-message ContractComponent {
-  // contract address
-  string address = 1;
-  // data to be passed to the contract
-  bytes data = 2;
-}
-
-// ibc msg component
-message IBCMsgComponent {
-  // ibc message type
-  oneof ibc_msg_type {
-    // output for ibc contract call
-    IBCContractCall ibc_contract_call = 1;
-    // output for ibc send
-    IBCSend ibc_send = 2;
-  }
-}
-
-// for ibc output message, we could make this be contract, or IBC send...
-message IBCContractCall {
-  // contract address
-  string address = 1;
-  // destination chain
-  bytes chain = 2;
-  // data to be passed in the packet
-  bytes data = 3;
-  // channel to be passed in the packet
-  bytes channel = 4;
-}
-
-// output for ibc send
-message IBCSend {
-  // contract address
-  string address = 1;
-  // destination chain
-  bytes chain = 2;
-  // data to be passed in the packet
-  bytes denom = 3;
-  // channel to be passed in the packet
-  bytes channel = 4;
-  // amount to send over IBC
-  cosmos.base.v1beta1.Coin amount = 5;
 }
 
 // CLAIM TYPES

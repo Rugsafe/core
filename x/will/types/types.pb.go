@@ -45,9 +45,10 @@ type ExecutionComponent struct {
 	//	*ExecutionComponent_Claim
 	//	*ExecutionComponent_Contract
 	//	*ExecutionComponent_IbcMsg
+	//	*ExecutionComponent_IbcSend
 	ComponentType isExecutionComponent_ComponentType `protobuf_oneof:"component_type"`
 	// output type
-	OutputType *ComponentOutput `protobuf:"bytes,8,opt,name=output_type,json=outputType,proto3" json:"output_type,omitempty"`
+	OutputType *ComponentOutput `protobuf:"bytes,9,opt,name=output_type,json=outputType,proto3" json:"output_type,omitempty"`
 }
 
 func (m *ExecutionComponent) Reset()         { *m = ExecutionComponent{} }
@@ -107,11 +108,15 @@ type ExecutionComponent_Contract struct {
 type ExecutionComponent_IbcMsg struct {
 	IbcMsg *IBCMsgComponent `protobuf:"bytes,7,opt,name=ibc_msg,json=ibcMsg,proto3,oneof" json:"ibc_msg,omitempty"`
 }
+type ExecutionComponent_IbcSend struct {
+	IbcSend *IBCSendComponent `protobuf:"bytes,8,opt,name=ibc_send,json=ibcSend,proto3,oneof" json:"ibc_send,omitempty"`
+}
 
 func (*ExecutionComponent_Transfer) isExecutionComponent_ComponentType() {}
 func (*ExecutionComponent_Claim) isExecutionComponent_ComponentType()    {}
 func (*ExecutionComponent_Contract) isExecutionComponent_ComponentType() {}
 func (*ExecutionComponent_IbcMsg) isExecutionComponent_ComponentType()   {}
+func (*ExecutionComponent_IbcSend) isExecutionComponent_ComponentType()  {}
 
 func (m *ExecutionComponent) GetComponentType() isExecutionComponent_ComponentType {
 	if m != nil {
@@ -148,6 +153,13 @@ func (m *ExecutionComponent) GetIbcMsg() *IBCMsgComponent {
 	return nil
 }
 
+func (m *ExecutionComponent) GetIbcSend() *IBCSendComponent {
+	if x, ok := m.GetComponentType().(*ExecutionComponent_IbcSend); ok {
+		return x.IbcSend
+	}
+	return nil
+}
+
 // XXX_OneofWrappers is for the internal use of the proto package.
 func (*ExecutionComponent) XXX_OneofWrappers() []interface{} {
 	return []interface{}{
@@ -155,6 +167,7 @@ func (*ExecutionComponent) XXX_OneofWrappers() []interface{} {
 		(*ExecutionComponent_Claim)(nil),
 		(*ExecutionComponent_Contract)(nil),
 		(*ExecutionComponent_IbcMsg)(nil),
+		(*ExecutionComponent_IbcSend)(nil),
 	}
 }
 
@@ -626,6 +639,154 @@ func (*ClaimComponent) XXX_OneofWrappers() []interface{} {
 	}
 }
 
+// contract component
+type ContractComponent struct {
+	// contract address
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	// data to be passed to the contract
+	Data []byte `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+}
+
+func (m *ContractComponent) Reset()         { *m = ContractComponent{} }
+func (m *ContractComponent) String() string { return proto.CompactTextString(m) }
+func (*ContractComponent) ProtoMessage()    {}
+func (*ContractComponent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{7}
+}
+
+func (m *ContractComponent) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *ContractComponent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ContractComponent.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *ContractComponent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ContractComponent.Merge(m, src)
+}
+
+func (m *ContractComponent) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *ContractComponent) XXX_DiscardUnknown() {
+	xxx_messageInfo_ContractComponent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ContractComponent proto.InternalMessageInfo
+
+// for ibc output message, we could make this be contract, or IBC send...
+type IBCMsgComponent struct {
+	// contract address
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	// channel to be passed in the packet
+	Channel string `protobuf:"bytes,2,opt,name=channel,proto3" json:"channel,omitempty"`
+	// port id
+	PortId string `protobuf:"bytes,3,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty"`
+	// data to be passed in the packet
+	Data []byte `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
+}
+
+func (m *IBCMsgComponent) Reset()         { *m = IBCMsgComponent{} }
+func (m *IBCMsgComponent) String() string { return proto.CompactTextString(m) }
+func (*IBCMsgComponent) ProtoMessage()    {}
+func (*IBCMsgComponent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{8}
+}
+
+func (m *IBCMsgComponent) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *IBCMsgComponent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_IBCMsgComponent.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *IBCMsgComponent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_IBCMsgComponent.Merge(m, src)
+}
+
+func (m *IBCMsgComponent) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *IBCMsgComponent) XXX_DiscardUnknown() {
+	xxx_messageInfo_IBCMsgComponent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_IBCMsgComponent proto.InternalMessageInfo
+
+// output for ibc send
+type IBCSendComponent struct {
+	// contract address
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	// channel to be passed in the packet
+	Channel string `protobuf:"bytes,2,opt,name=channel,proto3" json:"channel,omitempty"`
+	// port id
+	PortId string `protobuf:"bytes,3,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty"`
+	// data to be passed in the packet
+	Denom string `protobuf:"bytes,4,opt,name=denom,proto3" json:"denom,omitempty"`
+	// amount to send over IBC
+	Amount *types.Coin `protobuf:"bytes,5,opt,name=amount,proto3" json:"amount,omitempty"`
+}
+
+func (m *IBCSendComponent) Reset()         { *m = IBCSendComponent{} }
+func (m *IBCSendComponent) String() string { return proto.CompactTextString(m) }
+func (*IBCSendComponent) ProtoMessage()    {}
+func (*IBCSendComponent) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{9}
+}
+
+func (m *IBCSendComponent) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+
+func (m *IBCSendComponent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_IBCSendComponent.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+
+func (m *IBCSendComponent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_IBCSendComponent.Merge(m, src)
+}
+
+func (m *IBCSendComponent) XXX_Size() int {
+	return m.Size()
+}
+
+func (m *IBCSendComponent) XXX_DiscardUnknown() {
+	xxx_messageInfo_IBCSendComponent.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_IBCSendComponent proto.InternalMessageInfo
+
 // types of outputs for components
 type OutputTransfer struct {
 	// recipient
@@ -640,7 +801,7 @@ func (m *OutputTransfer) Reset()         { *m = OutputTransfer{} }
 func (m *OutputTransfer) String() string { return proto.CompactTextString(m) }
 func (*OutputTransfer) ProtoMessage()    {}
 func (*OutputTransfer) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{7}
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{10}
 }
 
 func (m *OutputTransfer) XXX_Unmarshal(b []byte) error {
@@ -686,7 +847,7 @@ func (m *OutputContractCall) Reset()         { *m = OutputContractCall{} }
 func (m *OutputContractCall) String() string { return proto.CompactTextString(m) }
 func (*OutputContractCall) ProtoMessage()    {}
 func (*OutputContractCall) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{8}
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{11}
 }
 
 func (m *OutputContractCall) XXX_Unmarshal(b []byte) error {
@@ -734,7 +895,7 @@ func (m *OutputIBCContractCall) Reset()         { *m = OutputIBCContractCall{} }
 func (m *OutputIBCContractCall) String() string { return proto.CompactTextString(m) }
 func (*OutputIBCContractCall) ProtoMessage()    {}
 func (*OutputIBCContractCall) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{9}
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{12}
 }
 
 func (m *OutputIBCContractCall) XXX_Unmarshal(b []byte) error {
@@ -784,7 +945,7 @@ func (m *OutputIBCSend) Reset()         { *m = OutputIBCSend{} }
 func (m *OutputIBCSend) String() string { return proto.CompactTextString(m) }
 func (*OutputIBCSend) ProtoMessage()    {}
 func (*OutputIBCSend) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{10}
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{13}
 }
 
 func (m *OutputIBCSend) XXX_Unmarshal(b []byte) error {
@@ -828,7 +989,7 @@ func (m *OutputEmit) Reset()         { *m = OutputEmit{} }
 func (m *OutputEmit) String() string { return proto.CompactTextString(m) }
 func (*OutputEmit) ProtoMessage()    {}
 func (*OutputEmit) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{11}
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{14}
 }
 
 func (m *OutputEmit) XXX_Unmarshal(b []byte) error {
@@ -862,249 +1023,6 @@ func (m *OutputEmit) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_OutputEmit proto.InternalMessageInfo
 
-// contract component
-type ContractComponent struct {
-	// contract address
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	// data to be passed to the contract
-	Data []byte `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
-}
-
-func (m *ContractComponent) Reset()         { *m = ContractComponent{} }
-func (m *ContractComponent) String() string { return proto.CompactTextString(m) }
-func (*ContractComponent) ProtoMessage()    {}
-func (*ContractComponent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{12}
-}
-
-func (m *ContractComponent) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-
-func (m *ContractComponent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_ContractComponent.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-
-func (m *ContractComponent) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ContractComponent.Merge(m, src)
-}
-
-func (m *ContractComponent) XXX_Size() int {
-	return m.Size()
-}
-
-func (m *ContractComponent) XXX_DiscardUnknown() {
-	xxx_messageInfo_ContractComponent.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ContractComponent proto.InternalMessageInfo
-
-// ibc msg component
-type IBCMsgComponent struct {
-	// ibc message type
-	//
-	// Types that are valid to be assigned to IbcMsgType:
-	//
-	//	*IBCMsgComponent_IbcContractCall
-	//	*IBCMsgComponent_IbcSend
-	IbcMsgType isIBCMsgComponent_IbcMsgType `protobuf_oneof:"ibc_msg_type"`
-}
-
-func (m *IBCMsgComponent) Reset()         { *m = IBCMsgComponent{} }
-func (m *IBCMsgComponent) String() string { return proto.CompactTextString(m) }
-func (*IBCMsgComponent) ProtoMessage()    {}
-func (*IBCMsgComponent) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{13}
-}
-
-func (m *IBCMsgComponent) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-
-func (m *IBCMsgComponent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_IBCMsgComponent.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-
-func (m *IBCMsgComponent) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_IBCMsgComponent.Merge(m, src)
-}
-
-func (m *IBCMsgComponent) XXX_Size() int {
-	return m.Size()
-}
-
-func (m *IBCMsgComponent) XXX_DiscardUnknown() {
-	xxx_messageInfo_IBCMsgComponent.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_IBCMsgComponent proto.InternalMessageInfo
-
-type isIBCMsgComponent_IbcMsgType interface {
-	isIBCMsgComponent_IbcMsgType()
-	Equal(interface{}) bool
-	MarshalTo([]byte) (int, error)
-	Size() int
-}
-
-type IBCMsgComponent_IbcContractCall struct {
-	IbcContractCall *IBCContractCall `protobuf:"bytes,1,opt,name=ibc_contract_call,json=ibcContractCall,proto3,oneof" json:"ibc_contract_call,omitempty"`
-}
-type IBCMsgComponent_IbcSend struct {
-	IbcSend *IBCSend `protobuf:"bytes,2,opt,name=ibc_send,json=ibcSend,proto3,oneof" json:"ibc_send,omitempty"`
-}
-
-func (*IBCMsgComponent_IbcContractCall) isIBCMsgComponent_IbcMsgType() {}
-func (*IBCMsgComponent_IbcSend) isIBCMsgComponent_IbcMsgType()         {}
-
-func (m *IBCMsgComponent) GetIbcMsgType() isIBCMsgComponent_IbcMsgType {
-	if m != nil {
-		return m.IbcMsgType
-	}
-	return nil
-}
-
-func (m *IBCMsgComponent) GetIbcContractCall() *IBCContractCall {
-	if x, ok := m.GetIbcMsgType().(*IBCMsgComponent_IbcContractCall); ok {
-		return x.IbcContractCall
-	}
-	return nil
-}
-
-func (m *IBCMsgComponent) GetIbcSend() *IBCSend {
-	if x, ok := m.GetIbcMsgType().(*IBCMsgComponent_IbcSend); ok {
-		return x.IbcSend
-	}
-	return nil
-}
-
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*IBCMsgComponent) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
-		(*IBCMsgComponent_IbcContractCall)(nil),
-		(*IBCMsgComponent_IbcSend)(nil),
-	}
-}
-
-// for ibc output message, we could make this be contract, or IBC send...
-type IBCContractCall struct {
-	// contract address
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	// destination chain
-	Chain []byte `protobuf:"bytes,2,opt,name=chain,proto3" json:"chain,omitempty"`
-	// data to be passed in the packet
-	Data []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
-	// channel to be passed in the packet
-	Channel []byte `protobuf:"bytes,4,opt,name=channel,proto3" json:"channel,omitempty"`
-}
-
-func (m *IBCContractCall) Reset()         { *m = IBCContractCall{} }
-func (m *IBCContractCall) String() string { return proto.CompactTextString(m) }
-func (*IBCContractCall) ProtoMessage()    {}
-func (*IBCContractCall) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{14}
-}
-
-func (m *IBCContractCall) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-
-func (m *IBCContractCall) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_IBCContractCall.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-
-func (m *IBCContractCall) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_IBCContractCall.Merge(m, src)
-}
-
-func (m *IBCContractCall) XXX_Size() int {
-	return m.Size()
-}
-
-func (m *IBCContractCall) XXX_DiscardUnknown() {
-	xxx_messageInfo_IBCContractCall.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_IBCContractCall proto.InternalMessageInfo
-
-// output for ibc send
-type IBCSend struct {
-	// contract address
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	// destination chain
-	Chain []byte `protobuf:"bytes,2,opt,name=chain,proto3" json:"chain,omitempty"`
-	// data to be passed in the packet
-	Denom []byte `protobuf:"bytes,3,opt,name=denom,proto3" json:"denom,omitempty"`
-	// channel to be passed in the packet
-	Channel []byte `protobuf:"bytes,4,opt,name=channel,proto3" json:"channel,omitempty"`
-	// amount to send over IBC
-	Amount *types.Coin `protobuf:"bytes,5,opt,name=amount,proto3" json:"amount,omitempty"`
-}
-
-func (m *IBCSend) Reset()         { *m = IBCSend{} }
-func (m *IBCSend) String() string { return proto.CompactTextString(m) }
-func (*IBCSend) ProtoMessage()    {}
-func (*IBCSend) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{15}
-}
-
-func (m *IBCSend) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-
-func (m *IBCSend) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_IBCSend.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-
-func (m *IBCSend) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_IBCSend.Merge(m, src)
-}
-
-func (m *IBCSend) XXX_Size() int {
-	return m.Size()
-}
-
-func (m *IBCSend) XXX_DiscardUnknown() {
-	xxx_messageInfo_IBCSend.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_IBCSend proto.InternalMessageInfo
-
 // CLAIM TYPES
 // SchnorrSignature is used for claims that require a Schnorr signature.
 type SchnorrSignature struct {
@@ -1117,7 +1035,7 @@ func (m *SchnorrSignature) Reset()         { *m = SchnorrSignature{} }
 func (m *SchnorrSignature) String() string { return proto.CompactTextString(m) }
 func (*SchnorrSignature) ProtoMessage()    {}
 func (*SchnorrSignature) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{16}
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{15}
 }
 
 func (m *SchnorrSignature) XXX_Unmarshal(b []byte) error {
@@ -1161,7 +1079,7 @@ func (m *PedersenCommitment) Reset()         { *m = PedersenCommitment{} }
 func (m *PedersenCommitment) String() string { return proto.CompactTextString(m) }
 func (*PedersenCommitment) ProtoMessage()    {}
 func (*PedersenCommitment) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{17}
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{16}
 }
 
 func (m *PedersenCommitment) XXX_Unmarshal(b []byte) error {
@@ -1207,7 +1125,7 @@ func (m *GnarkZkSnark) Reset()         { *m = GnarkZkSnark{} }
 func (m *GnarkZkSnark) String() string { return proto.CompactTextString(m) }
 func (*GnarkZkSnark) ProtoMessage()    {}
 func (*GnarkZkSnark) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{18}
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{17}
 }
 
 func (m *GnarkZkSnark) XXX_Unmarshal(b []byte) error {
@@ -1256,7 +1174,7 @@ func (m *Will) Reset()         { *m = Will{} }
 func (m *Will) String() string { return proto.CompactTextString(m) }
 func (*Will) ProtoMessage()    {}
 func (*Will) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{19}
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{18}
 }
 
 func (m *Will) XXX_Unmarshal(b []byte) error {
@@ -1300,7 +1218,7 @@ func (m *Wills) Reset()         { *m = Wills{} }
 func (m *Wills) String() string { return proto.CompactTextString(m) }
 func (*Wills) ProtoMessage()    {}
 func (*Wills) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{20}
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{19}
 }
 
 func (m *Wills) XXX_Unmarshal(b []byte) error {
@@ -1343,7 +1261,7 @@ func (m *WillIds) Reset()         { *m = WillIds{} }
 func (m *WillIds) String() string { return proto.CompactTextString(m) }
 func (*WillIds) ProtoMessage()    {}
 func (*WillIds) Descriptor() ([]byte, []int) {
-	return fileDescriptor_cec37ad7aa1ffe0b, []int{21}
+	return fileDescriptor_cec37ad7aa1ffe0b, []int{20}
 }
 
 func (m *WillIds) XXX_Unmarshal(b []byte) error {
@@ -1385,15 +1303,14 @@ func init() {
 	proto.RegisterType((*ClaimAccessPrivate)(nil), "cosmwasm.will.ClaimAccessPrivate")
 	proto.RegisterType((*ClaimAccessControl)(nil), "cosmwasm.will.ClaimAccessControl")
 	proto.RegisterType((*ClaimComponent)(nil), "cosmwasm.will.ClaimComponent")
+	proto.RegisterType((*ContractComponent)(nil), "cosmwasm.will.ContractComponent")
+	proto.RegisterType((*IBCMsgComponent)(nil), "cosmwasm.will.IBCMsgComponent")
+	proto.RegisterType((*IBCSendComponent)(nil), "cosmwasm.will.IBCSendComponent")
 	proto.RegisterType((*OutputTransfer)(nil), "cosmwasm.will.OutputTransfer")
 	proto.RegisterType((*OutputContractCall)(nil), "cosmwasm.will.OutputContractCall")
 	proto.RegisterType((*OutputIBCContractCall)(nil), "cosmwasm.will.OutputIBCContractCall")
 	proto.RegisterType((*OutputIBCSend)(nil), "cosmwasm.will.OutputIBCSend")
 	proto.RegisterType((*OutputEmit)(nil), "cosmwasm.will.OutputEmit")
-	proto.RegisterType((*ContractComponent)(nil), "cosmwasm.will.ContractComponent")
-	proto.RegisterType((*IBCMsgComponent)(nil), "cosmwasm.will.IBCMsgComponent")
-	proto.RegisterType((*IBCContractCall)(nil), "cosmwasm.will.IBCContractCall")
-	proto.RegisterType((*IBCSend)(nil), "cosmwasm.will.IBCSend")
 	proto.RegisterType((*SchnorrSignature)(nil), "cosmwasm.will.SchnorrSignature")
 	proto.RegisterType((*PedersenCommitment)(nil), "cosmwasm.will.PedersenCommitment")
 	proto.RegisterType((*GnarkZkSnark)(nil), "cosmwasm.will.GnarkZkSnark")
@@ -1405,90 +1322,88 @@ func init() {
 func init() { proto.RegisterFile("cosmwasm/will/types.proto", fileDescriptor_cec37ad7aa1ffe0b) }
 
 var fileDescriptor_cec37ad7aa1ffe0b = []byte{
-	// 1325 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x57, 0xcb, 0x6f, 0x1b, 0x45,
-	0x18, 0xf7, 0xfa, 0x19, 0x7f, 0x4e, 0x9c, 0x64, 0x9a, 0x56, 0xdb, 0x97, 0x1d, 0x16, 0xa8, 0x0a,
-	0x95, 0x6c, 0xa5, 0x85, 0x03, 0x85, 0x52, 0x65, 0xdd, 0x82, 0x23, 0x28, 0x94, 0x4d, 0x51, 0xa5,
-	0x5e, 0xa2, 0xf1, 0x7a, 0x62, 0x8f, 0xba, 0xbb, 0x63, 0xed, 0xac, 0xdb, 0xe6, 0x7f, 0xe0, 0xc0,
-	0x05, 0x89, 0x03, 0x42, 0x1c, 0x38, 0xf4, 0xc8, 0x8d, 0x7f, 0xa1, 0xc7, 0x1e, 0x39, 0x59, 0xe0,
-	0x1e, 0xe0, 0xcf, 0x40, 0xf3, 0xd8, 0xf5, 0xae, 0x1f, 0x51, 0x90, 0xb8, 0x24, 0xfb, 0xbd, 0x7e,
-	0xdf, 0x37, 0xdf, 0x6b, 0xc6, 0x70, 0xd1, 0x65, 0xdc, 0x7f, 0x8e, 0xb9, 0xdf, 0x7e, 0x4e, 0x3d,
-	0xaf, 0x1d, 0x9d, 0x8c, 0x08, 0x6f, 0x8d, 0x42, 0x16, 0x31, 0xb4, 0x11, 0x8b, 0x5a, 0x42, 0x74,
-	0x69, 0x67, 0xc0, 0x06, 0x4c, 0x4a, 0xda, 0xe2, 0x4b, 0x29, 0x5d, 0x6a, 0x08, 0x25, 0xc6, 0xdb,
-	0x3d, 0xcc, 0x49, 0xfb, 0xd9, 0x5e, 0x8f, 0x44, 0x78, 0xaf, 0xed, 0x32, 0x1a, 0x68, 0xf9, 0x36,
-	0xf6, 0x69, 0xc0, 0xda, 0xf2, 0xaf, 0x62, 0x59, 0x3f, 0x14, 0x00, 0xdd, 0x7f, 0x41, 0xdc, 0x71,
-	0x44, 0x59, 0xd0, 0x61, 0xfe, 0x88, 0x05, 0x24, 0x88, 0x10, 0x82, 0x62, 0x80, 0x7d, 0x62, 0x1a,
-	0xbb, 0xc6, 0xf5, 0xaa, 0x23, 0xbf, 0x51, 0x1d, 0xf2, 0xb4, 0x6f, 0xe6, 0x25, 0x27, 0x4f, 0xfb,
-	0xe8, 0x02, 0x94, 0x79, 0x84, 0xa3, 0x31, 0x37, 0x0b, 0x92, 0xa7, 0x29, 0xf4, 0x29, 0xac, 0x45,
-	0x21, 0x0e, 0xf8, 0x31, 0x09, 0xcd, 0xe2, 0xae, 0x71, 0xbd, 0x76, 0x73, 0xb7, 0x95, 0x89, 0xbe,
-	0xf5, 0x48, 0x8b, 0x13, 0x7f, 0xdd, 0x9c, 0x93, 0xd8, 0xa0, 0x0f, 0xa1, 0xe4, 0x7a, 0x98, 0xfa,
-	0x66, 0x49, 0x1a, 0x5f, 0x9d, 0x33, 0xee, 0x08, 0x59, 0xda, 0x52, 0x69, 0x0b, 0xb7, 0x2e, 0x0b,
-	0xa2, 0x10, 0xbb, 0x91, 0x59, 0x5e, 0xea, 0xb6, 0xa3, 0xc5, 0x19, 0xb7, 0xb1, 0x0d, 0xfa, 0x08,
-	0x2a, 0xb4, 0xe7, 0x1e, 0xf9, 0x7c, 0x60, 0x56, 0xa4, 0x79, 0x63, 0xce, 0xfc, 0xc0, 0xee, 0x3c,
-	0xe0, 0x83, 0xb4, 0x71, 0x99, 0xf6, 0xdc, 0x07, 0x7c, 0x80, 0xee, 0x42, 0x8d, 0x8d, 0xa3, 0xd1,
-	0x38, 0x3a, 0x12, 0x25, 0x33, 0xd7, 0x96, 0x9a, 0x27, 0x86, 0x5f, 0x4b, 0x55, 0x07, 0x94, 0xc9,
-	0xa3, 0x93, 0x11, 0xb1, 0xb7, 0xa0, 0xee, 0xc6, 0x62, 0x89, 0x61, 0xbd, 0x2c, 0xc0, 0xe6, 0x9c,
-	0x05, 0xea, 0xc2, 0x66, 0xec, 0x26, 0xce, 0xaf, 0xb1, 0x34, 0x45, 0x4a, 0x3f, 0xce, 0x72, 0x37,
-	0xe7, 0xd4, 0x59, 0x86, 0x83, 0xbe, 0x85, 0x1d, 0x8d, 0x14, 0x1f, 0xff, 0xc8, 0xc5, 0x9e, 0x27,
-	0x8b, 0x5b, 0xbb, 0xf9, 0xd6, 0x52, 0xb8, 0x24, 0x7b, 0xd8, 0xf3, 0xba, 0x39, 0x07, 0xb1, 0x05,
-	0x2e, 0x3a, 0x02, 0x53, 0xc3, 0x8a, 0x4c, 0x66, 0xa1, 0x0b, 0x12, 0xfa, 0x9d, 0xa5, 0xd0, 0x07,
-	0x76, 0x67, 0x0e, 0xfd, 0xbc, 0xc2, 0x39, 0xe8, 0xb9, 0x19, 0x07, 0x9f, 0x25, 0x19, 0x10, 0x0e,
-	0x38, 0x09, 0xfa, 0xba, 0xc3, 0xae, 0xac, 0xc2, 0x3d, 0x24, 0x41, 0xbf, 0x9b, 0x73, 0x36, 0x12,
-	0x3c, 0xc1, 0x40, 0x9f, 0x24, 0x05, 0x23, 0x3e, 0x8d, 0x74, 0xa3, 0x5d, 0x5c, 0x8a, 0x71, 0xdf,
-	0xa7, 0xa2, 0xd4, 0xba, 0x5a, 0x82, 0xb2, 0x37, 0x32, 0xe5, 0xb6, 0x3c, 0xd8, 0x5e, 0x68, 0x68,
-	0x31, 0x2c, 0x11, 0xd3, 0xe3, 0x93, 0x8f, 0x18, 0xda, 0x81, 0x52, 0x9f, 0x04, 0xcc, 0xd7, 0xf3,
-	0xa3, 0x08, 0xb4, 0x07, 0x65, 0xec, 0xb3, 0x71, 0x10, 0xe9, 0xf4, 0xa8, 0x10, 0x18, 0x6f, 0x89,
-	0x09, 0x6e, 0xe9, 0x09, 0x6e, 0x75, 0x18, 0x0d, 0x1c, 0xad, 0x68, 0x9d, 0x83, 0x6d, 0x39, 0x01,
-	0xfb, 0xae, 0x4b, 0x38, 0x7f, 0x38, 0xee, 0x79, 0xd4, 0xb5, 0xf6, 0x01, 0xa5, 0x99, 0x21, 0x7d,
-	0x86, 0x23, 0x82, 0x6e, 0x40, 0x15, 0xf7, 0xfb, 0x21, 0xe1, 0x9c, 0x70, 0xd3, 0xd8, 0x2d, 0x5c,
-	0xaf, 0xda, 0x1b, 0xd3, 0x49, 0xb3, 0xba, 0x1f, 0x33, 0x9d, 0x99, 0xdc, 0xfa, 0xd9, 0xc8, 0x60,
-	0xc8, 0xb4, 0x33, 0x0f, 0xdd, 0x86, 0xf2, 0x48, 0xfa, 0xd0, 0xad, 0xb6, 0xbb, 0x6c, 0x1a, 0xd3,
-	0xb1, 0x88, 0xb1, 0x50, 0x16, 0xe8, 0x0e, 0x54, 0x46, 0x2a, 0x94, 0x15, 0x8d, 0xb5, 0x18, 0x73,
-	0x37, 0xe7, 0xc4, 0x36, 0x22, 0xcd, 0x58, 0xca, 0x54, 0x9a, 0x7f, 0xcc, 0x43, 0x3d, 0x3b, 0xfb,
-	0xe8, 0x1e, 0x94, 0x95, 0x86, 0x0e, 0xee, 0x14, 0x7c, 0x7d, 0x1e, 0xbb, 0xfa, 0x6a, 0xd2, 0xcc,
-	0xbd, 0xfc, 0xfb, 0xb7, 0xf7, 0x0d, 0x47, 0xdb, 0xa2, 0xbb, 0xb0, 0x36, 0x22, 0x7d, 0x12, 0x72,
-	0x12, 0xac, 0x88, 0xf3, 0xa1, 0x16, 0x77, 0x98, 0xef, 0xd3, 0xc8, 0xd7, 0x9b, 0x23, 0x36, 0x42,
-	0x1f, 0x43, 0x85, 0xbb, 0xc3, 0x80, 0x85, 0xa1, 0x2e, 0x63, 0x73, 0xce, 0xfe, 0x50, 0x49, 0x0f,
-	0xe9, 0x20, 0xc0, 0xd1, 0x38, 0x94, 0xa7, 0xd4, 0x16, 0xe8, 0x16, 0x94, 0x06, 0x01, 0x0e, 0x9f,
-	0xea, 0x46, 0xbe, 0x3c, 0x67, 0xfa, 0xb9, 0x90, 0x3d, 0x79, 0x7a, 0x28, 0xfe, 0x89, 0x5d, 0x27,
-	0x75, 0x45, 0x6a, 0xb8, 0x3b, 0x24, 0x3e, 0x51, 0xa9, 0xe1, 0x50, 0xcf, 0x8e, 0x3c, 0x32, 0xa1,
-	0xa2, 0x4b, 0xab, 0x7b, 0x30, 0x26, 0xff, 0xbf, 0x46, 0xec, 0x02, 0x5a, 0x5c, 0x0c, 0xa7, 0x38,
-	0x36, 0xa1, 0x32, 0xc2, 0x27, 0x1e, 0xc3, 0xea, 0x0e, 0x59, 0x77, 0x62, 0xd2, 0x22, 0x70, 0x7e,
-	0xe9, 0x1e, 0x10, 0x26, 0xee, 0x10, 0x07, 0x01, 0xf1, 0x62, 0x30, 0x4d, 0xae, 0x06, 0x4b, 0x07,
-	0x50, 0xc8, 0x04, 0x60, 0x7d, 0x67, 0xc0, 0x46, 0x66, 0x2f, 0x9c, 0x8e, 0x1f, 0xa3, 0xe4, 0x57,
-	0xe4, 0xaf, 0xb0, 0x3c, 0x7f, 0xc5, 0xb3, 0xe6, 0xef, 0x1a, 0xc0, 0x6c, 0xc3, 0x08, 0x87, 0x3e,
-	0xe1, 0x1c, 0x0f, 0xe2, 0x3b, 0x37, 0x26, 0xad, 0x7d, 0xd8, 0x5e, 0xb8, 0xb8, 0x4e, 0x49, 0x33,
-	0x82, 0x62, 0x1f, 0x47, 0x58, 0xa7, 0x45, 0x7e, 0x5b, 0xbf, 0x1a, 0xb0, 0x39, 0x77, 0x7b, 0xa1,
-	0x2f, 0x61, 0x7b, 0x71, 0x49, 0x1b, 0xab, 0x2e, 0xbe, 0xb9, 0xf5, 0xbc, 0x49, 0xe7, 0x16, 0xf3,
-	0x2d, 0x58, 0x4b, 0x36, 0xb2, 0x9a, 0xa1, 0x0b, 0x8b, 0x20, 0x7a, 0x17, 0x8b, 0x6b, 0x56, 0x7c,
-	0xda, 0x75, 0x58, 0xd7, 0x37, 0xae, 0x6a, 0x63, 0x26, 0xa3, 0x3c, 0x63, 0x3b, 0xed, 0x40, 0xc9,
-	0x1d, 0x62, 0x1a, 0xe8, 0x83, 0x2a, 0x22, 0x39, 0x7d, 0x61, 0x76, 0xfa, 0x74, 0x95, 0x8b, 0xaa,
-	0x57, 0x34, 0x69, 0xfd, 0x64, 0x40, 0x25, 0xd5, 0x0b, 0xff, 0xc9, 0x53, 0xa6, 0x0f, 0xd6, 0xe3,
-	0x3e, 0x58, 0xe9, 0x2b, 0xd5, 0x21, 0xa5, 0xb3, 0x76, 0x08, 0x85, 0xad, 0xf9, 0xcd, 0x81, 0xae,
-	0x02, 0xa8, 0xed, 0x7a, 0xf4, 0x94, 0x9c, 0xc8, 0x48, 0xd7, 0x9d, 0xaa, 0xe2, 0x7c, 0x41, 0x4e,
-	0xd0, 0x15, 0xa8, 0xf2, 0x58, 0x57, 0xc7, 0x3b, 0x63, 0xa4, 0x9b, 0xac, 0x90, 0x6d, 0x32, 0x0c,
-	0x68, 0x71, 0xc9, 0xa1, 0x06, 0x80, 0x9b, 0x50, 0xda, 0x59, 0x8a, 0x83, 0x6e, 0xc0, 0x76, 0x84,
-	0xc3, 0x01, 0x11, 0xcf, 0x88, 0x44, 0x4d, 0x79, 0xdd, 0x52, 0x82, 0x19, 0x98, 0x15, 0xc1, 0x7a,
-	0x7a, 0x99, 0xa1, 0xf7, 0x60, 0xeb, 0x19, 0x09, 0xe9, 0x31, 0x75, 0xb1, 0x78, 0x7b, 0xa6, 0xce,
-	0xb3, 0x99, 0xe6, 0x8b, 0x53, 0xbd, 0x0d, 0x1b, 0xfa, 0xd0, 0x34, 0x18, 0x8d, 0x23, 0xae, 0x7d,
-	0xac, 0x2b, 0xe6, 0x81, 0xe4, 0x89, 0x82, 0x8c, 0x42, 0xc6, 0x8e, 0xe3, 0x82, 0x48, 0xc2, 0xfa,
-	0x3d, 0x0f, 0xc5, 0xc7, 0xd4, 0xf3, 0xd0, 0x05, 0xf9, 0x7a, 0x95, 0xa5, 0xb5, 0xcb, 0xd3, 0x49,
-	0x33, 0x7f, 0x70, 0x4f, 0xbe, 0x62, 0xdf, 0x85, 0x8a, 0x1b, 0x12, 0x1c, 0xb1, 0x50, 0x4d, 0xba,
-	0x5d, 0x9b, 0x4e, 0x9a, 0x95, 0x8e, 0x62, 0x39, 0xb1, 0x0c, 0x5d, 0xd1, 0x0f, 0x62, 0x99, 0x37,
-	0x7b, 0x6d, 0x3a, 0x69, 0x16, 0xbf, 0xc2, 0x3e, 0xd1, 0x4f, 0xe3, 0x3d, 0xa8, 0xf5, 0x48, 0x40,
-	0x8e, 0xa9, 0x4b, 0x71, 0x78, 0x22, 0x4b, 0x5f, 0xb5, 0x37, 0xa7, 0x93, 0x66, 0xcd, 0x9e, 0xb1,
-	0x9d, 0xb4, 0x0e, 0xb2, 0xa0, 0x3c, 0x24, 0x74, 0x30, 0x54, 0xfd, 0x50, 0xb0, 0x61, 0x3a, 0x69,
-	0x96, 0xbb, 0x92, 0xe3, 0x68, 0x89, 0xd0, 0xd1, 0x2f, 0xec, 0xb2, 0x44, 0x94, 0x3a, 0x87, 0x92,
-	0x93, 0xbc, 0xb6, 0xbf, 0x91, 0x35, 0x52, 0x43, 0xcd, 0xcd, 0xca, 0x6e, 0x61, 0xc9, 0xfd, 0xb5,
-	0xf8, 0xc0, 0xb7, 0xeb, 0xd3, 0x49, 0x13, 0x12, 0x92, 0x3b, 0x29, 0x90, 0xdb, 0xc5, 0x7f, 0x7e,
-	0x69, 0x1a, 0xd6, 0x1d, 0x28, 0x89, 0xc4, 0x71, 0xf4, 0x01, 0x94, 0x04, 0x8a, 0x7a, 0x42, 0xd4,
-	0x6e, 0x9e, 0x9b, 0x03, 0x17, 0x4a, 0x76, 0x75, 0x3a, 0x69, 0x2a, 0x75, 0x47, 0x29, 0x5b, 0x97,
-	0xa1, 0x22, 0xe8, 0x83, 0x3e, 0x47, 0x5b, 0x50, 0xa0, 0x7d, 0xfd, 0x02, 0x71, 0xc4, 0xa7, 0xdd,
-	0x7d, 0xf5, 0x57, 0x23, 0xf7, 0x72, 0xda, 0x30, 0x5e, 0x4d, 0x1b, 0xc6, 0xeb, 0x69, 0xc3, 0xf8,
-	0x73, 0xda, 0x30, 0xbe, 0x7f, 0xd3, 0xc8, 0xbd, 0x7e, 0xd3, 0xc8, 0xfd, 0xf1, 0xa6, 0x91, 0x7b,
-	0x72, 0x6d, 0x40, 0xa3, 0xe1, 0xb8, 0xd7, 0x72, 0x99, 0xdf, 0xee, 0x30, 0xee, 0x3f, 0x96, 0xbf,
-	0x8a, 0x30, 0xf7, 0xfb, 0xed, 0x17, 0xa9, 0x5f, 0x47, 0xbd, 0xb2, 0xfc, 0x19, 0x73, 0xeb, 0xdf,
-	0x00, 0x00, 0x00, 0xff, 0xff, 0x45, 0x44, 0x49, 0xa2, 0x3b, 0x0d, 0x00, 0x00,
+	// 1294 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x57, 0x49, 0x8f, 0x1b, 0xc5,
+	0x17, 0x77, 0x7b, 0x1d, 0x3f, 0xcf, 0x5a, 0x59, 0xfe, 0x9d, 0xcd, 0x9e, 0x7f, 0x03, 0x51, 0x20,
+	0x92, 0xad, 0x49, 0xe0, 0x40, 0x48, 0x88, 0xa6, 0x9d, 0x80, 0x2d, 0x14, 0x08, 0x3d, 0x41, 0x91,
+	0x72, 0x19, 0x95, 0xbb, 0x6b, 0x3c, 0xa5, 0x74, 0x77, 0x59, 0x5d, 0xe5, 0x24, 0xf3, 0x1d, 0x38,
+	0x70, 0xe4, 0x84, 0x38, 0xce, 0x91, 0x1b, 0x5f, 0x21, 0xc7, 0x48, 0x5c, 0x38, 0x59, 0xe0, 0x1c,
+	0xe0, 0x63, 0xa0, 0x5a, 0xba, 0xa7, 0xbd, 0xcc, 0x28, 0x87, 0x5c, 0x66, 0xfa, 0x2d, 0xbf, 0xdf,
+	0xab, 0x7a, 0xaf, 0xde, 0xab, 0x32, 0x5c, 0xf2, 0x19, 0x8f, 0x5e, 0x62, 0x1e, 0x75, 0x5e, 0xd2,
+	0x30, 0xec, 0x88, 0xa3, 0x11, 0xe1, 0xed, 0x51, 0xc2, 0x04, 0x43, 0x6b, 0xa9, 0xa9, 0x2d, 0x4d,
+	0x97, 0xcf, 0x0f, 0xd9, 0x90, 0x29, 0x4b, 0x47, 0x7e, 0x69, 0xa7, 0xcb, 0x4d, 0xe9, 0xc4, 0x78,
+	0x67, 0x80, 0x39, 0xe9, 0xbc, 0xd8, 0x19, 0x10, 0x81, 0x77, 0x3a, 0x3e, 0xa3, 0xb1, 0xb1, 0x6f,
+	0xe1, 0x88, 0xc6, 0xac, 0xa3, 0xfe, 0x6a, 0x95, 0xf3, 0x47, 0x09, 0xd0, 0xc3, 0x57, 0xc4, 0x1f,
+	0x0b, 0xca, 0xe2, 0x2e, 0x8b, 0x46, 0x2c, 0x26, 0xb1, 0x40, 0x08, 0xca, 0x31, 0x8e, 0x88, 0x6d,
+	0x6d, 0x5b, 0x37, 0xea, 0x9e, 0xfa, 0x46, 0xeb, 0x50, 0xa4, 0x81, 0x5d, 0x54, 0x9a, 0x22, 0x0d,
+	0xd0, 0x45, 0xa8, 0x72, 0x81, 0xc5, 0x98, 0xdb, 0x25, 0xa5, 0x33, 0x12, 0xfa, 0x12, 0x56, 0x44,
+	0x82, 0x63, 0x7e, 0x40, 0x12, 0xbb, 0xbc, 0x6d, 0xdd, 0x68, 0xdc, 0xda, 0x6e, 0xcf, 0xac, 0xbe,
+	0xfd, 0xc4, 0x98, 0xb3, 0x78, 0xbd, 0x82, 0x97, 0x61, 0xd0, 0x67, 0x50, 0xf1, 0x43, 0x4c, 0x23,
+	0xbb, 0xa2, 0xc0, 0xd7, 0xe6, 0xc0, 0x5d, 0x69, 0xcb, 0x23, 0xb5, 0xb7, 0x0c, 0xeb, 0xb3, 0x58,
+	0x24, 0xd8, 0x17, 0x76, 0x75, 0x69, 0xd8, 0xae, 0x31, 0xcf, 0x84, 0x4d, 0x31, 0xe8, 0x73, 0xa8,
+	0xd1, 0x81, 0xbf, 0x1f, 0xf1, 0xa1, 0x5d, 0x53, 0xf0, 0xe6, 0x1c, 0xbc, 0xef, 0x76, 0x1f, 0xf1,
+	0x61, 0x1e, 0x5c, 0xa5, 0x03, 0xff, 0x11, 0x1f, 0xa2, 0xbb, 0xb0, 0x22, 0xa1, 0x9c, 0xc4, 0x81,
+	0xbd, 0xa2, 0xb0, 0xad, 0x45, 0xec, 0x1e, 0x89, 0x83, 0x3c, 0x58, 0x46, 0x93, 0x3a, 0x74, 0x1f,
+	0x1a, 0x6c, 0x2c, 0x46, 0x63, 0xb1, 0x2f, 0x0b, 0x6e, 0xd7, 0x97, 0x06, 0xcf, 0x90, 0xdf, 0x29,
+	0x57, 0x0f, 0x34, 0xe4, 0xc9, 0xd1, 0x88, 0xb8, 0x9b, 0xb0, 0xee, 0xa7, 0x66, 0xc5, 0xe1, 0x1c,
+	0x97, 0x60, 0x63, 0x0e, 0x81, 0x7a, 0xb0, 0x91, 0x86, 0x49, 0xab, 0x63, 0x2d, 0x4d, 0xb0, 0xf6,
+	0x4f, 0x6b, 0xd4, 0x2b, 0x78, 0xeb, 0x6c, 0x46, 0x83, 0x7e, 0x80, 0xf3, 0x86, 0x29, 0x4d, 0xde,
+	0xbe, 0x8f, 0xc3, 0x50, 0x1d, 0x8d, 0xc6, 0xad, 0xff, 0x2f, 0xa5, 0xcb, 0x72, 0x8f, 0xc3, 0xb0,
+	0x57, 0xf0, 0x10, 0x5b, 0xd0, 0xa2, 0x7d, 0xb0, 0x0d, 0xad, 0x4c, 0xe6, 0x2c, 0x75, 0x49, 0x51,
+	0x7f, 0xb8, 0x94, 0xba, 0xef, 0x76, 0xe7, 0xd8, 0x2f, 0x68, 0x9e, 0xfe, 0xc0, 0x9f, 0x09, 0xf0,
+	0x55, 0x96, 0x81, 0xac, 0x5a, 0xfa, 0x7c, 0x5e, 0x3d, 0x8d, 0x57, 0xd6, 0xa7, 0x57, 0xf0, 0xd6,
+	0x32, 0x3e, 0x55, 0xb0, 0xbb, 0x59, 0xc1, 0x48, 0x44, 0x85, 0x39, 0xa6, 0x97, 0x96, 0x72, 0x3c,
+	0x8c, 0xa8, 0xac, 0xb5, 0xa9, 0x96, 0x94, 0xdc, 0xb5, 0x99, 0x72, 0x3b, 0x21, 0x6c, 0x2d, 0xb4,
+	0x83, 0x6c, 0x35, 0xc1, 0x4c, 0xf3, 0x15, 0x05, 0x43, 0xe7, 0xa1, 0x12, 0x90, 0x98, 0x45, 0xa6,
+	0xfb, 0xb4, 0x80, 0x76, 0xa0, 0x8a, 0x23, 0x36, 0x8e, 0x85, 0x49, 0x8f, 0x5e, 0x02, 0xe3, 0x6d,
+	0xd9, 0xff, 0x6d, 0xd3, 0xff, 0xed, 0x2e, 0xa3, 0xb1, 0x67, 0x1c, 0x9d, 0x73, 0xb0, 0xa5, 0xfa,
+	0x67, 0xd7, 0xf7, 0x09, 0xe7, 0x8f, 0xc7, 0x83, 0x90, 0xfa, 0xce, 0x2e, 0xa0, 0xbc, 0x32, 0xa1,
+	0x2f, 0xb0, 0x20, 0xe8, 0x26, 0xd4, 0x71, 0x10, 0x24, 0x84, 0x73, 0xc2, 0x6d, 0x6b, 0xbb, 0x74,
+	0xa3, 0xee, 0xae, 0x4d, 0x27, 0xad, 0xfa, 0x6e, 0xaa, 0xf4, 0x4e, 0xec, 0xce, 0x2f, 0xd6, 0x0c,
+	0x87, 0x4a, 0x3b, 0x0b, 0xd1, 0x1d, 0xa8, 0x8e, 0x54, 0x0c, 0x73, 0xd4, 0xb6, 0x97, 0xf5, 0x72,
+	0x7e, 0x2d, 0xb2, 0xa9, 0x34, 0x02, 0xdd, 0x83, 0xda, 0x48, 0x2f, 0xe5, 0x94, 0x83, 0xb5, 0xb8,
+	0x66, 0xd9, 0x55, 0x06, 0x23, 0xd3, 0x8c, 0x95, 0x4d, 0xa7, 0xf9, 0xe7, 0x22, 0xac, 0xcf, 0x4e,
+	0x0e, 0xf4, 0x00, 0xaa, 0xda, 0xc3, 0x2c, 0xee, 0x0c, 0x7e, 0xb3, 0x1f, 0xb7, 0xfe, 0x7a, 0xd2,
+	0x2a, 0x1c, 0xff, 0xf3, 0xdb, 0x27, 0x96, 0x67, 0xb0, 0xe8, 0x3e, 0xac, 0x8c, 0x48, 0x40, 0x12,
+	0x4e, 0xe2, 0x53, 0xd6, 0xf9, 0xd8, 0x98, 0xbb, 0x2c, 0x8a, 0xa8, 0x88, 0xcc, 0xdc, 0x49, 0x41,
+	0xe8, 0x0b, 0xa8, 0x71, 0xff, 0x30, 0x66, 0x49, 0x62, 0xca, 0x38, 0x3f, 0x3b, 0xf6, 0xb4, 0x75,
+	0x8f, 0x0e, 0x63, 0x2c, 0xc6, 0x89, 0xda, 0xa5, 0x41, 0xa0, 0xdb, 0x50, 0x19, 0xc6, 0x38, 0x79,
+	0x6e, 0x0e, 0xf2, 0x95, 0x39, 0xe8, 0xd7, 0xd2, 0xf6, 0xec, 0xf9, 0x9e, 0xfc, 0x27, 0x27, 0xa5,
+	0xf2, 0x95, 0xa9, 0xe1, 0xfe, 0x21, 0x89, 0x88, 0x4e, 0xcd, 0x2e, 0x6c, 0x2d, 0x4c, 0x46, 0x64,
+	0x43, 0xcd, 0x54, 0xd7, 0x1c, 0xc3, 0x54, 0x94, 0x57, 0x43, 0x80, 0x05, 0x56, 0x9b, 0x5d, 0xf5,
+	0xd4, 0xb7, 0x93, 0xc0, 0xc6, 0xdc, 0x74, 0x3c, 0x83, 0xc0, 0x86, 0x9a, 0x7f, 0x88, 0xe3, 0x98,
+	0x84, 0xe6, 0x38, 0xa7, 0x22, 0xfa, 0x1f, 0xd4, 0x46, 0x2c, 0x11, 0xfb, 0x34, 0x48, 0xaf, 0x14,
+	0x29, 0xf6, 0x83, 0x2c, 0x66, 0x39, 0x17, 0xf3, 0xd8, 0x82, 0xcd, 0xf9, 0xb1, 0xfa, 0x7e, 0xa3,
+	0x66, 0x5d, 0x57, 0x5e, 0xde, 0x75, 0x95, 0x77, 0xed, 0x3a, 0x0e, 0xeb, 0xb3, 0x43, 0xf5, 0x8c,
+	0x75, 0xbe, 0xb7, 0x56, 0xef, 0x01, 0x5a, 0x1c, 0xbd, 0x67, 0x27, 0x68, 0x84, 0x8f, 0x42, 0x86,
+	0x03, 0x53, 0xda, 0x54, 0x74, 0x08, 0x5c, 0x58, 0x3a, 0x69, 0xf3, 0x39, 0xb5, 0x66, 0x73, 0x7a,
+	0x2a, 0x59, 0x7e, 0x01, 0xa5, 0x99, 0x05, 0x38, 0x3f, 0x5a, 0xb0, 0x36, 0x33, 0x79, 0xcf, 0xe6,
+	0x4f, 0x59, 0x8a, 0xa7, 0xe4, 0xaf, 0xb4, 0x3c, 0x7f, 0xe5, 0x77, 0xcd, 0xdf, 0x75, 0x80, 0x93,
+	0x19, 0x2e, 0x03, 0x46, 0x84, 0x73, 0x3c, 0x4c, 0xdf, 0x44, 0xa9, 0xe8, 0x50, 0xd8, 0x9c, 0xef,
+	0x50, 0x74, 0x0d, 0x40, 0x4f, 0xb1, 0xfd, 0xe7, 0xe4, 0x48, 0x01, 0x56, 0xbd, 0xba, 0xd6, 0x7c,
+	0x43, 0x8e, 0xd0, 0x55, 0xa8, 0xf3, 0xd4, 0xd7, 0xe4, 0xe7, 0x44, 0x91, 0x0f, 0x55, 0x9a, 0x0d,
+	0x85, 0x01, 0x2d, 0x0e, 0x13, 0xd4, 0x04, 0xf0, 0x33, 0xc9, 0x04, 0xcb, 0x69, 0xd0, 0x4d, 0xd8,
+	0x12, 0x38, 0x19, 0x12, 0x79, 0x5d, 0x67, 0x6e, 0x3a, 0xea, 0xa6, 0x36, 0x9c, 0x90, 0x39, 0x02,
+	0x56, 0xf3, 0x43, 0x03, 0x7d, 0x0c, 0x9b, 0x2f, 0x48, 0x42, 0x0f, 0xa8, 0x8f, 0xe5, 0x0b, 0x31,
+	0xb7, 0x9f, 0x8d, 0xbc, 0x5e, 0xee, 0xea, 0x03, 0x58, 0x33, 0x9b, 0xa6, 0xf1, 0x68, 0x2c, 0xb8,
+	0x89, 0xb1, 0xaa, 0x95, 0x7d, 0xa5, 0x93, 0xe5, 0x19, 0x25, 0x8c, 0x1d, 0xa8, 0xad, 0xad, 0x7a,
+	0x5a, 0x70, 0x7e, 0x2f, 0x42, 0xf9, 0x29, 0x0d, 0x43, 0x74, 0x51, 0xbd, 0x31, 0x55, 0x86, 0xdd,
+	0xea, 0x74, 0xd2, 0x2a, 0xf6, 0x1f, 0xa8, 0xb7, 0xe6, 0x47, 0x50, 0xf3, 0x13, 0x82, 0x05, 0x4b,
+	0x74, 0xbd, 0xdd, 0xc6, 0x74, 0xd2, 0xaa, 0x75, 0xb5, 0xca, 0x4b, 0x6d, 0xe8, 0xaa, 0x79, 0xb6,
+	0xaa, 0xbc, 0xb9, 0x2b, 0xd3, 0x49, 0xab, 0xfc, 0x2d, 0x8e, 0x88, 0x79, 0xc0, 0xee, 0x40, 0x63,
+	0x40, 0x62, 0x72, 0x40, 0x7d, 0x8a, 0x93, 0x23, 0xdd, 0xd5, 0xee, 0xc6, 0x74, 0xd2, 0x6a, 0xb8,
+	0x27, 0x6a, 0x2f, 0xef, 0x83, 0x1c, 0xa8, 0x1e, 0x12, 0x3a, 0x3c, 0xd4, 0xcd, 0x5e, 0x72, 0x61,
+	0x3a, 0x69, 0x55, 0x7b, 0x4a, 0xe3, 0x19, 0x8b, 0xf4, 0x31, 0xef, 0xe0, 0xaa, 0x62, 0x54, 0x3e,
+	0x7b, 0x4a, 0x93, 0xbd, 0x89, 0xbf, 0x57, 0x35, 0xd2, 0x43, 0x8a, 0xdb, 0xb5, 0xed, 0xd2, 0x92,
+	0x7b, 0x62, 0xf1, 0x19, 0xee, 0xae, 0x4f, 0x27, 0x2d, 0xc8, 0x44, 0xee, 0xe5, 0x48, 0xee, 0x94,
+	0xff, 0xfd, 0xb5, 0x65, 0x39, 0xf7, 0xa0, 0x22, 0x13, 0xc7, 0xd1, 0xa7, 0x50, 0x91, 0x2c, 0xfa,
+	0xaa, 0x6e, 0xdc, 0x3a, 0x37, 0x47, 0x2e, 0x9d, 0xdc, 0xfa, 0x74, 0xd2, 0xd2, 0xee, 0x9e, 0x76,
+	0x76, 0xae, 0x40, 0x4d, 0xca, 0xfd, 0x80, 0xa3, 0x4d, 0x28, 0xd1, 0xc0, 0xdc, 0xf4, 0x9e, 0xfc,
+	0x74, 0x7b, 0xaf, 0xff, 0x6e, 0x16, 0x8e, 0xa7, 0x4d, 0xeb, 0xf5, 0xb4, 0x69, 0xbd, 0x99, 0x36,
+	0xad, 0xbf, 0xa6, 0x4d, 0xeb, 0xa7, 0xb7, 0xcd, 0xc2, 0x9b, 0xb7, 0xcd, 0xc2, 0x9f, 0x6f, 0x9b,
+	0x85, 0x67, 0xd7, 0x87, 0x54, 0x1c, 0x8e, 0x07, 0x6d, 0x9f, 0x45, 0x9d, 0x2e, 0xe3, 0xd1, 0x53,
+	0xf5, 0xdb, 0x05, 0xf3, 0x28, 0xe8, 0xbc, 0xca, 0xfd, 0x86, 0x19, 0x54, 0xd5, 0x8f, 0x8d, 0xdb,
+	0xff, 0x05, 0x00, 0x00, 0xff, 0xff, 0xf3, 0xda, 0xfd, 0x3a, 0xe1, 0x0c, 0x00, 0x00,
 }
 
 func (this *ExecutionComponent) Equal(that interface{}) bool {
@@ -1629,6 +1544,31 @@ func (this *ExecutionComponent_IbcMsg) Equal(that interface{}) bool {
 		return false
 	}
 	if !this.IbcMsg.Equal(that1.IbcMsg) {
+		return false
+	}
+	return true
+}
+
+func (this *ExecutionComponent_IbcSend) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ExecutionComponent_IbcSend)
+	if !ok {
+		that2, ok := that.(ExecutionComponent_IbcSend)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if !this.IbcSend.Equal(that1.IbcSend) {
 		return false
 	}
 	return true
@@ -2063,6 +2003,105 @@ func (this *ClaimComponent_Gnark) Equal(that interface{}) bool {
 	return true
 }
 
+func (this *ContractComponent) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*ContractComponent)
+	if !ok {
+		that2, ok := that.(ContractComponent)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Address != that1.Address {
+		return false
+	}
+	if !bytes.Equal(this.Data, that1.Data) {
+		return false
+	}
+	return true
+}
+
+func (this *IBCMsgComponent) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*IBCMsgComponent)
+	if !ok {
+		that2, ok := that.(IBCMsgComponent)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Address != that1.Address {
+		return false
+	}
+	if this.Channel != that1.Channel {
+		return false
+	}
+	if this.PortId != that1.PortId {
+		return false
+	}
+	if !bytes.Equal(this.Data, that1.Data) {
+		return false
+	}
+	return true
+}
+
+func (this *IBCSendComponent) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*IBCSendComponent)
+	if !ok {
+		that2, ok := that.(IBCSendComponent)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Address != that1.Address {
+		return false
+	}
+	if this.Channel != that1.Channel {
+		return false
+	}
+	if this.PortId != that1.PortId {
+		return false
+	}
+	if this.Denom != that1.Denom {
+		return false
+	}
+	if !this.Amount.Equal(that1.Amount) {
+		return false
+	}
+	return true
+}
+
 func (this *OutputTransfer) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
@@ -2207,186 +2246,6 @@ func (this *OutputEmit) Equal(that interface{}) bool {
 		return false
 	}
 	if this.Message != that1.Message {
-		return false
-	}
-	return true
-}
-
-func (this *ContractComponent) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*ContractComponent)
-	if !ok {
-		that2, ok := that.(ContractComponent)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Address != that1.Address {
-		return false
-	}
-	if !bytes.Equal(this.Data, that1.Data) {
-		return false
-	}
-	return true
-}
-
-func (this *IBCMsgComponent) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*IBCMsgComponent)
-	if !ok {
-		that2, ok := that.(IBCMsgComponent)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if that1.IbcMsgType == nil {
-		if this.IbcMsgType != nil {
-			return false
-		}
-	} else if this.IbcMsgType == nil {
-		return false
-	} else if !this.IbcMsgType.Equal(that1.IbcMsgType) {
-		return false
-	}
-	return true
-}
-
-func (this *IBCMsgComponent_IbcContractCall) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*IBCMsgComponent_IbcContractCall)
-	if !ok {
-		that2, ok := that.(IBCMsgComponent_IbcContractCall)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.IbcContractCall.Equal(that1.IbcContractCall) {
-		return false
-	}
-	return true
-}
-
-func (this *IBCMsgComponent_IbcSend) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*IBCMsgComponent_IbcSend)
-	if !ok {
-		that2, ok := that.(IBCMsgComponent_IbcSend)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if !this.IbcSend.Equal(that1.IbcSend) {
-		return false
-	}
-	return true
-}
-
-func (this *IBCContractCall) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*IBCContractCall)
-	if !ok {
-		that2, ok := that.(IBCContractCall)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Address != that1.Address {
-		return false
-	}
-	if !bytes.Equal(this.Chain, that1.Chain) {
-		return false
-	}
-	if !bytes.Equal(this.Data, that1.Data) {
-		return false
-	}
-	if !bytes.Equal(this.Channel, that1.Channel) {
-		return false
-	}
-	return true
-}
-
-func (this *IBCSend) Equal(that interface{}) bool {
-	if that == nil {
-		return this == nil
-	}
-
-	that1, ok := that.(*IBCSend)
-	if !ok {
-		that2, ok := that.(IBCSend)
-		if ok {
-			that1 = &that2
-		} else {
-			return false
-		}
-	}
-	if that1 == nil {
-		return this == nil
-	} else if this == nil {
-		return false
-	}
-	if this.Address != that1.Address {
-		return false
-	}
-	if !bytes.Equal(this.Chain, that1.Chain) {
-		return false
-	}
-	if !bytes.Equal(this.Denom, that1.Denom) {
-		return false
-	}
-	if !bytes.Equal(this.Channel, that1.Channel) {
-		return false
-	}
-	if !this.Amount.Equal(that1.Amount) {
 		return false
 	}
 	return true
@@ -2620,7 +2479,7 @@ func (m *ExecutionComponent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 			i = encodeVarintTypes(dAtA, i, uint64(size))
 		}
 		i--
-		dAtA[i] = 0x42
+		dAtA[i] = 0x4a
 	}
 	if m.ComponentType != nil {
 		{
@@ -2739,6 +2598,28 @@ func (m *ExecutionComponent_IbcMsg) MarshalToSizedBuffer(dAtA []byte) (int, erro
 		}
 		i--
 		dAtA[i] = 0x3a
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *ExecutionComponent_IbcSend) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ExecutionComponent_IbcSend) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	if m.IbcSend != nil {
+		{
+			size, err := m.IbcSend.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTypes(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x42
 	}
 	return len(dAtA) - i, nil
 }
@@ -3173,6 +3054,157 @@ func (m *ClaimComponent_Gnark) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *ContractComponent) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ContractComponent) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ContractComponent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Data) > 0 {
+		i -= len(m.Data)
+		copy(dAtA[i:], m.Data)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Data)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *IBCMsgComponent) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *IBCMsgComponent) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *IBCMsgComponent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Data) > 0 {
+		i -= len(m.Data)
+		copy(dAtA[i:], m.Data)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Data)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.PortId) > 0 {
+		i -= len(m.PortId)
+		copy(dAtA[i:], m.PortId)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.PortId)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Channel) > 0 {
+		i -= len(m.Channel)
+		copy(dAtA[i:], m.Channel)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Channel)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *IBCSendComponent) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *IBCSendComponent) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *IBCSendComponent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Amount != nil {
+		{
+			size, err := m.Amount.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTypes(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x2a
+	}
+	if len(m.Denom) > 0 {
+		i -= len(m.Denom)
+		copy(dAtA[i:], m.Denom)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Denom)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.PortId) > 0 {
+		i -= len(m.PortId)
+		copy(dAtA[i:], m.PortId)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.PortId)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Channel) > 0 {
+		i -= len(m.Channel)
+		copy(dAtA[i:], m.Channel)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Channel)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintTypes(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *OutputTransfer) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -3383,233 +3415,6 @@ func (m *OutputEmit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.Message)
 		copy(dAtA[i:], m.Message)
 		i = encodeVarintTypes(dAtA, i, uint64(len(m.Message)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *ContractComponent) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *ContractComponent) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *ContractComponent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Data) > 0 {
-		i -= len(m.Data)
-		copy(dAtA[i:], m.Data)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.Data)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.Address)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *IBCMsgComponent) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *IBCMsgComponent) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *IBCMsgComponent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.IbcMsgType != nil {
-		{
-			size := m.IbcMsgType.Size()
-			i -= size
-			if _, err := m.IbcMsgType.MarshalTo(dAtA[i:]); err != nil {
-				return 0, err
-			}
-		}
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *IBCMsgComponent_IbcContractCall) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *IBCMsgComponent_IbcContractCall) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	if m.IbcContractCall != nil {
-		{
-			size, err := m.IbcContractCall.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTypes(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *IBCMsgComponent_IbcSend) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *IBCMsgComponent_IbcSend) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	if m.IbcSend != nil {
-		{
-			size, err := m.IbcSend.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTypes(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x12
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *IBCContractCall) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *IBCContractCall) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *IBCContractCall) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Channel) > 0 {
-		i -= len(m.Channel)
-		copy(dAtA[i:], m.Channel)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.Channel)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.Data) > 0 {
-		i -= len(m.Data)
-		copy(dAtA[i:], m.Data)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.Data)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.Chain) > 0 {
-		i -= len(m.Chain)
-		copy(dAtA[i:], m.Chain)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.Chain)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.Address)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *IBCSend) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *IBCSend) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *IBCSend) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.Amount != nil {
-		{
-			size, err := m.Amount.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTypes(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x2a
-	}
-	if len(m.Channel) > 0 {
-		i -= len(m.Channel)
-		copy(dAtA[i:], m.Channel)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.Channel)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.Denom) > 0 {
-		i -= len(m.Denom)
-		copy(dAtA[i:], m.Denom)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.Denom)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.Chain) > 0 {
-		i -= len(m.Chain)
-		copy(dAtA[i:], m.Chain)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.Chain)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.Address)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -3979,6 +3784,19 @@ func (m *ExecutionComponent_IbcMsg) Size() (n int) {
 	return n
 }
 
+func (m *ExecutionComponent_IbcSend) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.IbcSend != nil {
+		l = m.IbcSend.Size()
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
 func (m *ComponentOutput) Size() (n int) {
 	if m == nil {
 		return 0
@@ -4192,6 +4010,77 @@ func (m *ClaimComponent_Gnark) Size() (n int) {
 	return n
 }
 
+func (m *ContractComponent) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.Data)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
+func (m *IBCMsgComponent) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.Channel)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.PortId)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.Data)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
+func (m *IBCSendComponent) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.Channel)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.PortId)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	l = len(m.Denom)
+	if l > 0 {
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	if m.Amount != nil {
+		l = m.Amount.Size()
+		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
 func (m *OutputTransfer) Size() (n int) {
 	if m == nil {
 		return 0
@@ -4284,115 +4173,6 @@ func (m *OutputEmit) Size() (n int) {
 	_ = l
 	l = len(m.Message)
 	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	return n
-}
-
-func (m *ContractComponent) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Address)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	l = len(m.Data)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	return n
-}
-
-func (m *IBCMsgComponent) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.IbcMsgType != nil {
-		n += m.IbcMsgType.Size()
-	}
-	return n
-}
-
-func (m *IBCMsgComponent_IbcContractCall) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.IbcContractCall != nil {
-		l = m.IbcContractCall.Size()
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	return n
-}
-
-func (m *IBCMsgComponent_IbcSend) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.IbcSend != nil {
-		l = m.IbcSend.Size()
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	return n
-}
-
-func (m *IBCContractCall) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Address)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	l = len(m.Chain)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	l = len(m.Data)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	l = len(m.Channel)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	return n
-}
-
-func (m *IBCSend) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Address)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	l = len(m.Chain)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	l = len(m.Denom)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	l = len(m.Channel)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
-	}
-	if m.Amount != nil {
-		l = m.Amount.Size()
 		n += 1 + l + sovTypes(uint64(l))
 	}
 	return n
@@ -4799,6 +4579,41 @@ func (m *ExecutionComponent) Unmarshal(dAtA []byte) error {
 			m.ComponentType = &ExecutionComponent_IbcMsg{v}
 			iNdEx = postIndex
 		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IbcSend", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			v := &IBCSendComponent{}
+			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			m.ComponentType = &ExecutionComponent_IbcSend{v}
+			iNdEx = postIndex
+		case 9:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field OutputType", wireType)
 			}
@@ -5677,6 +5492,519 @@ func (m *ClaimComponent) Unmarshal(dAtA []byte) error {
 	return nil
 }
 
+func (m *ContractComponent) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ContractComponent: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ContractComponent: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Data = append(m.Data[:0], dAtA[iNdEx:postIndex]...)
+			if m.Data == nil {
+				m.Data = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *IBCMsgComponent) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: IBCMsgComponent: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: IBCMsgComponent: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Channel", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Channel = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PortId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PortId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Data = append(m.Data[:0], dAtA[iNdEx:postIndex]...)
+			if m.Data == nil {
+				m.Data = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *IBCSendComponent) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: IBCSendComponent: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: IBCSendComponent: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Channel", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Channel = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PortId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PortId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Denom = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Amount == nil {
+				m.Amount = &types.Coin{}
+			}
+			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
 func (m *OutputTransfer) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -6337,650 +6665,6 @@ func (m *OutputEmit) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Message = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTypes(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-
-func (m *ContractComponent) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTypes
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: ContractComponent: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ContractComponent: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Address = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Data = append(m.Data[:0], dAtA[iNdEx:postIndex]...)
-			if m.Data == nil {
-				m.Data = []byte{}
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTypes(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-
-func (m *IBCMsgComponent) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTypes
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: IBCMsgComponent: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: IBCMsgComponent: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field IbcContractCall", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			v := &IBCContractCall{}
-			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			m.IbcMsgType = &IBCMsgComponent_IbcContractCall{v}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field IbcSend", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			v := &IBCSend{}
-			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			m.IbcMsgType = &IBCMsgComponent_IbcSend{v}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTypes(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-
-func (m *IBCContractCall) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTypes
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: IBCContractCall: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: IBCContractCall: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Address = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Chain", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Chain = append(m.Chain[:0], dAtA[iNdEx:postIndex]...)
-			if m.Chain == nil {
-				m.Chain = []byte{}
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Data = append(m.Data[:0], dAtA[iNdEx:postIndex]...)
-			if m.Data == nil {
-				m.Data = []byte{}
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Channel", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Channel = append(m.Channel[:0], dAtA[iNdEx:postIndex]...)
-			if m.Channel == nil {
-				m.Channel = []byte{}
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTypes(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-
-func (m *IBCSend) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTypes
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: IBCSend: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: IBCSend: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Address = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Chain", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Chain = append(m.Chain[:0], dAtA[iNdEx:postIndex]...)
-			if m.Chain == nil {
-				m.Chain = []byte{}
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Denom = append(m.Denom[:0], dAtA[iNdEx:postIndex]...)
-			if m.Denom == nil {
-				m.Denom = []byte{}
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Channel", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Channel = append(m.Channel[:0], dAtA[iNdEx:postIndex]...)
-			if m.Channel == nil {
-				m.Channel = []byte{}
-			}
-			iNdEx = postIndex
-		case 5:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Amount == nil {
-				m.Amount = &types.Coin{}
-			}
-			if err := m.Amount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
