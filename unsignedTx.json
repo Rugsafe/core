@@ -1,14 +1,14 @@
 memKeys app
-map[memory:capability:MemoryStoreKey{0x140012ae230, memory:capability}]
+map[memory:capability:MemoryStoreKey{0x14000d9e670, memory:capability}]
 scopedWillKeeper app
-{0x14001257bb0 0x140012ae180 0x140012ae230 map[] will}
+{0x14000d9e070 0x14000d9e5c0 0x14000d9e670 map[] will}
 cap keeper app
-&{0x14001257bb0 0x140012ae180 0x140012ae230 map[] map[ibc:{} icacontroller:{} icahost:{} transfer:{} wasm:{} will:{}] true}
+&{0x14000d9e070 0x14000d9e5c0 0x14000d9e670 map[] map[ibc:{} icacontroller:{} icahost:{} transfer:{} wasm:{} will:{}] true}
 NewKeeper:
 scopedKeeper:
-{0x14001257bb0 0x140012ae180 0x140012ae230 map[] will}
-{0x14001257bb0 0x140012ae180 0x140012ae230 map[] ibc}
-{0x14001257bb0 0x140012ae180 0x140012ae230 map[] map[ibc:{} icacontroller:{} icahost:{} transfer:{} wasm:{} will:{}] true}
+{0x14000d9e070 0x14000d9e5c0 0x14000d9e670 map[] will}
+{0x14000d9e070 0x14000d9e5c0 0x14000d9e670 map[] ibc}
+{0x14000d9e070 0x14000d9e5c0 0x14000d9e670 map[] map[ibc:{} icacontroller:{} icahost:{} transfer:{} wasm:{} will:{}] true}
 IBC DEBUG: NewIBCModule
 INSIDE WILL MODULE.GO
 ========INSIDE setAnteHandler==========
