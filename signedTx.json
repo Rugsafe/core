@@ -1,0 +1,14 @@
+memKeys app
+map[memory:capability:MemoryStoreKey{0x14000e078e0, memory:capability}]
+scopedWillKeeper app
+{0x14000e072e0 0x14000e07830 0x14000e078e0 map[] will}
+cap keeper app
+&{0x14000e072e0 0x14000e07830 0x14000e078e0 map[] map[ibc:{} icacontroller:{} icahost:{} transfer:{} wasm:{} will:{}] true}
+NewKeeper:
+scopedKeeper:
+{0x14000e072e0 0x14000e07830 0x14000e078e0 map[] will}
+{0x14000e072e0 0x14000e07830 0x14000e078e0 map[] ibc}
+{0x14000e072e0 0x14000e07830 0x14000e078e0 map[] map[ibc:{} icacontroller:{} icahost:{} transfer:{} wasm:{} will:{}] true}
+IBC DEBUG: NewIBCModule
+INSIDE WILL MODULE.GO
+========INSIDE setAnteHandler==========
