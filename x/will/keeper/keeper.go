@@ -234,6 +234,11 @@ func createWillId(creator string, name string, beneficiary string, height int64)
 func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest) (*types.Will, error) {
 	store := k.storeService.OpenKVStore(ctx)
 
+	if sdk.UnwrapSDKContext(ctx).BlockHeight() > msg.Height {
+		var errheight error
+		return nil, errors.Wrap(errheight, "inside k.createWill, block height is greater than submitted will execution height")
+	}
+
 	// Concatenate values to generate a unique hash
 	concatValues := createWillId(msg.Creator, msg.Name, msg.Beneficiary, msg.Height)
 	// idBytes := []byte(concatValues)
@@ -800,7 +805,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 				// DONT EXECUTE HandleOutput()
 			case *types.ExecutionComponent_Contract:
 
-				_, err := k.ExecuteContract(ctx, c)
+				_, err := k.ExecuteContract(ctx, c, will.Creator)
 				if err != nil {
 					// Handle error, maybe log it or take appropriate action.
 					continue
@@ -898,7 +903,8 @@ func (k Keeper) OutputHandler(ctx sdk.Context, component *types.ExecutionCompone
 		if !ok {
 			return fmt.Errorf("component is not a Contract component")
 		}
-		if _, err := k.ExecuteContract(ctx, contractComponent); err != nil {
+		// contract caller could be beneficiary?
+		if _, err := k.ExecuteContract(ctx, contractComponent, will.Creator); err != nil {
 			return fmt.Errorf("failed to call contract: %v", err)
 		}
 		return nil
@@ -1020,7 +1026,7 @@ func (k *Keeper) ExecuteTransfer(ctx sdk.Context, component *types.ExecutionComp
 
 // //////////////////////////// EXECUTE CONTRACT
 // function to invoke contract during will execution, or claim
-func (k Keeper) ExecuteContract(ctx sdk.Context, c *types.ExecutionComponent_Contract) ([]byte, error) {
+func (k Keeper) ExecuteContract(ctx sdk.Context, c *types.ExecutionComponent_Contract, caller string) ([]byte, error) {
 	// Prepare the message you want to send to the contract. You might need to serialize it if it's not already in []byte form.
 	msg := c.Contract.Data // Assuming this is already in []byte form.
 
@@ -1037,7 +1043,14 @@ func (k Keeper) ExecuteContract(ctx sdk.Context, c *types.ExecutionComponent_Con
 		return nil, fmt.Errorf("failed to send coins: %w", err)
 	}
 
-	callerAddr := sdk.AccAddress{} // Determine how you get or set the caller address.
+	// this should be the will creator address, or parameterized
+	// callerAddr := sdk.AccAddress{} // Determine how you get or set the caller address.
+	callerAddr, callerErr := sdk.AccAddressFromBech32(caller)
+	if callerErr != nil {
+		// handle error
+		return nil, fmt.Errorf("failed to send coins: %w", err)
+	}
+
 	// k.wasmKeeper.
 	return k.permissionedWasmKeeper.Execute(ctxContext, contractAddr, callerAddr, msg, coins)
 }

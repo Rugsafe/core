@@ -15,13 +15,13 @@ DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace $(
 HTTPS_GIT := https://github.com/CosmWasm/wasmd.git
 
 
-WILLCHAIN_CHAIN_ID="willchain-mainnet"
-WILLCHAIN_DENOM=uwill
-WILLCHAIN_NODE=http://localhost:26657
-
-# WILLCHAIN_CHAIN_ID="willchain-testnet"
+# WILLCHAIN_CHAIN_ID="willchain-mainnet"
 # WILLCHAIN_DENOM=uwill
-# WILLCHAIN_NODE=http://192.168.1.100:26657
+# WILLCHAIN_NODE=http://localhost:26657
+
+WILLCHAIN_CHAIN_ID="willchain-testnet"
+WILLCHAIN_DENOM=uwill
+WILLCHAIN_NODE=http://192.168.1.100:26657
 
 WILLCHAIN_CHAIN_ID_ARGS=--chain-id=$(WILLCHAIN_CHAIN_ID)
 WILLCHAIN_NODE_ARGS=--node=$(WILLCHAIN_NODE)
@@ -274,7 +274,7 @@ will_create:
 	--component-name "component_for_pedersen_claim_with_ibc_send_output" --component-args "pedersen-private-will156mw28alhpenp4lknweat6432dux34uydx590v:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" --component-output-type "ibc_send" --component-output-args "channel-0,uwill,will156mw28alhpenp4lknweat6432dux34uydx590v,123" \
 	--component-name "component_for_gnark_claim_with_contract_call_output" --component-args "gnark-private-will156mw28alhpenp4lknweat6432dux34uydx590v:verification_key_hex,public_inputs_hex,proof_hex" --component-output-type "contract_call" --component-output-args "0xcontract_address,${HEX_PAYLOAD}" \
 	--component-name "component_for_ibc_msg_with_emit_output" --component-args "ibc_msg:channel-0,wasm.will14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s8dkg8g,msg1234" --component-output-type "emit" --component-output-args "sent ibc message" \
-	--from alice --chain-id willchain-mainnet -y $(WILLCHAIN_NODE_ARGS) 
+	--from alice $(WILLCHAIN_CHAIN_ID_ARGS) -y $(WILLCHAIN_NODE_ARGS) 
 	sleep 1
 will_cx:
 	@for i in {1..20}; do \
