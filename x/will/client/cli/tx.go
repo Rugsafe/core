@@ -246,10 +246,12 @@ func parseAccess(accessType string, accessDetails []string) types.ClaimAccessCon
 	case "public":
 		return types.ClaimAccessControl{AccessType: &types.ClaimAccessControl_Public{}}
 	case "private":
+		addresses := strings.Split(strings.Join(accessDetails, ""), ",")
+		fmt.Println("parseAccess addresses: ", addresses, " and length: ", len(addresses))
 		return types.ClaimAccessControl{
 			AccessType: &types.ClaimAccessControl_Private{
 				Private: &types.ClaimAccessPrivate{
-					Addresses: accessDetails,
+					Addresses: addresses,
 				},
 			},
 		}
