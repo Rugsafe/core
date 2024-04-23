@@ -17,7 +17,7 @@ jobs:
 
     - name: Kill Tmux Session and Processes
       run: |
-        tmux send-keys -t willchain-protocol C-c
+        tmux send-keys -t willchain-protocol C-c || true
         sleep 5  # Give some time for the processes to terminate gracefully
         tmux kill-session -t willchain-protocol || true
         fuser -k 26657/tcp || true  # Force kill any process still using the port
