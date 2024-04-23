@@ -212,8 +212,18 @@ func (k Keeper) GetWillByID(ctx context.Context, id string) (*types.Will, error)
 // TODO: use Decentralized Identifier in Will ID
 // @note: https://pkg.go.dev/go.bryk.io/pkg/did
 // @note: https://w3c.github.io/did-core/
+//
+//	func createWillId(creator string, name string, beneficiary string, height int64) string {
+//		willID := fmt.Sprintf("%s-%s-%s-%s", creator, name, beneficiary, strconv.Itoa(int(height)))
+//		fmt.Println("New Will ID: ", willID)
+//		return willID
+//	}
 func createWillId(creator string, name string, beneficiary string, height int64) string {
-	return fmt.Sprintf("%s-%s-%s-%s", creator, name, beneficiary, strconv.Itoa(int(height)))
+	baseString := fmt.Sprintf("%s|%s|%s|%d", creator, name, beneficiary, height)
+	hash := sha256.Sum256([]byte(baseString))
+	willID := fmt.Sprintf("did:will:%x", hash[:])
+	fmt.Println("New Will ID: ", willID)
+	return willID
 }
 
 /*
@@ -226,7 +236,7 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 
 	// Concatenate values to generate a unique hash
 	concatValues := createWillId(msg.Creator, msg.Name, msg.Beneficiary, msg.Height)
-	idBytes := []byte(concatValues)
+	// idBytes := []byte(concatValues)
 
 	// Generate a truncated hash of the concatenated values
 	// truncatedHash, err := TruncateHash(idBytes, 16) // Truncate SHA256 to 16 bytes
@@ -235,8 +245,8 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 	// }
 
 	// Convert the truncated hash bytes to a hex string for safe serialization
-	idString := hex.EncodeToString(idBytes)
-	fmt.Println(fmt.Printf("NEWLY CREATED WILL: %s", idString))
+	// idString := hex.EncodeToString(idBytes)
+	// fmt.Println(fmt.Printf("NEWLY CREATED WILL: %s", idString))
 
 	// TODO: verify components, as this is already done in client/cli/tx.go
 	// verifyComponents(msg.components)
@@ -245,7 +255,8 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 
 	// Construct the will object
 	will := types.Will{
-		ID:          idString,
+		// ID:          fmt.Sprintf("did:will:%x", idString),
+		ID:          concatValues,
 		Creator:     msg.Creator,
 		Name:        msg.Name,
 		Beneficiary: msg.Beneficiary,
@@ -256,14 +267,14 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 
 	// Marshal the will object to bytes
 	willBz := k.cdc.MustMarshal(&will)
-	fmt.Println("inside k.createWill: " + idString)
+	fmt.Println("inside k.createWill: " + concatValues)
 	if willBz == nil {
 		var errBz error
 		return nil, errors.Wrap(errBz, "inside k.createWill, willBz is nil") // Make sure to handle the error appropriately
 	}
 
 	// Use the GetWillKey function to get a unique byte key for this will
-	key := types.GetWillKey(idString)
+	key := types.GetWillKey(concatValues)
 	// key := types.GetWillKey("zmxjiudojne844jdsbndsbdyuikdbaazxqetrsdshudjsdhuekdsxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxnxnmcnmcndhdiohsiodsdhsdoshdsdjksdhjksdsdsdhjsdjsdhjksdjshjdhjshdjksjdhsjdhks")
 	fmt.Println("KEY")
 	fmt.Println(key)
