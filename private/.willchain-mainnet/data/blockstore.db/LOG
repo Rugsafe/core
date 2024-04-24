@@ -1,6 +1,32 @@
 =============== Apr 24, 2024 (EDT) ===============
-01:24:07.447272 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-01:24:07.541420 db@open opening
-01:24:07.542428 version@stat F·[] S·0B[] Sc·[]
-01:24:07.578378 db@janitor F·2 G·0
-01:24:07.578407 db@open done T·36.954042ms
+01:37:18.143321 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+01:37:18.221545 db@open opening
+01:37:18.222295 version@stat F·[] S·0B[] Sc·[]
+01:37:18.248146 db@janitor F·2 G·0
+01:37:18.248230 db@open done T·26.63575ms
+01:54:32.542296 db@close closing
+01:54:32.542819 db@close done T·778µs
+=============== Apr 24, 2024 (EDT) ===============
+01:55:25.920446 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+01:55:25.921099 version@stat F·[] S·0B[] Sc·[]
+01:55:25.921119 db@open opening
+01:55:25.921172 journal@recovery F·1
+01:55:25.922035 journal@recovery recovering @1
+01:55:25.945847 memdb@flush created L0@2 N·1153 S·260KiB "BH:..0b3,v544":"blo..ore,v6"
+01:55:25.946063 version@stat F·[1] S·260KiB[260KiB] Sc·[0.25]
+01:55:26.007084 db@janitor F·3 G·0
+01:55:26.007108 db@open done T·85.981458ms
+01:59:20.551520 db@close closing
+01:59:20.553469 db@close done T·2.255333ms
+=============== Apr 24, 2024 (EDT) ===============
+02:00:12.037360 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+02:00:12.040079 version@stat F·[1] S·260KiB[260KiB] Sc·[0.25]
+02:00:12.060386 db@open opening
+02:00:12.060510 journal@recovery F·1
+02:00:12.060913 journal@recovery recovering @3
+02:00:12.104265 memdb@flush created L0@5 N·264 S·41KiB "BH:..65f,v1265":"blo..ore,v1160"
+02:00:12.104624 version@stat F·[2] S·302KiB[302KiB] Sc·[0.50]
+02:00:12.180587 db@janitor F·4 G·0
+02:00:12.180613 db@open done T·120.21425ms
+02:09:20.686576 db@close closing
+02:09:20.687177 db@close done T·1.061959ms

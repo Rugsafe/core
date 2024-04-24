@@ -268,7 +268,7 @@ PUBKEY=2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c
 # contract payload
 HEX_PAYLOAD := $(shell printf '{"foo":"bar"}' | xxd -p | tr -d '\n')
 will_create:
-	./build/wasmd tx will create "test will ${i}" "will156mw28alhpenp4lknweat6432dux34uydx590v" 100 \
+	./build/wasmd tx will create "test will ${i}" "will156mw28alhpenp4lknweat6432dux34uydx590v" 310 \
 	--component-name "component_for_transfer_with_emit_output" --component-args "transfer:will156mw28alhpenp4lknweat6432dux34uydx590v,987654321,uwill" --component-output-type "emit" --component-output-args "transferred_the_tokens" \
 	--component-name "component_for_schnorr_claim_with_transfer_output" --component-args "schnorr-private-will156mw28alhpenp4lknweat6432dux34uydx590v,a,b,c:${SIGNATURE},${PUBKEY},${MESSAGE}" --component-output-type "transfer" --component-output-args "will156mw28alhpenp4lknweat6432dux34uydx590v,1000000000,uwill"  \
 	--component-name "component_for_pedersen_claim_with_ibc_send_output" --component-args "pedersen-private-will156mw28alhpenp4lknweat6432dux34uydx590v:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" --component-output-type "ibc_send" --component-output-args "channel-0,uwill,will156mw28alhpenp4lknweat6432dux34uydx590v,123" \

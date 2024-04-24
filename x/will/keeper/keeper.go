@@ -393,8 +393,9 @@ func (k Keeper) ListWillsByAddress(ctx context.Context, address string) ([]*type
 func (k Keeper) updateWillStatusAndStore(ctx context.Context, will *types.Will, componentIndex int) error {
 	fmt.Println("Updating will status and storing it")
 	store := k.storeService.OpenKVStore(ctx)
-	concatValues := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
-	willID := hex.EncodeToString([]byte(concatValues))
+	// concatValues := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
+	// willID := hex.EncodeToString([]byte(concatValues))
+	willID := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
 	key := types.GetWillKey(willID)
 	fmt.Println(fmt.Sprintf("Storing will with ID: %s", willID))
 
@@ -841,9 +842,10 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) error {
 
 		// update will
 		will.Status = "expired"
-		concatValues := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
-		willID := hex.EncodeToString([]byte(concatValues))
+		// concatValues := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
+		// willID := hex.EncodeToString([]byte(concatValues))
 		// willID := hex.EncodeToString(idString)
+		willID := createWillId(will.Creator, will.Name, will.Beneficiary, will.Height)
 		key := types.GetWillKey(willID)
 		fmt.Println(fmt.Printf("BEGIN BLOCKER WILL EXECUTED: %s", willID))
 
@@ -1073,6 +1075,7 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, component *types.ExecutionCompo
 	data = component.GetIbcMsg().Data // Assuming Data is a field in IbcContractCall
 
 	sequence, found := k.GetChannelKeeper().GetNextSequenceSend(ctx, portID, channelID)
+	fmt.Println("will.keeper SendIBCMessage, sequence: ", sequence)
 	if !found {
 		return fmt.Errorf("sequence not found for channel")
 	}
@@ -1081,8 +1084,11 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, component *types.ExecutionCompo
 	timeoutTimestamp := uint64(ctx.BlockTime().UnixNano()) + 100000000000
 
 	packet := channeltypes.NewPacket(data, sequence, portID, channelID, "destPort", "destChannel", timeoutHeight, timeoutTimestamp)
+	fmt.Println("will.keeper SendIBCMessage, packet: ", packet)
 
 	channelCap, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(portID, channelID))
+	fmt.Println("will.keeper SendIBCMessage, channelCap: ", channelCap)
+
 	if !ok {
 		return fmt.Errorf("channel capability not found")
 	}
