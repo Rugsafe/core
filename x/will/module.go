@@ -259,5 +259,5 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 }
 
 func Main() {
-	fmt.Println("INSIDE WILL MODULE.GO")
+	// fmt.Println("INSIDE WILL MODULE.GO")
 }

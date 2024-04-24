@@ -100,7 +100,7 @@ func NewKeeper(
 	pwk wasmkeeper.PermissionedKeeper,
 	ak authkeeper.AccountKeeper,
 ) Keeper {
-	fmt.Println("NewKeeper:")
+	// fmt.Println("NewKeeper:")
 	// sb := collections.NewSchemaBuilder(storeService)
 
 	// sk := ScopedKeeper {
@@ -111,10 +111,10 @@ func NewKeeper(
 	// 		module   string
 	// }
 
-	fmt.Println("scopedKeeper:")
-	fmt.Println(scopedKeeper)
-	fmt.Println(scopedIBCKeeper)
-	fmt.Println(capabilityKeeper)
+	// fmt.Println("scopedKeeper:")
+	// fmt.Println(scopedKeeper)
+	// fmt.Println(scopedIBCKeeper)
+	// fmt.Println(capabilityKeeper)
 	keeper := &Keeper{
 		storeService:           storeService,
 		cdc:                    cdc,
@@ -540,7 +540,8 @@ func (k Keeper) Claim(ctx context.Context, msg *types.MsgClaimRequest) error {
 */
 func (k Keeper) processSchnorrClaim(ctx context.Context, claim *types.MsgClaimRequest_SchnorrClaim, will *types.Will, componentIndex int) error {
 	// publicKeyBytes := claim.SchnorrClaim.PublicKey // The public key bytes
-	// NOTE: use the public key
+	// NOTE: use the public key from the will
+	// publicKeyBytes, _ := hex.DecodeString(string(claim.SchnorrClaim.PublicKey))
 	// publicKeyBytes, _ := hex.DecodeString(string(claim.SchnorrClaim.PublicKey))
 	publicKeyBytes, _ := hex.DecodeString(string(claim.SchnorrClaim.PublicKey))
 

@@ -1,14 +1,1 @@
-memKeys app
-map[memory:capability:MemoryStoreKey{0x14000d9e670, memory:capability}]
-scopedWillKeeper app
-{0x14000d9e070 0x14000d9e5c0 0x14000d9e670 map[] will}
-cap keeper app
-&{0x14000d9e070 0x14000d9e5c0 0x14000d9e670 map[] map[ibc:{} icacontroller:{} icahost:{} transfer:{} wasm:{} will:{}] true}
-NewKeeper:
-scopedKeeper:
-{0x14000d9e070 0x14000d9e5c0 0x14000d9e670 map[] will}
-{0x14000d9e070 0x14000d9e5c0 0x14000d9e670 map[] ibc}
-{0x14000d9e070 0x14000d9e5c0 0x14000d9e670 map[] map[ibc:{} icacontroller:{} icahost:{} transfer:{} wasm:{} will:{}] true}
-IBC DEBUG: NewIBCModule
-INSIDE WILL MODULE.GO
-========INSIDE setAnteHandler==========
+{"body":{"messages":[{"@type":"/cosmos.bank.v1beta1.MsgSend","from_address":"will1p0k8gygawzpggzwftv7cv47zvgg8zaun7h2v28","to_address":"will156mw28alhpenp4lknweat6432dux34uydx590v","amount":[{"denom":"uwill","amount":"1000000"}]}],"memo":"","timeout_height":"0","extension_options":[],"non_critical_extension_options":[]},"auth_info":{"signer_infos":[],"fee":{"amount":[],"gas_limit":"200000","payer":"","granter":""},"tip":null},"signatures":[]}

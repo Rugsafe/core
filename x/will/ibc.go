@@ -49,7 +49,7 @@ type IBCModule struct {
 
 // NewIBCModule creates a new IBCModule given the associated keeper
 func NewIBCModule(k willkeeper.Keeper, ck willkeeper.ChannelKeeper, vg appVersionGetter) IBCModule {
-	fmt.Println("IBC DEBUG: NewIBCModule")
+	// fmt.Println("IBC DEBUG: NewIBCModule")
 	return IBCModule{
 		keeper:           k,
 		channelKeeper:    ck,

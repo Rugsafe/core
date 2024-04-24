@@ -344,8 +344,8 @@ func NewWasmApp(
 
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
-	fmt.Println("memKeys app")
-	fmt.Println(memKeys)
+	// fmt.Println("memKeys app")
+	// fmt.Println(memKeys)
 	// register streaming services
 	if err := bApp.RegisterStreamingServices(appOpts, keys); err != nil {
 		panic(err)
@@ -391,8 +391,8 @@ func NewWasmApp(
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
 	scopedWillKeeper := app.CapabilityKeeper.ScopeToModule(willtypes.ModuleName)
-	fmt.Println("scopedWillKeeper app")
-	fmt.Println(scopedWillKeeper)
+	// fmt.Println("scopedWillKeeper app")
+	// fmt.Println(scopedWillKeeper)
 	app.CapabilityKeeper.Seal()
 
 	// add keepers
@@ -681,8 +681,8 @@ func NewWasmApp(
 	// NOTE: MOVED BELOW WASM INIT BECAUSE WE NOW NEED THE WASM CONTRACT KEEPER
 
 	// WILL
-	fmt.Println("cap keeper app")
-	fmt.Println(app.CapabilityKeeper)
+	// fmt.Println("cap keeper app")
+	// fmt.Println(app.CapabilityKeeper)
 	app.WillKeeper = willkeeper.NewKeeper(
 		appCodec,
 		// keys[willtypes.StoreKey],
@@ -1017,7 +1017,7 @@ func (app *WasmApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*abci.Respons
 }
 
 func (app *WasmApp) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtypes.WasmConfig, txCounterStoreKey *storetypes.KVStoreKey) {
-	fmt.Println("========INSIDE setAnteHandler==========")
+	// fmt.Println("========INSIDE setAnteHandler==========")
 	// signers, _ := txConfig.SigningContext().GetSigners()
 
 	anteHandler, err := NewAnteHandler(
