@@ -255,8 +255,8 @@ will_test: will_cx
 
 # will
 ADDRESS=will1p0k8gygawzpggzwftv7cv47zvgg8zaun7h2v28
-WID=77336c6c3170306b3867796761777a7067677a7766747637637634377a766767387a61756e35787563787a2d746573742077696c6c202d62656e65666963696172792d3235
-CID=109edf75-7c30-4988-8f51-38c58a884022
+WID=did:will:8a95c62c1e5a3c30b38e99cdb9b2799ccc5bfb2511d4c0f5c0dfaeb22d33564b
+CID=3a6dfef9-281a-412c-b4d7-232a4820c093
 # schnorr claim
 SIGNATURE=7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06
 MESSAGE=message-2b-signed
@@ -267,8 +267,12 @@ PUBKEY=2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c
 
 # contract payload
 HEX_PAYLOAD := $(shell printf '{"foo":"bar"}' | xxd -p | tr -d '\n')
+will_cl:
+	make will_create ; 
+	sleep 5 ; 
+	make will_list
 will_create:
-	./build/wasmd tx will create "test will ${i}" "will156mw28alhpenp4lknweat6432dux34uydx590v" 310 \
+	./build/wasmd tx will create "test will ${i}" "will156mw28alhpenp4lknweat6432dux34uydx590v" 120 \
 	--component-name "component_for_transfer_with_emit_output" --component-args "transfer:will156mw28alhpenp4lknweat6432dux34uydx590v,987654321,uwill" --component-output-type "emit" --component-output-args "transferred_the_tokens" \
 	--component-name "component_for_schnorr_claim_with_transfer_output" --component-args "schnorr-private-will156mw28alhpenp4lknweat6432dux34uydx590v,a,b,c:${SIGNATURE},${PUBKEY},${MESSAGE}" --component-output-type "transfer" --component-output-args "will156mw28alhpenp4lknweat6432dux34uydx590v,1000000000,uwill"  \
 	--component-name "component_for_pedersen_claim_with_ibc_send_output" --component-args "pedersen-private-will156mw28alhpenp4lknweat6432dux34uydx590v:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" --component-output-type "ibc_send" --component-output-args "channel-0,uwill,will156mw28alhpenp4lknweat6432dux34uydx590v,123" \
@@ -290,7 +294,7 @@ will_list:
 # SCHNORR
 will_claim_schnorr:
 	
-	./build/wasmd tx will claim "${WID}" "${CID}" "schnorr" "${SIGNATURE}:${PUBKEY}:${MESSAGE}" --from alice --chain-id willchain-mainnet -y
+	./build/wasmd tx will claim "${WID}" "${CID}" "schnorr" "${SIGNATURE}:${PUBKEY}:${MESSAGE}" --from dev-wallet --chain-id willchain-mainnet -y
 # will_claim_schnorr:
 # 	@echo "Claiming with Schnorr verification..."
 # 	@SIGNATURE="4aadcea21fe145eeb73a72a8eb3fac914c79c9c2efbf86e9ccc616bf94ede603"; \
