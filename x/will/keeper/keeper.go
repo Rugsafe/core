@@ -1092,10 +1092,12 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, component *types.ExecutionCompo
 
 	packet := channeltypes.NewPacket(data, sequence, "will", channelID, portID, channelID, timeoutHeight, timeoutTimestamp)
 	fmt.Println("will.keeper SendIBCMessage, packet: ", packet)
-	channelCap, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(portID, channelID))
-	channelCap1, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath("will", channelID))
-	fmt.Println("will.keeper SendIBCMessage, channelCap: ", channelCap, " : ", host.ChannelCapabilityPath(portID, channelID))
-	fmt.Println("will.keeper SendIBCMessage, channelCap1: ", channelCap1, " : ", host.ChannelCapabilityPath("will", channelID))
+
+	var capabilityName string = host.ChannelCapabilityPath(portID, channelID)
+	channelCap, ok := k.scopedKeeper.GetCapability(ctx, capabilityName)
+	channelCap1, ok := k.scopedKeeper.GetCapability(ctx, capabilityName)
+	fmt.Println("will.keeper SendIBCMessage, channelCap: ", channelCap, " : ", capabilityName)
+	fmt.Println("will.keeper SendIBCMessage, channelCap1: ", channelCap1, " : ", capabilityName)
 
 	/////////
 
@@ -1132,10 +1134,11 @@ func (k *Keeper) hasCapability(ctx sdk.Context, portID string) bool {
 func (k *Keeper) BindPort(ctx sdk.Context, portID string) error {
 	capability := k.portKeeper.BindPort(ctx, portID)
 	// ports/will
-	fmt.Println("binding port: capability, ", host.PortPath(portID))
+	var capabilityName string = host.PortPath(portID)
+	fmt.Println("binding port: capability, ", capabilityName)
 	fmt.Println(capability)
 	// return k.ClaimCapability(ctx, capability, host.PortPath(portID))
-	k.scopedKeeper.ClaimCapability(ctx, capability, host.PortPath(portID))
+	k.scopedKeeper.ClaimCapability(ctx, capability, capabilityName)
 	// k.portKeeper.BindPort(ctx, portID)
 	// k.capabilityKeeper.Cl
 	k.ClaimCapability(ctx, capability, host.PortPath(portID))

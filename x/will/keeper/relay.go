@@ -87,7 +87,8 @@ func (k Keeper) OnRecvPacket(
 	msg types.IBCPacketReceiveMsg,
 ) (ibcexported.Acknowledgement, error) {
 	defer telemetry.MeasureSince(time.Now(), "will", "contract", "ibc-recv-packet")
-	fmt.Println("INSIDE OnRecvPacket")
+	fmt.Println("INSIDE OnRecvPacket:")
+	fmt.Println(msg)
 	// panic(1)
 	return nil, nil
 }
