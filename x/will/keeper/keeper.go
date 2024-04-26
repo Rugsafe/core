@@ -1076,8 +1076,9 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, component *types.ExecutionCompo
 	fmt.Println(k.channelKeeper)
 	// panic(99)
 	sequence, found := k.GetChannelKeeper().GetNextSequenceSend(ctx, portID, channelID)
-	fmt.Println("will.keeper SendIBCMessage, sequence: ", sequence)
+	fmt.Println("will.keeper SendIBCMessage, sequence: ", sequence, " : ", found)
 	if !found {
+		fmt.Println("sequence not found for channel")
 		return fmt.Errorf("sequence not found for channel")
 	}
 
@@ -1089,7 +1090,7 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, component *types.ExecutionCompo
 	fmt.Println("timeoutTimestamp")
 	fmt.Println(timeoutTimestamp)
 
-	packet := channeltypes.NewPacket(data, sequence, portID, channelID, "destPort", "destChannel", timeoutHeight, timeoutTimestamp)
+	packet := channeltypes.NewPacket(data, sequence, "will", channelID, portID, channelID, timeoutHeight, timeoutTimestamp)
 	fmt.Println("will.keeper SendIBCMessage, packet: ", packet)
 	channelCap, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(portID, channelID))
 	fmt.Println("will.keeper SendIBCMessage, channelCap: ", channelCap)
