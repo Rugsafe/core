@@ -1102,7 +1102,7 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, component *types.ExecutionCompo
 
 	////////////////
 	fmt.Println("k.GetChannelKeeper().GetAllChannels()")
-	fmt.Println(k.GetChannelKeeper().GetAllChannels())
+	fmt.Println(k.GetChannelKeeper().GetAllChannels(ctx))
 	_, err := k.GetChannelKeeper().SendPacket(ctx, channelCap, portID, channelID, timeoutHeight, timeoutTimestamp, packet.GetData())
 	return err
 }
