@@ -1075,7 +1075,8 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, component *types.ExecutionCompo
 	fmt.Println(k.GetChannelKeeper())
 	fmt.Println(k.channelKeeper)
 	// panic(99)
-	sequence, found := k.GetChannelKeeper().GetNextSequenceSend(ctx, portID, channelID)
+	// sequence, found := k.GetChannelKeeper().GetNextSequenceSend(ctx, portID, channelID)
+	sequence, found := k.GetChannelKeeper().GetNextSequenceSend(ctx, "will", channelID)
 	fmt.Println("will.keeper SendIBCMessage, sequence: ", sequence, " : ", found)
 	if !found {
 		fmt.Println("sequence not found for channel")
