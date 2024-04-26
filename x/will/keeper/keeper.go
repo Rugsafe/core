@@ -1094,6 +1094,7 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, component *types.ExecutionCompo
 	fmt.Println("will.keeper SendIBCMessage, packet: ", packet)
 
 	var capabilityName string = host.ChannelCapabilityPath(portID, channelID)
+	fmt.Println("capabilityName: ", capabilityName)
 	channelCap, ok := k.scopedKeeper.GetCapability(ctx, capabilityName)
 	channelCap1, ok := k.scopedKeeper.GetCapability(ctx, capabilityName)
 	fmt.Println("will.keeper SendIBCMessage, channelCap: ", channelCap, " : ", capabilityName)
