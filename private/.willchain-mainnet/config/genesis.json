@@ -1,7 +1,7 @@
 {
   "app_name": "wasmd",
   "app_version": "",
-  "genesis_time": "2024-04-26T05:59:13.783269Z",
+  "genesis_time": "2024-04-26T06:10:04.539659Z",
   "chain_id": "willchain-mainnet",
   "initial_height": 1,
   "app_hash": null,
@@ -132,7 +132,7 @@
                 "validator_address": "willvaloper1p0k8gygawzpggzwftv7cv47zvgg8zaunkkpn68",
                 "pubkey": {
                   "@type": "/cosmos.crypto.ed25519.PubKey",
-                  "key": "MTsOrg2zh0E3ttiNARrw0mOaO0aRPxbRk65/1LTNu0U="
+                  "key": "nlRb/4AtEipBdZ4pAkW5/kvkFBy4aL+n84THW5MSN5c="
                 },
                 "value": {
                   "denom": "stake",
@@ -140,7 +140,7 @@
                 }
               }
             ],
-            "memo": "f3a3e96817757b91fcccb7d55418e5385b1b33bf@192.168.1.101:26656",
+            "memo": "4294ebc37c40c35e7dd95a17ee7bf176981bac07@192.168.1.101:26656",
             "timeout_height": "0",
             "extension_options": [],
             "non_critical_extension_options": []
@@ -169,7 +169,7 @@
             "tip": null
           },
           "signatures": [
-            "YVnerEtTzjkX/JZ9a9kopsIih3v+yrjxVZ3zCvHkKwBArqG8i17xw3MMuEBHRG7+qnPXh0wSakYjTMjLBuBDqQ=="
+            "iRcvUPmDCRja9uo7MXoa3FHog7RdXl6zeP6pkMfQu+xpWam++BIOOVZO6/B/tZn4KYHcFX9w1ozCaDkjR9FlPw=="
           ]
         }
       ]
