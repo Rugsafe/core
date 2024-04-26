@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	// "google.golang.org/protobuf/reflect/protoreflect"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -68,12 +69,12 @@ func (wd WillDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, ne
 
 	for i, msg := range msgs {
 		switch msg := msg.(type) {
+		// @note this further prevents users from creating a will for another address
 		case *types.MsgCreateWillRequest:
 			fmt.Println("Processing MsgCreateWillRequest")
 			creator := msg.Creator
 			fmt.Println("Creator:", creator)
 
-			// Continue with your existing logic
 			signers, err := wd.txConfig.SigningContext().GetSigners(msgsV2[i])
 			if err != nil {
 				return ctx, err

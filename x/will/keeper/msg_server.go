@@ -27,16 +27,23 @@ func (m msgServer) CreateWill(
 	// signer := sdk.AccAddress(ctx.Signers()[0].Bytes()).String()
 
 	will, err := m.keeper.CreateWill(ctx, msg)
+	fmt.Println("MSG SERVER CREATE WILL")
+	fmt.Println(will)
+	fmt.Println(err)
+
 	if err != nil {
-		return nil, errors.Wrap(err, "upon creating will")
+		// return nil, errors.Wrap(err, "error upon creating will")
+		return nil, err
+	} else {
+		return &types.MsgCreateWillResponse{
+			Id:          will.ID,
+			Creator:     msg.GetCreator(),
+			Name:        will.Name,
+			Beneficiary: will.Beneficiary,
+			Height:      will.Height,
+		}, nil
 	}
-	return &types.MsgCreateWillResponse{
-		Id:          will.ID,
-		Creator:     msg.GetCreator(),
-		Name:        will.Name,
-		Beneficiary: will.Beneficiary,
-		Height:      will.Height,
-	}, nil
+
 }
 
 func (m msgServer) Claim(ctx context.Context, msg *types.MsgClaimRequest) (*types.MsgClaimResponse, error) {

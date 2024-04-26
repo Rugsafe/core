@@ -25,6 +25,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
@@ -233,12 +234,13 @@ func createWillId(creator string, name string, beneficiary string, height int64)
 */
 func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest) (*types.Will, error) {
 	store := k.storeService.OpenKVStore(ctx)
-
 	if sdk.UnwrapSDKContext(ctx).BlockHeight() > msg.Height {
-		var errheight error
-		return nil, errors.Wrap(errheight, "inside k.createWill, block height is greater than submitted will execution height")
-	}
+		// var errheight error
+		fmt.Println("Target Block height is less than the current block height")
+		// return nil, errors.Wrap(errheight, "inside k.createWill, block height is greater than submitted will execution height")
+		return nil, errors.Wrapf(sdkerrors.ErrInvalidRequest, "block height %d is greater than submitted will execution height %d", sdk.UnwrapSDKContext(ctx).BlockHeight(), msg.Height)
 
+	}
 	// Concatenate values to generate a unique hash
 	concatValues := createWillId(msg.Creator, msg.Name, msg.Beneficiary, msg.Height)
 	// idBytes := []byte(concatValues)
@@ -257,7 +259,6 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 	// verifyComponents(msg.components)
 
 	// TODO: ENSURE EACH COMPONENT HAS AN OUTPUT TYPE AND AN ACCESS TYPE
-
 	// Construct the will object
 	will := types.Will{
 		// ID:          fmt.Sprintf("did:will:%x", idString),
@@ -269,7 +270,6 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 		Status:      "live",
 		Components:  msg.Components,
 	}
-
 	// Marshal the will object to bytes
 	willBz := k.cdc.MustMarshal(&will)
 	fmt.Println("inside k.createWill: " + concatValues)
@@ -287,11 +287,9 @@ func (k *Keeper) CreateWill(ctx context.Context, msg *types.MsgCreateWillRequest
 	// Store the marshaled will in the module's store
 	// storeErr := store.Set(key, willBz)
 	storeErr := store.Set([]byte(key), willBz)
-
 	if storeErr != nil {
 		return nil, errors.Wrap(storeErr, "inside k.createWill storeErr, KV store set threw an error")
 	}
-
 	///////////// store at height
 	// Assuming you want to store the will's ID under a key derived from its height for some indexing purpose
 	// Handling storage for heightKey with WillIds message
@@ -1073,7 +1071,10 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, component *types.ExecutionCompo
 	channelID = component.GetIbcMsg().Channel
 	portID = component.GetIbcMsg().PortId
 	data = component.GetIbcMsg().Data // Assuming Data is a field in IbcContractCall
-
+	fmt.Println("send ibc messsage DEBUG CHANNEL KEEPER")
+	fmt.Println(k.GetChannelKeeper())
+	fmt.Println(k.channelKeeper)
+	// panic(99)
 	sequence, found := k.GetChannelKeeper().GetNextSequenceSend(ctx, portID, channelID)
 	fmt.Println("will.keeper SendIBCMessage, sequence: ", sequence)
 	if !found {
@@ -1081,7 +1082,12 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, component *types.ExecutionCompo
 	}
 
 	timeoutHeight := clienttypes.NewHeight(0, 10000)
+	fmt.Println("timeoutHeight")
+	fmt.Println(timeoutHeight)
+
 	timeoutTimestamp := uint64(ctx.BlockTime().UnixNano()) + 100000000000
+	fmt.Println("timeoutTimestamp")
+	fmt.Println(timeoutTimestamp)
 
 	packet := channeltypes.NewPacket(data, sequence, portID, channelID, "destPort", "destChannel", timeoutHeight, timeoutTimestamp)
 	fmt.Println("will.keeper SendIBCMessage, packet: ", packet)
@@ -1095,7 +1101,8 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, component *types.ExecutionCompo
 	}
 
 	////////////////
-
+	fmt.Println("k.GetChannelKeeper().GetAllChannels()")
+	fmt.Println(k.GetChannelKeeper().GetAllChannels())
 	_, err := k.GetChannelKeeper().SendPacket(ctx, channelCap, portID, channelID, timeoutHeight, timeoutTimestamp, packet.GetData())
 	return err
 }
