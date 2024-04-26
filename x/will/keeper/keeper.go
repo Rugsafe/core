@@ -1093,7 +1093,9 @@ func (k *Keeper) SendIBCMessage(ctx sdk.Context, component *types.ExecutionCompo
 	packet := channeltypes.NewPacket(data, sequence, "will", channelID, portID, channelID, timeoutHeight, timeoutTimestamp)
 	fmt.Println("will.keeper SendIBCMessage, packet: ", packet)
 	channelCap, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(portID, channelID))
+	channelCap1, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath("will", channelID))
 	fmt.Println("will.keeper SendIBCMessage, channelCap: ", channelCap)
+	fmt.Println("will.keeper SendIBCMessage, channelCap1: ", channelCap1)
 
 	/////////
 
