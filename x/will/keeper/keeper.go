@@ -1131,10 +1131,14 @@ func (k *Keeper) hasCapability(ctx sdk.Context, portID string) bool {
 // order to expose it to module's InitGenesis function
 func (k *Keeper) BindPort(ctx sdk.Context, portID string) error {
 	capability := k.portKeeper.BindPort(ctx, portID)
-	fmt.Println("binding port: capability")
+	fmt.Println("binding port: capability, ", host.PortPath(portID))
 	fmt.Println(capability)
 	// return k.ClaimCapability(ctx, capability, host.PortPath(portID))
-	return k.scopedKeeper.ClaimCapability(ctx, capability, host.PortPath(portID))
+	// return k.scopedKeeper.ClaimCapability(ctx, capability, host.PortPath(portID))
+	// k.portKeeper.BindPort(ctx, portID)
+	// k.capabilityKeeper.Cl
+	k.ClaimCapability(ctx, capability, host.PortPath(portID))
+	return nil
 }
 
 // GetPort returns the portID for the transfer module. Used in ExportGenesis
