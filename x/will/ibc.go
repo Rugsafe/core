@@ -67,6 +67,9 @@ func (i IBCModule) OnAcknowledgementPacket(
 	fmt.Println("IBC DEBUG: NewIBCModule OnAcknowledgementPacket")
 
 	// TODO: check type of ack
+	fmt.Println(packet)
+	fmt.Println(acknowledgement)
+	fmt.Println(relayer)
 
 	return nil
 }

@@ -503,8 +503,9 @@ Example:
 				}
 				// Additional parsing and validation of parts[0], parts[1], and parts[2] needed here
 				msg = &types.MsgClaimRequest{
-					WillId:  willID,
-					Claimer: clientCtx.GetFromAddress().String(),
+					WillId:      willID,
+					Claimer:     clientCtx.GetFromAddress().String(),
+					ComponentId: componentID,
 					ClaimType: &types.MsgClaimRequest_PedersenClaim{
 						PedersenClaim: &types.PedersenClaim{
 							Commitment:     []byte(parts[0]),

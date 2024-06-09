@@ -255,13 +255,16 @@ will_test: will_cx
 
 # will
 ADDRESS=will1p0k8gygawzpggzwftv7cv47zvgg8zaun7h2v28
-WID=did:will:8a95c62c1e5a3c30b38e99cdb9b2799ccc5bfb2511d4c0f5c0dfaeb22d33564b
-CID=3a6dfef9-281a-412c-b4d7-232a4820c093
+WID=did:will:5ef8a4b1216ccc9290cad30c6a27b1d158442781615e32e5b5c5936da5130648
+CID=7b028f1e-5842-4bc2-a73f-15de8371061b
 # schnorr claim
 SIGNATURE=7ab0edb9b0929b5bb4b47dfb927d071ecc5de75985662032bb52ef3c5ace640b165c6df5ea8911a6c0195a3140be5119a5b882e91b34cbcdd31ef3f5b0035b06
 MESSAGE=message-2b-signed
 PUBKEY=2320a2da28561875cedbb0c25ae458e0a1d087834ae49b96a3f93cec79a8190c
 # pedersen claim
+COMMITMENT=0xabc 
+BLINDING_FACTOR=0000000000000000000000000000000000000000000000000000000000000000 
+VALUE=0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798 
 
 # gnark claim
 
@@ -272,12 +275,15 @@ will_cl:
 	sleep 5 ; 
 	make will_list
 will_create:
-	./build/wasmd tx will create "test will ${i}" "will156mw28alhpenp4lknweat6432dux34uydx590v" 70 \
+#wasm.will14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s8dkg8
+# fix this in the contract?
+# acknowledgement:"{\"error\":\"Error parsing into type ibc_tutorial::msg::IbcExecuteMsg: Expected to parse either a `true`, `false`, or a `null`.\"}"
+	./build/wasmd tx will create "test will ${i}" "will156mw28alhpenp4lknweat6432dux34uydx590v" 30 \
 	--component-name "component_for_transfer_with_emit_output" --component-args "transfer:will156mw28alhpenp4lknweat6432dux34uydx590v,987654321,uwill" --component-output-type "emit" --component-output-args "transferred_the_tokens" \
 	--component-name "component_for_schnorr_claim_with_transfer_output" --component-args "schnorr-private-will156mw28alhpenp4lknweat6432dux34uydx590v,a,b,c:${SIGNATURE},${PUBKEY},${MESSAGE}" --component-output-type "transfer" --component-output-args "will156mw28alhpenp4lknweat6432dux34uydx590v,1000000000,uwill"  \
 	--component-name "component_for_pedersen_claim_with_ibc_send_output" --component-args "pedersen-private-will156mw28alhpenp4lknweat6432dux34uydx590v:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" --component-output-type "ibc_send" --component-output-args "channel-0,uwill,will156mw28alhpenp4lknweat6432dux34uydx590v,123" \
 	--component-name "component_for_gnark_claim_with_contract_call_output" --component-args "gnark-private-will156mw28alhpenp4lknweat6432dux34uydx590v:verification_key_hex,public_inputs_hex,proof_hex" --component-output-type "contract_call" --component-output-args "0xcontract_address,${HEX_PAYLOAD}" \
-	--component-name "component_for_ibc_msg_with_emit_output" --component-args "ibc_msg:channel-0,will,{\"increment\":{}}" --component-output-type "emit" --component-output-args "sent ibc message" \
+	--component-name "component_for_ibc_msg_with_emit_output" --component-args "ibc_msg:channel-0,will,abc" --component-output-type "emit" --component-output-args "sent ibc message" \
 	--from alice $(WILLCHAIN_CHAIN_ID_ARGS) -y $(WILLCHAIN_NODE_ARGS) 
 	sleep 1
 will_cx:
@@ -293,7 +299,6 @@ will_list:
 
 # SCHNORR
 will_claim_schnorr:
-	
 	./build/wasmd tx will claim "${WID}" "${CID}" "schnorr" "${SIGNATURE}:${PUBKEY}:${MESSAGE}" --from dev-wallet --chain-id willchain-mainnet -y
 # will_claim_schnorr:
 # 	@echo "Claiming with Schnorr verification..."
@@ -303,10 +308,7 @@ will_claim_schnorr:
 # 	./build/wasmd tx will claim "$${WID}" "$${CID}" "schnorr" "$${SIGNATURE}:$${MESSAGE}:$${PUBKEY}" --from alice --chain-id willchain-mainnet -y
 # PEDERSEN
 will_claim_pedersen:
-	COMMITMENT=0xabc
-	BLINDING_FACTOR=0000000000000000000000000000000000000000000000000000000000000000
-	VALUE=0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
-	./build/wasmd tx will claim "${WID}" "${CID}" "pedersen" "${COMMITMENT}:$(BLINDING_FACTOR):${VALUE}" --from alice --chain-id willchain-mainnet -y
+	./build/wasmd tx will claim "${WID}" "${CID}" "pedersen" "${COMMITMENT}:$(BLINDING_FACTOR):${VALUE}" --from dev-wallet --chain-id willchain-mainnet -y
 
 # GNARK
 will_claim_gnark:
@@ -345,8 +347,8 @@ contract_address:
 	echo $$CONTRACT_ADDRESS
 contract_info:
 	./build/wasmd q wasm contract $(DEPLOYED_CONTRACT_ADDRESS) --output json $(WILLCHAIN_NODE_ARGS)
-
-
+fund_dev:
+	./build/wasmd tx bank send alice will1038e4lakn5krq0wz7u5rg74l7ayt4gxyn5duey 10uwill --broadcast-mode="sync" --chain-id="willchain-mainnet" --yes
 # dev
 # mainnet - wasm.w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
 # testnet - wasm.w3ll14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srdqyxn
@@ -358,3 +360,58 @@ contract_info:
 # go: warning: github.com/cosmos/ibc-go/v8@v8.0.0: retracted by module author: contains ASA-2024-007 vulnerability
 # go: to switch to the latest unretracted version, run:
 #         go get <module>@latest
+
+
+
+# FOR KEPLR
+# {
+# 	"chainId": "willchain-mainnet",
+# 	"chainName": "willchain",
+# 	"rpc": "http://127.0.0.1:26557",
+# 	"rest": "http://127.0.0.1:1317",
+# 	"bip44": {
+# 		"coinType": 118
+# 	},
+# 	"coinType": 118,
+# 	"bech32Config": {
+# 		"bech32PrefixAccAddr": "will",
+# 		"bech32PrefixAccPub": "willpub",
+# 		"bech32PrefixValAddr": "willvaloper",
+# 		"bech32PrefixValPub": "willvaloperpub",
+# 		"bech32PrefixConsAddr": "willvalcons",
+# 		"bech32PrefixConsPub": "willvalconspub"
+# 	},
+# 	"currencies": [
+# 		{
+# 			"coinDenom": "WILL",
+# 			"coinMinimalDenom": "uwill",
+# 			"coinDecimals": 6,
+# 			"coinGeckoId": "willchain"
+# 		}
+# 	],
+# 	"feeCurrencies": [
+# 		{
+# 			"coinDenom": "WILL",
+# 			"coinMinimalDenom": "uwill",
+# 			"coinDecimals": 6,
+# 			"coinGeckoId": "willchain",
+# 			"gasPriceStep": {
+# 				"low": 0.01,
+# 				"average": 0.025,
+# 				"high": 0.03
+# 			}
+# 		}
+# 	],
+# 	"gasPriceStep": {
+# 		"low": 0.01,
+# 		"average": 0.025,
+# 		"high": 0.03
+# 	},
+# 	"stakeCurrency": {
+# 		"coinDenom": "WILL",
+# 		"coinMinimalDenom": "uwill",
+# 		"coinDecimals": 6,
+# 		"coinGeckoId": "willchain"
+# 	},
+# 	"features": []
+# }
