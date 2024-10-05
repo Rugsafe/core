@@ -1,0 +1,8 @@
+=============== Oct 5, 2024 (EDT) ===============
+16:05:43.184798 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+16:05:43.245713 db@open opening
+16:05:43.245913 version@stat F·[] S·0B[] Sc·[]
+16:05:43.268864 db@janitor F·2 G·0
+16:05:43.268892 db@open done T·23.15625ms
+16:20:41.720819 db@close closing
+16:20:41.720959 db@close done T·139.708µs

@@ -71,7 +71,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=wasm \
 		  -X github.com/cosmos/cosmos-sdk/version.AppName=wasmd \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X github.com/CosmWasm/wasmd/app.Bech32Prefix=will \
+		  -X github.com/CosmWasm/wasmd/app.Bech32Prefix=rugsafe \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
 ifeq ($(WITH_CLEVELDB),yes)
@@ -278,8 +278,8 @@ will_create:
 #wasm.will14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s8dkg8
 # fix this in the contract?
 # acknowledgement:"{\"error\":\"Error parsing into type ibc_tutorial::msg::IbcExecuteMsg: Expected to parse either a `true`, `false`, or a `null`.\"}"
-	./build/wasmd tx will create "test will ${i}" "will156mw28alhpenp4lknweat6432dux34uydx590v" 30 \
-	--component-name "component_for_transfer_with_emit_output" --component-args "transfer:will156mw28alhpenp4lknweat6432dux34uydx590v,987654321,uwill" --component-output-type "emit" --component-output-args "transferred_the_tokens" \
+	./build/wasmd tx will create "test will ${i}" "will156mw28alhpenp4lknweat6432dux34uydx590v" 500 \
+	--component-name "component_for_transfer_with_emit_output" --component-args "transfer:will1038e4lakn5krq0wz7u5rg74l7ayt4gxyn5duey,987654321,uwill" --component-output-type "emit" --component-output-args "transferred_the_tokens" \
 	--component-name "component_for_schnorr_claim_with_transfer_output" --component-args "schnorr-private-will156mw28alhpenp4lknweat6432dux34uydx590v,a,b,c:${SIGNATURE},${PUBKEY},${MESSAGE}" --component-output-type "transfer" --component-output-args "will156mw28alhpenp4lknweat6432dux34uydx590v,1000000000,uwill"  \
 	--component-name "component_for_pedersen_claim_with_ibc_send_output" --component-args "pedersen-private-will156mw28alhpenp4lknweat6432dux34uydx590v:commitment_hex,random_factor_hex,value_hex,blinding_factor_hex" --component-output-type "ibc_send" --component-output-args "channel-0,uwill,will156mw28alhpenp4lknweat6432dux34uydx590v,123" \
 	--component-name "component_for_gnark_claim_with_contract_call_output" --component-args "gnark-private-will156mw28alhpenp4lknweat6432dux34uydx590v:verification_key_hex,public_inputs_hex,proof_hex" --component-output-type "contract_call" --component-output-args "0xcontract_address,${HEX_PAYLOAD}" \
@@ -347,6 +347,7 @@ contract_address:
 	echo $$CONTRACT_ADDRESS
 contract_info:
 	./build/wasmd q wasm contract $(DEPLOYED_CONTRACT_ADDRESS) --output json $(WILLCHAIN_NODE_ARGS)
+
 fund_dev:
 	./build/wasmd tx bank send alice will1038e4lakn5krq0wz7u5rg74l7ayt4gxyn5duey 10uwill --broadcast-mode="sync" --chain-id="willchain-mainnet" --yes
 # dev

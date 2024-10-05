@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default chain name
-CHAIN_NAME=${CHAINNAME:-"willchain-mainnet"}
+CHAIN_NAME=${CHAINNAME:-"rugsafe-mainnet"}
 
 # Define paths
 HOME_DIR="./private/.${CHAIN_NAME}"
@@ -38,7 +38,7 @@ grep bond_denom ${HOME_DIR}/config/genesis.json
 # Add new account to genesis
 echo "step 5"
 ./build/wasmd genesis add-genesis-account alice 987654111111stake --home ${HOME_DIR} --keyring-backend test
-./build/wasmd genesis add-genesis-account alice 988887999999uwill --home ${HOME_DIR} --keyring-backend test --append
+./build/wasmd genesis add-genesis-account alice 988887999999urug --home ${HOME_DIR} --keyring-backend test --append
 
 # Generate a genesis tx carrying a self delegation
 echo "step 6"

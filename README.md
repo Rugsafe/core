@@ -1,3 +1,7 @@
+```
+make build
+make run
+```
 
 # Wasm Zone
 

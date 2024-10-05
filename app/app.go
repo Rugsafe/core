@@ -147,7 +147,7 @@ const appName = "WasmApp"
 // We pull these out so we can set them with LDFLAGS in the Makefile
 var (
 	NodeDir      = ".wasmd"
-	Bech32Prefix = "will" // wasm
+	Bech32Prefix = "rugsafe" // wasm
 )
 
 // These constants are derived from the above variables.
@@ -642,7 +642,8 @@ func NewWasmApp(
 
 	// wasm.Keeper.
 	// wasmDir := filepath.Join(homePath, "wasm")
-	wasmDir := filepath.Join(homePath, "willchain")
+	// wasmDir := filepath.Join(homePath, "willchain")
+	wasmDir := filepath.Join(homePath, "rugsafe")
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
 	if err != nil {
 		panic(fmt.Sprintf("error while reading wasm config: %s", err))

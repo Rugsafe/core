@@ -1,6 +1,6 @@
-=============== Jun 8, 2024 (EDT) ===============
-22:19:04.808048 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-22:19:04.863442 db@open opening
-22:19:04.864033 version@stat F·[] S·0B[] Sc·[]
-22:19:04.882622 db@janitor F·2 G·0
-22:19:04.882670 db@open done T·19.184916ms
+=============== Oct 5, 2024 (EDT) ===============
+15:19:17.627062 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+15:19:17.703993 db@open opening
+15:19:17.704233 version@stat F·[] S·0B[] Sc·[]
+15:19:17.728107 db@janitor F·2 G·0
+15:19:17.728196 db@open done T·24.166792ms
