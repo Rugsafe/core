@@ -1,4 +1,4 @@
-name: Willchain Protocol
+name: Rugsafe Protocol
 
 on:
   push:
@@ -17,11 +17,11 @@ jobs:
 
     - name: Kill Tmux Session and Processes
       run: |
-        tmux send-keys -t willchain-protocol C-c || true
+        tmux send-keys -t rugsafe-protocol C-c || true
         sleep 5  # Give some time for the processes to terminate gracefully
-        tmux kill-session -t willchain-protocol || true
+        tmux kill-session -t rugsafe-protocol || true
         fuser -k 26657/tcp || true  # Force kill any process still using the port
 
     - name: Run protocol
       run: |
-        tmux new -d -s willchain-protocol 'sh -c "CHAINNAME=willchain-testnet make run"'
+        tmux new -d -s rugsafe-protocol 'sh -c "CHAINNAME=rugsafe-testnet make run"'
